@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const evaluationStrategyEnum = {
-    values: ['IMMEDIATE', 'USER', 'PERCENTAGE'],
+    values: ['IMMEDIATE', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
     message: '{VALUE} is not a valid EvaluationStrategy value'
 };
 
