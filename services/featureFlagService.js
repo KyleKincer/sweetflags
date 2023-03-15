@@ -4,26 +4,19 @@ const md5 = require('md5');
 
 class FeatureFlagService {
     async isEnabled(featureFlag, user, environment) {
-        let environmentData = {};
-        await Environment.findOne({ name: environment, app: featureFlag.app }).then((result) => {
-            environmentData = result;
-        }).catch((err) => {
-            console.log(err)
-        });
+        
+        let environmentData = await Environment.findOne({ name: environment, app: featureFlag.app }).exec()
 
         if (!environmentData) {
             // Default to production
-            await Environment.findOne({ name: "Production" }).then((result) => {
-                environmentData = result;
-            }).catch((err) => {
-                console.log(err)
-            });
+            environmentData = await Environment.findOne({ name: "Production" }).exec()
             if (!environmentData) {
                 return false;
             }
         }
 
         const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentData._id.toString());
+        console.log(flagData)
         switch (flagData.evaluationStrategy) {
             case 'IMMEDIATE':
                 return flagData.isActive;
@@ -56,12 +49,11 @@ class FeatureFlagService {
     }
 
     async areEnabled(featureFlags, user, environment) {
-        const result = {};
-        for (const flag of featureFlags) {
-          const enabled = await this.isEnabled(flag, user, environment);
-          result[flag.name] = enabled;
-        }
-        return result;
+        const promise = featureFlags.map((flag) => {
+            return this.isEnabled(flag, user, environment);
+        })
+        console.log(promise)
+        return await Promise.all(promise);
       }
       
 }
