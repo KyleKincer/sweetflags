@@ -16,7 +16,6 @@ class FeatureFlagService {
         }
 
         const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentData._id.toString());
-        console.log(flagData)
         switch (flagData.evaluationStrategy) {
             case 'IMMEDIATE':
                 return flagData.isActive;
@@ -52,7 +51,6 @@ class FeatureFlagService {
         const promise = featureFlags.map((flag) => {
             return this.isEnabled(flag, user, environment);
         })
-        console.log(promise)
         return await Promise.all(promise);
       }
       
