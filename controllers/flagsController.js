@@ -66,10 +66,10 @@ async function getFlagsByAppName(req, res) {
 // Return feature flag state for a given app, environment name, user id, and flag name
 /*
     {
-        "appName": "myApp",
-        "flagName": "myFlag",
-        "userId": "123",
-        "environmentName": "Production"
+        "appName": "myApp",             // String, required
+        "flagName": "myFlag",           // String, required
+        "userId": "123",                // String, required
+        "environmentName": "Production" // String, required
     }
 */
 async function getFlagStateForFlagName(req, res) {
@@ -99,9 +99,9 @@ async function getFlagStateForFlagName(req, res) {
 // Return feature flag states for all flags for a given app and environment name and user id
 /*
     {
-        "appName": "myApp",
-        "userId": "123",
-        "environmentName": "Production"
+        "appName": "myApp",             // String, required
+        "userId": "123",                // String, required
+        "environmentName": "Production" // String, required
     }
 */
 async function getFlagStatesForUserId(req, res) {
@@ -125,10 +125,10 @@ async function getFlagStatesForUserId(req, res) {
 // Toggle a feature flag state
 /*
     {
-        "id": "123", // either id or name is required
-        "name": "myFlag",
-        "appName": "myApp",
-        "environmentName": "Production"
+        "id": "123",                    // String, optional, must provide either id or name
+        "name": "myFlag",               // String, optional, must provide either id or name
+        "appName": "myApp",             // String, required
+        "environmentName": "Production" // String, required
     }
 */
 async function toggleFlag(req, res) {
@@ -176,14 +176,14 @@ async function toggleFlag(req, res) {
 // Create a new feature flag
 /*
     {
-        "name": "myFlag",
-        "app": "myApp",
-        "isActive": true,
-        "evaluationStrategy": "PERCENTAGE/USER/IMMEDIATE",
-        "evaluationPercentage": 50, // if evaluationStrategy is PERCENTAGE
-        "allowedUsers": ["123", "456"], // if evaluationStrategy is USER
-        "disallowedUsers": ["789"], // if evaluationStrategy is USER
-        "createdBy": "me"
+        "name": "myFlag",                   // String, required
+        "app": "myApp",                     // String, required
+        "isActive": true,                   // Boolean, required
+        "evaluationStrategy": "IMMEDIATE",  // String, required. Must be one of IMMEDIATE, PERCENTAGE, USER, or PROBABILISTIC
+        "evaluationPercentage": 50,         // String, required if evaluationStrategy is PERCENTAGE
+        "allowedUsers": ["123", "456"],     // Array of strings, required if evaluationStrategy is USER
+        "disallowedUsers": ["789"],         // Array of strings, required if evaluationStrategy is USER
+        "createdBy": "me"                   // String, required
     }
 */
 async function createFlag(req, res) {

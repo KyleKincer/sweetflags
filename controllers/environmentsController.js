@@ -47,11 +47,11 @@ async function getEnvironmentsByAppName(req, res) {
 // Create a new environment
 /*
     {
-        "name": "Development",
-        "description": "Development environment",
-        "appName": "Symphony",
-        "isActive": true,
-        "createdBy": "admin"
+        "name": "Development",                    // String, required
+        "description": "Development environment", // String, optional
+        "appName": "Symphony",                    // String, required
+        "isActive": true,                         // Boolean, optional, default: true
+        "createdBy": "admin"                      // String, required
     }
 */
 async function createEnvironment(req, res) {
