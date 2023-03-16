@@ -1,5 +1,6 @@
 const swaggerJSDoc = require('swagger-jsdoc');
 const { FeatureFlag } = require('./schemas/featureFlagSchema');
+const { App } = require('./schemas/appSchema');
 
 const options = {
   definition: {
@@ -17,7 +18,8 @@ const options = {
     ],
       components: {
         schemas: {
-            FeatureFlag
+            FeatureFlag, 
+            App
         },
     },
   },

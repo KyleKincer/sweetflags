@@ -2,12 +2,19 @@ const express = require('express');
 const router = express.Router();
 const flagsController = require('../controllers/flagsController.js');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Flags
+ *   description: Endpoints for managing feature flags
+ */
 
 /**
  * @swagger
  * /api/flags:
  *   get:
  *     summary: Returns all feature flag data
+ *     tags: [Flags]
  *     responses:
  *       200:
  *         description: An array of feature flag objects
@@ -45,6 +52,7 @@ router.get('/', flagsController.getAllFlags);
  * /api/flags/id/{id}:
  *   get:
  *     summary: Returns feature flag data for a given id
+ *     tags: [Flags]
  *     parameters:
  *       - in: path
  *         name: id
@@ -87,6 +95,7 @@ router.get('/id/:id', flagsController.getFlagById);
  * /api/flags/name/{name}:
  *   get:
  *     summary: Returns feature flag data for a given name
+ *     tags: [Flags]
  *     parameters:
  *       - in: path
  *         name: name
@@ -129,6 +138,7 @@ router.get('/name/:name', flagsController.getFlagByName)
  * /api/flags/app/{appName}:
  *   get:
  *     summary: Returns all feature flag data for a given app name
+ *     tags: [Flags]
  *     parameters:
  *       - in: path
  *         name: appName
@@ -175,6 +185,7 @@ router.get('/app/:appName', flagsController.getFlagsByAppName)
  * /api/flags/state/name:
  *   get:
  *     summary: Returns the feature flag state
+ *     tags: [Flags]
  *     requestBody:
  *       required: true
  *       content:
@@ -237,6 +248,7 @@ router.get('/state/name', flagsController.getFlagStateForFlagName)
  * /api/flags/state/user:
  *   get:
  *     summary: Returns the state of all feature flags for a given user ID, app name, and environment name
+ *     tags: [Flags]
  *     requestBody:
  *       required: true
  *       content:
@@ -306,9 +318,10 @@ router.get('/user', flagsController.getFlagStatesForUserId)
 /**
  * @swagger
  * paths:
- *   /api/toggle:
+ *   /api/flags/toggle:
  *     put:
  *       summary: Toggle a feature flag state
+ *       tags: [Flags]
  *       requestBody:
  *         required: true
  *         content:
@@ -367,6 +380,7 @@ router.put('/toggle', flagsController.toggleFlag);
  * /api/flags:
  *   post:
  *     summary: Create a new feature flag
+ *     tags: [Flags]
  *     requestBody:
  *       required: true
  *       content:
