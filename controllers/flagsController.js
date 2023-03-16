@@ -3,189 +3,110 @@ const Environment = require('../models/EnvironmentModel');
 const App = require('../models/AppModel');
 const FeatureFlagService = require('../services/featureFlagService');
 const mongoose = require('mongoose');
+const featureFlagService = require('../services/featureFlagService');
+const { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } = require('../errors');
 
-// Flag data (no states)
-
-// GET /api/flags
-// Return all feature flag data
 async function getAllFlags(_req, res) {
     try {
         const featureFlags = await FeatureFlagService.getAllFlags();
         res.status(200).json(featureFlags);
-      } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: err.message });
-      }
-}
-
-// GET /api/flags/id/:id
-// Return feature flag data for a given id
-async function getFlagById(req, res) {
-    try {
-        const featureFlag = await FeatureFlag.findById(req.params.id);
-        res.status(200).json(featureFlag);
-      } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: err.message });
-      }
-}
-
-// GET /api/flags/name/:name
-// Return feature flag data for a given name
-async function getFlagByName(req, res) {
-    try {
-        const featureFlag = await FeatureFlag.findOne({ name: req.params.name });
-        res.status(200).json(featureFlag);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: err.message });
+        if (err instanceof FlagNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
     }
 }
 
-// GET /api/flags/app/:appName
-// Return feature flag data for all flags for a given app name
+async function getFlagById(req, res) {
+    try {
+        const featureFlag = await FeatureFlagService.getFlagById(req.params.id);
+        res.status(200).json(featureFlag);
+    } catch (err) {
+        console.log(err);
+        if (err instanceof FlagNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
+    }
+}
+
+async function getFlagByName(req, res) {
+    try {
+        const featureFlag = await FeatureFlagService.getFlagByName(req.params.name);
+        res.status(200).json(featureFlag);
+    } catch (err) {
+        console.log(err);
+        if (err instanceof FlagNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
+    }
+}
+
 async function getFlagsByAppName(req, res) {
     try {
-        const app = await App.findOne({ name: req.params.appName });
-
-        if (!app) {
-            return res.status(400).json({ message: `App '${req.params.appName}' not found` });
-        }
-
-        const featureFlags = await FeatureFlag.find({ app: app._id });
+        const featureFlags = await FeatureFlagService.getFlagsByAppName(req.params.appName);
         res.status(200).json(featureFlags);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: err.message });
+        if (err instanceof AppNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
     }
 }
 
-// Flag states
-
-// GET /api/flags/forFlagName
-// Return feature flag state for a given app, environment name, user id, and flag name
-/*
-    {
-        "appName": "myApp",             // String, required
-        "flagName": "myFlag",           // String, required
-        "userId": "123",                // String, required
-        "environmentName": "Production" // String, required
-    }
-*/
 async function getFlagStateForFlagName(req, res) {
     try {
-        const app = await App.findOne({ name: req.body.appName });
-
-        if (!app) {
-            return res.status(400).json({ message: `App '${req.body.appName}' not found` });
-        }
-        
-        const featureFlag = await FeatureFlag.findOne({ app: app._id, name: req.body.flagName }).exec();
-
-        if (!featureFlag) {
-            return res.status(400).json({ message: `Flag '${req.body.flagName}' not found` });
-        }
-
-        const result = await FeatureFlagService.isEnabled(featureFlag, req.body.userId, req.body.environmentName);
-        res.status(200).json(result);
+        const state = await FeatureFlagService.getFlagStateForName(req.body.flagName, req.body.appName, req.body.userId, req.body.environmentName);
+        res.status(200).json(state);
 
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: err.message });
+        if (err instanceof FlagNotFoundError || err instanceof AppNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
     }
-} 
+}
 
-// GET /api/flags/forUser
-// Return feature flag states for all flags for a given app and environment name and user id
-/*
-    {
-        "appName": "myApp",             // String, required
-        "userId": "123",                // String, required
-        "environmentName": "Production" // String, required
-    }
-*/
 async function getFlagStatesForUserId(req, res) {
     try {
-        const app = await App.findOne({ name: req.body.appName });
-
-        if (!app) {
-            return res.status(400).json({ message: `App '${req.body.appName}' not found` });
-        }
-
-        const featureFlags = await FeatureFlag.find({ app: app._id }).exec();
-        const results = await FeatureFlagService.areEnabled(featureFlags, req.body.userId, req.body.environmentName);
+        const states = await FeatureFlagService.getFlagStatesForUserId(req.body.userId, req.body.appName, req.body.environmentName);
         res.status(200).json(results);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: err.message });
+        if (err instanceof FlagNotFoundError || err instanceof AppNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
     }
 }
 
-// PUT /api/toggle
-// Toggle a feature flag state
-/*
-    {
-        "id": "123",                    // String, optional, must provide either id or name
-        "name": "myFlag",               // String, optional, must provide either id or name
-        "appName": "myApp",             // String, required
-        "environmentName": "Production" // String, required
-    }
-*/
 async function toggleFlag(req, res) {
-    const app = await App.findOne({ name: req.body.appName }).exec();
-    if (!app) {
-        res.status(400).json({ message: `App ${req.body.appName} does not exist` });
-        return;
-    }
-
-    const environment = await Environment.findOne({ app: app._id, name: req.body.environmentName }).exec();
-    if (!environment) {
-        res.status(400).json({ message: `Environment ${req.body.environmentName} does not exist` });
-        return;
-    }
-
-    let featureFlag = {};
-    if (req.body.id) {
-        featureFlag = await FeatureFlag.findOne({ app: app._id, _id: req.body.id }).exec();
-    } else if (req.body.name) {
-        featureFlag = await FeatureFlag.findOne({ app: app._id, name: req.body.name }).exec();
-    } else {
-        res.status(400).json({ message: `Either the id or name property is required` });
-        return;
-    }
-
-    if (!featureFlag) {
-        res.status(400).json({ message: `Flag ${req.body.id || req.body.name} does not exist` });
-        return;
-    }
-
-    const environments = featureFlag.environments;
-    const environmentIndex = environments.findIndex(e => e.environment.toString() === environment._id.toString());
-    if (environmentIndex === -1) {
-        res.status(400).json({ message: `Flag ${req.body.id || req.body.name} does not exist for environment ${environment._id}` });
-        return;
-    } else {
-        environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
-        featureFlag.environments = environments;
-        await featureFlag.save();
+    try {
+        const featureFlag = await FeatureFlagService.toggleFlag(req.body.flagName, req.body.id, req.body.appName, req.body.environmentName);
         res.status(200).json(featureFlag);
+    } catch (err) {
+        console.log(err);
+        if (err instanceof FlagNotFoundError || 
+            err instanceof AppNotFoundError || 
+            err instanceof EnvironmentNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
     }
 }
 
-// POST /api/flags
-// Create a new feature flag
-/*
-    {
-        "name": "myFlag",                   // String, required
-        "app": "myApp",                     // String, required
-        "isActive": true,                   // Boolean, required
-        "evaluationStrategy": "IMMEDIATE",  // String, required. Must be one of IMMEDIATE, PERCENTAGE, USER, or PROBABILISTIC
-        "evaluationPercentage": 50,         // String, required if evaluationStrategy is PERCENTAGE
-        "allowedUsers": ["123", "456"],     // Array of strings, required if evaluationStrategy is USER
-        "disallowedUsers": ["789"],         // Array of strings, required if evaluationStrategy is USER
-        "createdBy": "me"                   // String, required
-    }
-*/
 async function createFlag(req, res) {
     const app = await App.findOne({ name: req.body.app }).exec();
     if (!app) {

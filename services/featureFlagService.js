@@ -1,20 +1,110 @@
 const FeatureFlag = require('../models/FeatureFlagModel');
 const Environment = require('../models/EnvironmentModel');
+const App = require('../models/AppModel');
+const { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } = require('../errors');
 const md5 = require('md5');
 
 class FeatureFlagService {
     async getAllFlags() {
         const featureFlags = await FeatureFlag.find().populate('environments.environment').exec();
+        if (!featureFlags) {
+            throw new FlagNotFoundError('No flags found');
+        }
         return featureFlags;
     }
 
+    async getFlagById(id) {
+        const featureFlag = await FeatureFlag.findById(id).populate('environments.environment').exec();
+        if (!featureFlag) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+        return featureFlag;
+    }
+
+    async getFlagByName(name) {
+        const featureFlag = FeatureFlag.find({ name: name }).populate('environments.environment').exec();
+        if (!featureFlag) {
+            throw new FlagNotFoundError(`Flag '${name}' not found`);
+        }
+        return featureFlag;
+    }
+
+    async getFlagsByAppName(appName) {
+        const app = await App.findOne({ name: req.params.appName });
+        if (!app) {
+            throw new AppNotFoundError(`App '${appName}' not found`);
+        }
+        return await FeatureFlag.find({ app: app._id }).populate('environments.environment').exec();
+    }
+
+    async getFlagStateForName(flagName, appName, userId, environmentName) {
+        const app = await App.findOne({ name: appName });
+        if (!app) {
+            throw new AppNotFoundError(`App '${appName}' not found`);
+        }
+
+        const featureFlag = await FeatureFlag.findOne({ app: app._id, name: flagName }).exec();
+        if (!featureFlag) {
+            throw new FlagNotFoundError(`Flag '${flagName}' not found`);
+        }
+
+        return await this.isEnabled(featureFlag, userId, environmentName);
+    }
+
+    async getFlagStatesForUserId(appName, userId, environmentName) {
+        const app = await App.findOne({ name: appName });
+        if (!app) {
+            throw new AppNotFoundError(`App '${appName}' not found`);
+        }
+
+        const featureFlags = await FeatureFlag.find({ app: app._id }).exec();
+
+        return this.areEnabled(featureFlags, userId, environmentName);
+    }
+
+    async toggleFlag(flagName, id, appName, environmentName) {
+        const app = await App.findOne({ name: appName }).exec();
+        if (!app) {
+            throw new AppNotFoundError(`App '${appName}' not found`);
+        }
+
+        const environment = await Environment.findOne({ app: app._id, name: environmentName }).exec();
+        if (!environment) {
+            throw new EnvironmentNotFoundError(`Environment '${environmentName}' not found`);
+        }
+
+        let featureFlag = {};
+        if (id) {
+            featureFlag = await FeatureFlag.findOne({ app: app._id, _id: id }).exec();
+        } else if (flagName) {
+            featureFlag = await FeatureFlag.findOne({ app: app._id, name: flagName }).exec();
+        } else {
+            throw new FlagNotFoundError(`Either the id or name property is required`);
+        }
+
+        if (!featureFlag) {
+            throw new FlagNotFoundError(`Flag '${id || flagName}' not found`);
+        }
+
+        const environments = featureFlag.environments;
+        const environmentIndex = environments.findIndex(e => e.environment.toString() === environment._id.toString());
+        if (environmentIndex === -1) {
+            throw new FlagNotFoundError(`Flag ${id || flagName} does not exist for environment ${environment._id}`);
+        } else {
+            environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
+            featureFlag.environments = environments;
+            await featureFlag.save();
+            return featureFlag;
+        }
+    }
+
     async isEnabled(featureFlag, user, environment) {
-        
-        let environmentData = await Environment.findOne({ name: environment, app: featureFlag.app }).exec()
+
+        let environmentData = await Environment.findOne({ flagName: environment, app: featureFlag.app }).exec()
 
         if (!environmentData) {
             // Default to production
-            environmentData = await Environment.findOne({ name: "Production" }).exec()
+            environmentData = await Environment.findOne({ flagName: "Production" }).exec()
             if (!environmentData) {
                 return false;
             }
@@ -60,8 +150,8 @@ class FeatureFlagService {
             };
         })
         return await Promise.all(promise);
-      }
-      
+    }
+
 }
 
 module.exports = new FeatureFlagService();

@@ -5,6 +5,8 @@ const flagRouter = require('./routes/flags');
 const appRouter = require('./routes/apps');
 const environmentRouter = require('./routes/environments');
 const config = require('./config');
+const swaggerUi = require('swagger-ui-express');
+const specs = require('./swagger');
 
 // Connect to database
 mongoose.connect(config.mongoConnectionString, { 
@@ -22,6 +24,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 app.set('port', port);
 
+// Set up Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
 app.use('/api/flags', flagRouter);
 app.use('/api/apps', appRouter);
