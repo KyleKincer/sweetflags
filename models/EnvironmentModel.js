@@ -27,7 +27,6 @@ environmentSchema.post('save', async function (doc, next) {
                 }
                 const prodFlag = environments.find((env) => env.environment.toString() === prod._id.toString());
 
-                console.log(`Adding environment ${doc.name} to feature flag ${featureFlag.name}`)
                 environments.push({
                     environment: doc._id,
                     isActive: prodFlag.isActive,

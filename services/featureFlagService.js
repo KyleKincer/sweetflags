@@ -48,8 +48,11 @@ class FeatureFlagService {
     }
 
     async areEnabled(featureFlags, user, environment) {
-        const promise = featureFlags.map((flag) => {
-            return this.isEnabled(flag, user, environment);
+        const promise = featureFlags.map(async (flag) => {
+            return {
+                name: flag.name,
+                isEnabled: await this.isEnabled(flag, user, environment)
+            };
         })
         return await Promise.all(promise);
       }
