@@ -2,8 +2,6 @@ const mongoose = require('mongoose');
 const App = require('../models/AppModel');
 const Environment = require('../models/EnvironmentModel');
 
-// GET /api/environments
-// Return all environments
 async function getAllEnvironments(_req, res) {
     try {
         const environments = await Environment.find();
@@ -14,8 +12,6 @@ async function getAllEnvironments(_req, res) {
     }
 }
 
-// GET /api/environments/id/:id
-// Return environment data for a given id
 async function getEnvironmentById(req, res) {
     try {
         const environment = await Environment.findById(req.params.id);
@@ -26,8 +22,6 @@ async function getEnvironmentById(req, res) {
     }
 }
 
-// GET /api/environments/:appName
-// Return environment data for all environments for a given app name
 async function getEnvironmentsByAppName(req, res) {
     try {
         const app = await App.findOne({ name: req.params.appName });
@@ -43,17 +37,6 @@ async function getEnvironmentsByAppName(req, res) {
     }
 }
 
-// POST /api/environments
-// Create a new environment
-/*
-    {
-        "name": "Development",                    // String, required
-        "description": "Development environment", // String, optional
-        "appName": "Symphony",                    // String, required
-        "isActive": true,                         // Boolean, optional, default: true
-        "createdBy": "admin"                      // String, required
-    }
-*/
 async function createEnvironment(req, res) {
     const app = await App.findOne({ name: req.body.appName });
     if (!app) {
