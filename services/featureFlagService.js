@@ -98,6 +98,41 @@ class FeatureFlagService {
         }
     }
 
+    async createFlag(name, description, appName, isActive, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers, createdBy) {
+        const app = await App.findOne({ name: appName }).exec();
+        if (!app) {
+            throw new AppNotFoundError(`App '${appName}' not found`);
+        }
+
+        const environments = await Environment.find({ app: app._id }).exec();
+        if (!environments) {
+            throw new EnvironmentNotFoundError(`No environments found for app '${appName}'`);
+        }
+
+        const environmentsArray = []
+        environments.forEach((env) => {
+            environmentsArray.push({
+                environment: env._id,
+                isActive: isActive,
+                evaluationStrategy: evaluationStrategy,
+                evaluationPercentage: evaluationPercentage,
+                allowedUsers: allowedUsers,
+                disallowedUsers: disallowedUsers
+            });
+        });
+
+        const featureFlag = new FeatureFlag({
+            name: name,
+            description: description,
+            app: app._id,
+            environments: environmentsArray,
+            createdBy: createdBy
+        });
+
+        await featureFlag.save();
+        return featureFlag;
+    }
+
     async isEnabled(featureFlag, user, environment) {
 
         let environmentData = await Environment.findOne({ flagName: environment, app: featureFlag.app }).exec()

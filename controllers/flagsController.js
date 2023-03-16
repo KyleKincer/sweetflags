@@ -108,44 +108,19 @@ async function toggleFlag(req, res) {
 }
 
 async function createFlag(req, res) {
-    const app = await App.findOne({ name: req.body.app }).exec();
-    if (!app) {
-        res.status(400).json({ message: `App ${req.body.app} does not exist` });
-        return;
-    }
-
-    const environments = await Environment.find({ app: app._id }).exec();
-    if (!environments) {
-        res.status(400).json({ message: `App ${req.body.app} does not have any environments` });
-        return;
-    }
-
-    const environmentsArray = []
-    environments.forEach((env) => {
-        environmentsArray.push({
-            environment: env._id,
-            isActive: req.body.isActive,
-            evaluationStrategy: req.body.evaluationStrategy,
-            evaluationPercentage: req.body.evaluationPercentage,
-            allowedUsers: req.body.allowedUsers,
-            disallowedUsers: req.body.disallowedUsers
-        });
-    });
-
-    const featureFlag = new FeatureFlag({
-        name: req.body.name,
-        description: req.body.description,
-        app: app._id,
-        environments: environmentsArray,
-        createdBy: req.body.createdBy
-    });
-
-    FeatureFlag.create(featureFlag).then((result) => {
-        res.status(201).json(result);
-    }).catch((err) => {
+    try {
+        const featureFlag = await FeatureFlagService.createFlag(req.body.name, req.body.appName, req.body.environmentName);
+        res.status(200).json(featureFlag);
+    } catch (err) {
         console.log(err);
-        res.status(500).json({ message: err.message });
-    });
+        if (err instanceof FlagNotFoundError || 
+            err instanceof AppNotFoundError || 
+            err instanceof EnvironmentNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
+    }
 }
 
 

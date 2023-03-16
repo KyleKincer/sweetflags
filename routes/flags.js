@@ -416,8 +416,17 @@ router.put('/toggle', flagsController.toggleFlag);
  *             application/json:
  *               schema:
  *                 $ref: '#/components/schemas/FeatureFlag'
- *       400:
- *         description: The request body was invalid.
+ *       404:
+ *         description: Resource not found. 
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: App {appName} not found
  *       500:
  *         description: An error occurred while creating the feature flag.
  */
