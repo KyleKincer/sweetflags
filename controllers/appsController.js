@@ -1,8 +1,7 @@
 const App = require('../models/AppModel');
 const Environment = require('../models/EnvironmentModel');
 
-// GET /api/apps
-// Return all apps
+
 async function getAllApps(req, res) {
     const isActive = req.query.isActive;
     try {
@@ -19,16 +18,6 @@ async function getAllApps(req, res) {
       }
 };
 
-// POST /api/apps
-// Create a new app
-/*
-{
-    "name": "Test App",                    // String, required
-    "description": "Test app description", // String, optional
-    "isActive": true,                      // Boolean, optional, default: true
-    "createdBy": "testuser"                // String, required
-}
-*/
 async function createApp(req, res) {
     const app = new App({
         name: req.body.name,
