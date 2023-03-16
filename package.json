@@ -4,7 +4,9 @@
   "description": "A feature flag service.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "author": "Kyle Kincer",
   "license": "ISC",
@@ -12,5 +14,8 @@
     "express": "^4.18.2",
     "md5": "^2.3.0",
     "mongoose": "^7.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.21"
   }
 }

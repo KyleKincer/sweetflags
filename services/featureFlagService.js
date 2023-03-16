@@ -3,6 +3,11 @@ const Environment = require('../models/EnvironmentModel');
 const md5 = require('md5');
 
 class FeatureFlagService {
+    async getAllFlags() {
+        const featureFlags = await FeatureFlag.find().populate('environments.environment').exec();
+        return featureFlags;
+    }
+
     async isEnabled(featureFlag, user, environment) {
         
         let environmentData = await Environment.findOne({ name: environment, app: featureFlag.app }).exec()

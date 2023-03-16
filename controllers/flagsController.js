@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 // Return all feature flag data
 async function getAllFlags(_req, res) {
     try {
-        const featureFlags = await FeatureFlag.find();
+        const featureFlags = await FeatureFlagService.getAllFlags();
         res.status(200).json(featureFlags);
       } catch (err) {
         console.log(err);
