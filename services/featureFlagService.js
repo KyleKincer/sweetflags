@@ -30,7 +30,7 @@ class FeatureFlagService {
     }
 
     async getFlagsByAppName(appName) {
-        const app = await App.findOne({ name: req.params.appName });
+        const app = await App.findOne({ name: appName });
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
         }

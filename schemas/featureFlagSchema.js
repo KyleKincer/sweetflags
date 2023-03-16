@@ -1,3 +1,5 @@
+const { Environment } = require('./environmentSchema');
+
 const FeatureFlag = {
     type: 'object',
     properties: {
@@ -10,10 +12,7 @@ const FeatureFlag = {
         items: {
           type: 'object',
           properties: {
-            environment: {
-              type: 'string',
-              description: 'The ID of the environment associated with the feature flag',
-            },
+            environment: Environment,
             isActive: {
               type: 'boolean',
               description: 'Whether the feature flag is active in this environment',

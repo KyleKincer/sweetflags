@@ -1,8 +1,10 @@
+const { App } = require('./appSchema');
+
 const Environment = {
     type: 'object',
     properties: {
       name: { type: 'string', description: 'The name of the environment' },
-      app: { type: 'string', description: 'The ID of the app associated with the environment' },
+      app: App,
       description: { type: 'string', description: 'A description of the environment' },
       isActive: {
         type: 'boolean',

@@ -4,7 +4,7 @@ const Environment = require('../models/EnvironmentModel');
 
 async function getAllEnvironments(_req, res) {
     try {
-        const environments = await Environment.find();
+        const environments = await Environment.find().populate('app').exec();
         res.status(200).json(environments);
     } catch (err) {
         console.log(err);
@@ -14,7 +14,7 @@ async function getAllEnvironments(_req, res) {
 
 async function getEnvironmentById(req, res) {
     try {
-        const environment = await Environment.findById(req.params.id);
+        const environment = await Environment.findById(req.params.id).populate('app').exec();
         res.status(200).json(environment);
     } catch (err) {
         console.log(err);
@@ -29,7 +29,7 @@ async function getEnvironmentsByAppName(req, res) {
             return res.status(400).json({ message: `App '${req.params.appName}' not found` });
         }
 
-        const environments = await Environment.find({ app: app._id });
+        const environments = await Environment.find({ app: app._id }).populate('app').exec();
         res.status(200).json(environments);
     } catch (err) {
         console.log(err);
