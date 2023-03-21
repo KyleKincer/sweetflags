@@ -1,62 +1,65 @@
 const mongoose = require('mongoose');
 const App = require('../models/AppModel');
 const Environment = require('../models/EnvironmentModel');
+const EnvironmentsService = require('../services/environmentsService');
 
 async function getAllEnvironments(_req, res) {
     try {
-        const environments = await Environment.find().populate('app').exec();
+        const environments = await EnvironmentsService.getAllEnvironments();
         res.status(200).json(environments);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: err.message });
+        if (err instanceof EnvironmentNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
     }
 }
 
 async function getEnvironmentById(req, res) {
     try {
-        const environment = await Environment.findById(req.params.id).populate('app').exec();
+        const environment = await EnvironmentsService.getEnvironmentById(req.params.id);
         res.status(200).json(environment);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: err.message });
+        if (err instanceof EnvironmentNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
     }
 }
 
 async function getEnvironmentsByAppName(req, res) {
     try {
-        const app = await App.findOne({ name: req.params.appName });
-        if (!app) {
-            return res.status(400).json({ message: `App '${req.params.appName}' not found` });
-        }
-
-        const environments = await Environment.find({ app: app._id }).populate('app').exec();
+        const environments = await EnvironmentsService.getAppByName(req.params.appName);
         res.status(200).json(environments);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: err.message });
+        if (err instanceof AppNotFoundError || err instanceof EnvironmentNotFoundError) {
+            res.status(404).json({ message: err.message });
+        }
     }
 }
 
 async function createEnvironment(req, res) {
-    const app = await App.findOne({ name: req.body.appName });
-    if (!app) {
-        return res.status(400).json({ message: `App '${req.body.appName}' not found` });
-    }
-
-    const environment = new Environment({
-        name: req.body.name,
-        description: req.body.description,
-        app: app._id,
-        isActive: req.body.isActive,
-        createdBy: req.body.createdBy
-    });
-
-    Environment.create(environment).then((result) => {
-        res.status(201).json(result);
-    }).catch((err) => {
+    try {
+        const environment = await EnvironmentsService.createEnvironment(
+            req.body.name, 
+            req.body.description, 
+            req.body.appName, 
+            req.body.isActive, 
+            req.body.createdBy);
+        res.status(201).json(environment);
+    } catch (err) {
         console.error(err);
-        res.status(500).json({ message: err.message });
-    });
+        if (err instanceof AppNotFoundError) {
+            res.status(404).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: err.message });
+        }
+    }
 }
 
 module.exports = {

@@ -16,7 +16,11 @@ async function getAllApps(req, res) {
 
 async function createApp(req, res) {
     try {
-        const app = await AppsService.createApp(req.body.name, req.body.description, req.body.isActive, req.body.createdBy);
+        const app = await AppsService.createApp(
+            req.body.name, 
+            req.body.description, 
+            req.body.isActive, 
+            req.body.createdBy);
         res.status(201).json(app);
     } catch (err) {
         console.error(err);
