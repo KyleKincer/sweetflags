@@ -7,7 +7,7 @@ async function getAllEnvironments(_req, res) {
         const environments = await Environment.find().populate('app').exec();
         res.status(200).json(environments);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         res.status(500).json({ message: err.message });
     }
 }
@@ -17,7 +17,7 @@ async function getEnvironmentById(req, res) {
         const environment = await Environment.findById(req.params.id).populate('app').exec();
         res.status(200).json(environment);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         res.status(500).json({ message: err.message });
     }
 }
@@ -32,7 +32,7 @@ async function getEnvironmentsByAppName(req, res) {
         const environments = await Environment.find({ app: app._id }).populate('app').exec();
         res.status(200).json(environments);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         res.status(500).json({ message: err.message });
     }
 }
@@ -54,7 +54,7 @@ async function createEnvironment(req, res) {
     Environment.create(environment).then((result) => {
         res.status(201).json(result);
     }).catch((err) => {
-        console.log(err);
+        console.error(err);
         res.status(500).json({ message: err.message });
     });
 }

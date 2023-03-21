@@ -11,7 +11,7 @@ async function getAllFlags(_req, res) {
         const featureFlags = await FeatureFlagService.getAllFlags();
         res.status(200).json(featureFlags);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         if (err instanceof FlagNotFoundError) {
             res.status(404).json({ message: err.message });
         } else {
@@ -25,7 +25,7 @@ async function getFlagById(req, res) {
         const featureFlag = await FeatureFlagService.getFlagById(req.params.id);
         res.status(200).json(featureFlag);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         if (err instanceof FlagNotFoundError) {
             res.status(404).json({ message: err.message });
         } else {
@@ -39,7 +39,7 @@ async function getFlagByName(req, res) {
         const featureFlag = await FeatureFlagService.getFlagByName(req.params.name);
         res.status(200).json(featureFlag);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         if (err instanceof FlagNotFoundError) {
             res.status(404).json({ message: err.message });
         } else {
@@ -53,7 +53,7 @@ async function getFlagsByAppName(req, res) {
         const featureFlags = await FeatureFlagService.getFlagsByAppName(req.params.appName);
         res.status(200).json(featureFlags);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         if (err instanceof AppNotFoundError) {
             res.status(404).json({ message: err.message });
         } else {
@@ -68,7 +68,7 @@ async function getFlagStateForFlagName(req, res) {
         res.status(200).json(state);
 
     } catch (err) {
-        console.log(err);
+        console.error(err);
         if (err instanceof FlagNotFoundError || err instanceof AppNotFoundError) {
             res.status(404).json({ message: err.message });
         } else {
@@ -82,7 +82,7 @@ async function getFlagStatesForUserId(req, res) {
         const states = await FeatureFlagService.getFlagStatesForUserId(req.body.userId, req.body.appName, req.body.environmentName);
         res.status(200).json(results);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         if (err instanceof FlagNotFoundError || err instanceof AppNotFoundError) {
             res.status(404).json({ message: err.message });
         } else {
@@ -96,7 +96,7 @@ async function toggleFlag(req, res) {
         const featureFlag = await FeatureFlagService.toggleFlag(req.body.flagName, req.body.id, req.body.appName, req.body.environmentName);
         res.status(200).json(featureFlag);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         if (err instanceof FlagNotFoundError || 
             err instanceof AppNotFoundError || 
             err instanceof EnvironmentNotFoundError) {
@@ -112,7 +112,7 @@ async function createFlag(req, res) {
         const featureFlag = await FeatureFlagService.createFlag(req.body.name, req.body.appName, req.body.environmentName);
         res.status(200).json(featureFlag);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         if (err instanceof FlagNotFoundError || 
             err instanceof AppNotFoundError || 
             err instanceof EnvironmentNotFoundError) {
