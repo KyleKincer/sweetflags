@@ -147,7 +147,7 @@ class FeatureFlagService {
         }
 
         switch (flagData.evaluationStrategy) {
-            case 'IMMEDIATE':
+            case 'BOOLEAN':
                 return flagData.isActive;
 
             case 'USER':

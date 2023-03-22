@@ -2,7 +2,7 @@ import { Document, Schema, Model, model } from 'mongoose';
 import { IEnvironment } from './EnvironmentModel';
 
 const evaluationStrategyEnum = {
-    values: ['IMMEDIATE', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
+    values: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
     message: '{VALUE} is not a valid EvaluationStrategy value'
 };
 

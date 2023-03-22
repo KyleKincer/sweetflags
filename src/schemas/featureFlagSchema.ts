@@ -20,7 +20,7 @@ const FeatureFlag = {
             evaluationStrategy: {
               type: 'string',
               description: 'The strategy used to evaluate the feature flag',
-              enum: ['IMMEDIATE', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
+              enum: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
             },
             evaluationPercentage: {
               type: 'number',

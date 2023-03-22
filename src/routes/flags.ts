@@ -400,7 +400,7 @@ router.put('/toggle', flagsController.toggleFlag);
  *                 description: Indicates whether the feature flag is active or not.
  *               evaluationStrategy:
  *                 type: string
- *                 enum: [IMMEDIATE, PERCENTAGE, USER, PROBABILISTIC]
+ *                 enum: [BOOLEAN, PERCENTAGE, USER, PROBABILISTIC]
  *                 description: The evaluation strategy used for the feature flag.
  *               evaluationPercentage:
  *                 type: integer
