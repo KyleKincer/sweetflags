@@ -2,8 +2,8 @@ import App, { IApp } from '../models/AppModel';
 import Environment from '../models/EnvironmentModel';
 
 class AppsService {
-    async getAllApps(isActive: boolean | undefined): Promise<Array<typeof App>> {
-        let apps = [] as Array<typeof App>;
+    async getAllApps(isActive: boolean | undefined): Promise<Array<IApp>> {
+        let apps = [] as Array<IApp>;
         if (isActive) {
             apps = await App.find({ isActive: isActive });
         } else {
