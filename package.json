@@ -12,9 +12,11 @@
   "author": "Kyle Kincer",
   "license": "ISC",
   "dependencies": {
+    "@types/redis": "^4.0.11",
     "express": "^4.18.2",
     "md5": "^2.3.0",
     "mongoose": "^7.0.1",
+    "redis": "^4.6.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^4.6.2"
   },
