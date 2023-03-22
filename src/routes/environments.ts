@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import environmentsController from '../controllers/environmentsController';
+
 const router = express.Router();
-const environmentController = require('../controllers/environmentsController');
 
 /**
  * @swagger
@@ -37,7 +38,7 @@ const environmentController = require('../controllers/environmentsController');
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/', environmentController.getAllEnvironments);
+router.get('/', environmentsController.getAllEnvironments);
 
 /**
  * @swagger
@@ -72,7 +73,7 @@ router.get('/', environmentController.getAllEnvironments);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/id/:id', environmentController.getEnvironmentById);
+router.get('/id/:id', environmentsController.getEnvironmentById);
 
 /**
  * @swagger
@@ -120,7 +121,7 @@ router.get('/id/:id', environmentController.getEnvironmentById);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/:appName', environmentController.getEnvironmentsByAppName);
+router.get('/:appName', environmentsController.getEnvironmentsByAppName);
 
 /**
  * @swagger
@@ -186,6 +187,6 @@ router.get('/:appName', environmentController.getEnvironmentsByAppName);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.post('/', environmentController.createEnvironment);
+router.post('/', environmentsController.createEnvironment);
 
-module.exports = router;
+export default router;

@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import * as appsController from '../controllers/appsController';
+
 const router = express.Router();
-const appsController = require('../controllers/appsController.js');
 
 /**
  * @swagger
@@ -96,4 +97,4 @@ router.get('/', appsController.getAllApps);
  */
 router.post('/', appsController.createApp);
 
-module.exports = router;
+export default router;

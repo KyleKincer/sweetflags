@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import * as flagsController from '../controllers/flagsController';
+
 const router = express.Router();
-const flagsController = require('../controllers/flagsController.js');
 
 /**
  * @swagger
@@ -388,10 +389,10 @@ router.put('/toggle', flagsController.toggleFlag);
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               flagName:
  *                 type: string
  *                 description: The name of the feature flag.
- *               app:
+ *               appName:
  *                 type: string
  *                 description: The name of the application associated with the feature flag.
  *               isActive:
@@ -446,4 +447,4 @@ router.put('/toggle', flagsController.toggleFlag);
  */
 router.post('/', flagsController.createFlag);
 
-module.exports = router;
+export default router;

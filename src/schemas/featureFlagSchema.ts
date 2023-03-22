@@ -1,4 +1,4 @@
-const { Environment } = require('./environmentSchema');
+import { Environment } from './environmentSchema';
 
 const FeatureFlag = {
     type: 'object',
@@ -67,7 +67,5 @@ const FeatureFlag = {
     },
   };
   
-  module.exports = {
-    FeatureFlag
-  };
+export { FeatureFlag };
   

@@ -1,4 +1,4 @@
-const { App } = require('./appSchema');
+import { App } from './appSchema';
 
 const Environment = {
     type: 'object',
@@ -32,7 +32,4 @@ const Environment = {
     },
   };
   
-  module.exports = {
-    Environment,
-  };
-  
+export { Environment };

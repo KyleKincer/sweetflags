@@ -1,9 +1,9 @@
-const App = require('../models/AppModel');
-const Environment = require('../models/EnvironmentModel');
+import App, { IApp } from '../models/AppModel';
+import Environment from '../models/EnvironmentModel';
 
 class AppsService {
-    async getAllApps(isActive) {
-        let apps = {};
+    async getAllApps(isActive: boolean | undefined): Promise<Array<typeof App>> {
+        let apps = [] as Array<typeof App>;
         if (isActive) {
             apps = await App.find({ isActive: isActive });
         } else {
@@ -12,7 +12,7 @@ class AppsService {
         return apps;
     }
 
-    async createApp(name, description, isActive, createdBy) {
+    async createApp(name: string, description: string, isActive: boolean, createdBy: string): Promise<IApp> {
         let app = new App({
             name: name,
             description: description,
@@ -22,11 +22,11 @@ class AppsService {
 
         try {
             app = await App.create(app);
-        } catch (err) {
-            throw new Error(err);
+        } catch (err: unknown) {
+            throw new Error((err as Error).message);
         }
 
-        // Creat production environment by default
+        // Create production environment by default
         const environment = new Environment({
             name: 'Production',
             description: 'Production environment',
@@ -37,12 +37,12 @@ class AppsService {
         
         try {
             const newEnvironment = await Environment.create(environment);
-        } catch (err) {
-            throw new Error(err);
+        } catch (err: unknown) {
+            throw new Error((err as Error).message);
         }
 
         return app;
     }
 }
 
-module.exports = new AppsService();
+export default new AppsService();

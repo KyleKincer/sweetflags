@@ -1,11 +1,11 @@
-const FeatureFlag = require('../models/FeatureFlagModel');
-const Environment = require('../models/EnvironmentModel');
-const App = require('../models/AppModel');
-const { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } = require('../errors');
-const md5 = require('md5');
+import FeatureFlag, { IFeatureFlag } from '../models/FeatureFlagModel';
+import Environment from '../models/EnvironmentModel';
+import App from '../models/AppModel';
+import { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } from '../errors';
+import md5 from 'md5';
 
 class FeatureFlagService {
-    async getAllFlags() {
+    async getAllFlags(): Promise<Array<IFeatureFlag>> {
         const featureFlags = await FeatureFlag.find().populate('environments.environment').exec();
         if (!featureFlags) {
             throw new FlagNotFoundError('No flags found');
@@ -13,7 +13,7 @@ class FeatureFlagService {
         return featureFlags;
     }
 
-    async getFlagById(id) {
+    async getFlagById(id: string): Promise<IFeatureFlag> {
         const featureFlag = await FeatureFlag.findById(id).populate('environments.environment').exec();
         if (!featureFlag) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
@@ -21,15 +21,15 @@ class FeatureFlagService {
         return featureFlag;
     }
 
-    async getFlagByName(name) {
-        const featureFlag = FeatureFlag.find({ name: name }).populate('environments.environment').exec();
+    async getFlagByName(name: string): Promise<IFeatureFlag> {
+        const featureFlag = await FeatureFlag.findOne({ name: name }).populate('environments.environment').exec();
         if (!featureFlag) {
-            throw new FlagNotFoundError(`Flag '${name}' not found`);
+          throw new FlagNotFoundError(`Flag '${name}' not found`);
         }
         return featureFlag;
-    }
+      }
 
-    async getFlagsByAppName(appName) {
+    async getFlagsByAppName(appName: string): Promise<Array<IFeatureFlag>> {
         const app = await App.findOne({ name: appName });
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
@@ -37,7 +37,7 @@ class FeatureFlagService {
         return await FeatureFlag.find({ app: app._id }).populate('environments.environment').exec();
     }
 
-    async getFlagStateForName(flagName, appName, userId, environmentName) {
+    async getFlagStateForName(flagName: string, appName: string, userId: string, environmentName: string): Promise<boolean> {
         const app = await App.findOne({ name: appName });
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
@@ -51,7 +51,7 @@ class FeatureFlagService {
         return await this.isEnabled(featureFlag, userId, environmentName);
     }
 
-    async getFlagStatesForUserId(appName, userId, environmentName) {
+    async getFlagStatesForUserId(appName: string, userId: string, environmentName: string): Promise<Array<{ name: string; isEnabled: boolean }>> {
         const app = await App.findOne({ name: appName });
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
@@ -62,7 +62,7 @@ class FeatureFlagService {
         return this.areEnabled(featureFlags, userId, environmentName);
     }
 
-    async toggleFlag(flagName, id, appName, environmentName) {
+    async toggleFlag(flagName: string, id: string, appName: string, environmentName: string): Promise<IFeatureFlag> {
         const app = await App.findOne({ name: appName }).exec();
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
@@ -73,7 +73,7 @@ class FeatureFlagService {
             throw new EnvironmentNotFoundError(`Environment '${environmentName}' not found`);
         }
 
-        let featureFlag = {};
+        let featureFlag: IFeatureFlag | null = new FeatureFlag();
         if (id) {
             featureFlag = await FeatureFlag.findOne({ app: app._id, _id: id }).exec();
         } else if (flagName) {
@@ -98,7 +98,7 @@ class FeatureFlagService {
         }
     }
 
-    async createFlag(name, description, appName, isActive, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers, createdBy) {
+    async createFlag(name: string, description: string, appName: string, isActive: boolean, evaluationStrategy: string, evaluationPercentage: number, allowedUsers: Array<string>, disallowedUsers: Array<string>, createdBy: string): Promise<IFeatureFlag> {
         const app = await App.findOne({ name: appName }).exec();
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
@@ -109,17 +109,14 @@ class FeatureFlagService {
             throw new EnvironmentNotFoundError(`No environments found for app '${appName}'`);
         }
 
-        const environmentsArray = []
-        environments.forEach((env) => {
-            environmentsArray.push({
-                environment: env._id,
-                isActive: isActive,
-                evaluationStrategy: evaluationStrategy,
-                evaluationPercentage: evaluationPercentage,
-                allowedUsers: allowedUsers,
-                disallowedUsers: disallowedUsers
-            });
-        });
+        const environmentsArray = environments.map((env) => ({
+            environment: env._id,
+            isActive: isActive,
+            evaluationStrategy: evaluationStrategy,
+            evaluationPercentage: evaluationPercentage,
+            allowedUsers: allowedUsers,
+            disallowedUsers: disallowedUsers
+        }));
 
         const featureFlag = new FeatureFlag({
             name: name,
@@ -133,30 +130,38 @@ class FeatureFlagService {
         return featureFlag;
     }
 
-    async isEnabled(featureFlag, user, environment) {
-
-        let environmentData = await Environment.findOne({ flagName: environment, app: featureFlag.app }).exec()
+    async isEnabled(featureFlag: IFeatureFlag, user: string, environment: string): Promise<boolean> {
+        let environmentData = await Environment.findOne({ flagName: environment, app: featureFlag.app }).exec();
 
         if (!environmentData) {
             // Default to production
-            environmentData = await Environment.findOne({ flagName: "Production" }).exec()
+            environmentData = await Environment.findOne({ flagName: "Production" }).exec();
             if (!environmentData) {
                 return false;
             }
         }
+        
+        const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentData!._id.toString());
+        if (!flagData) {
+            return false;
+        }
 
-        const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentData._id.toString());
         switch (flagData.evaluationStrategy) {
             case 'IMMEDIATE':
                 return flagData.isActive;
 
             case 'USER':
+                // If there is nothing in either of these arrays, then we can't evaluate the flag
+                if (!flagData.allowedUsers || !flagData.disallowedUsers) {
+                    return false;
+                }
+                // Allowed users take precedence over disallowed users
                 return (
                     flagData.isActive &&
                     (flagData.allowedUsers.includes(user) || !flagData.disallowedUsers.includes(user))
                 );
 
-            // Percentage is deterministic based on the user id  
+            // Percentage is deterministic based on the user id
             case 'PERCENTAGE':
                 const percentage = flagData.evaluationPercentage || 0;
                 const hash = md5(user);
@@ -171,22 +176,21 @@ class FeatureFlagService {
                 const probabalisticPercentage = flagData.evaluationPercentage || 0;
                 return Math.random() * 100 <= probabalisticPercentage;
 
-
             default:
                 return false;
         }
     }
 
-    async areEnabled(featureFlags, user, environment) {
-        const promise = featureFlags.map(async (flag) => {
+    async areEnabled(featureFlags: Array<IFeatureFlag>, user: string, environment: string): Promise<Array<{ name: string; isEnabled: boolean }>> {
+        const promises = featureFlags.map(async (flag) => {
             return {
                 name: flag.name,
                 isEnabled: await this.isEnabled(flag, user, environment)
             };
-        })
-        return await Promise.all(promise);
+        });
+        return await Promise.all(promises);
     }
-
 }
 
-module.exports = new FeatureFlagService();
+export default new FeatureFlagService();
+
