@@ -314,7 +314,7 @@ router.get('/state/name', flagsController.getFlagStateForFlagName)
  *                   description: A message explaining the error
  *                   example: Internal server error
  */
-router.get('/user', flagsController.getFlagStatesForUserId)
+router.get('/state/user', flagsController.getFlagStatesForUserId)
 
 /**
  * @swagger

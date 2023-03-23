@@ -7,6 +7,12 @@ brew install mongodb-community
 brew services start mongodb-community
 ```
 
+**Redis**
+```
+brew install redis
+brew services start redis
+```
+
 **Node**
 ```
 npm install

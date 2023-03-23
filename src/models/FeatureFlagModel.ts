@@ -1,5 +1,6 @@
 import { Document, Schema, Model, model } from 'mongoose';
 import { IEnvironment } from './EnvironmentModel';
+import { IApp } from './AppModel';
 
 const evaluationStrategyEnum = {
     values: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
@@ -9,7 +10,7 @@ const evaluationStrategyEnum = {
 export interface IFeatureFlag extends Document {
   name: string;
   description?: string;
-  app: Schema.Types.ObjectId;
+  app: IApp['_id'];
   environments: [
     {
         environment: IEnvironment['_id'];
