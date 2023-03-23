@@ -7,7 +7,7 @@ import md5 from 'md5';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
-        const featureFlags = await FeatureFlag.find().populate('environments.environment').exec();
+        const featureFlags = await FeatureFlag.find().populate('environments.environment', 'app').exec();
         if (!featureFlags) {
             throw new FlagNotFoundError('No flags found');
         }
@@ -25,7 +25,7 @@ class FeatureFlagService {
             return cachedData;
         } else {
             // If not, query the database
-            const featureFlag = await FeatureFlag.findById(id).populate('environments.environment').exec();
+            const featureFlag = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
             if (!featureFlag) {
                 throw new FlagNotFoundError(`Flag '${id}' not found`);
             }
@@ -43,7 +43,7 @@ class FeatureFlagService {
             console.log('Cache hit');
             return cachedData;
         } else {
-            const featureFlag = await FeatureFlag.findOne({ name: name }).populate('environments.environment').exec();
+            const featureFlag = await FeatureFlag.findOne({ name: name }).populate('environments.environment', 'app').exec();
             if (!featureFlag) {
                 throw new FlagNotFoundError(`Flag '${name}' not found`);
             }
@@ -64,7 +64,7 @@ class FeatureFlagService {
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
         }
-        const featureFlags =  await FeatureFlag.find({ app: app._id }).populate('environments.environment').exec();
+        const featureFlags =  await FeatureFlag.find({ app: app._id }).populate('environments.environment', 'app').exec();
         if (!featureFlags) {
             throw new FlagNotFoundError(`No flags found for app '${appName}'`);
         }
