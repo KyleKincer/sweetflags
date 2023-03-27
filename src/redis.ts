@@ -1,8 +1,8 @@
-// redis.ts
-import { json } from 'body-parser';
+// redis.ts\
 import Redis from 'ioredis';
 import config from './config';
 import { IFeatureFlag } from './models/FeatureFlagModel';
+import { IApp } from './models/AppModel';
 
 
 class RedisCache {
@@ -16,6 +16,8 @@ class RedisCache {
     }
 
     // Public methods
+
+    // Feature Flags
     
     public getFeatureFlag = async (options: {id?: string, name?: string}) => {
         if (options.id)
@@ -107,6 +109,32 @@ class RedisCache {
         );
     }
 
+    // Apps
+
+    public setCacheForAllApps = async (apps : Array<IApp>) => {
+        const serializedApps = JSON.stringify(apps);
+        this.setAsync("allApps", serializedApps).catch((error) => 
+            console.error(`Error setting cache for key 'allApps': ${error}`)
+        );
+    }
+
+    public setCacheForApps = async (apps: Array<IApp>) => {
+        apps.forEach((app) =>
+            this.setCacheForApp(app)
+        );
+    }
+
+    public setCacheForApp = async (app: IApp) => {
+        const { idKey, nameKey } = this.appKeys(app);
+        const serializedApp = JSON.stringify(app)
+        this.setAsync(idKey, serializedApp).catch((error) =>
+            console.error(`Error setting cache for key '${idKey}': ${error}`)
+        );
+        this.setAsync(nameKey, serializedApp).catch((error) => 
+            console.error(`Error setting cache for key '${nameKey}': ${error}`)
+        )
+    }
+
     // Private methods
     
     private getAsync = async (key: string): Promise<string | null> => {
@@ -153,6 +181,21 @@ class RedisCache {
             nameKey: this.featureFlagKeyForName(featureFlag.name),
         };
     };
+
+    private appKeys = (app: IApp): { idKey: string, nameKey: string } => {
+        return {
+            idKey: this.appKeyForId(app._id),
+            nameKey: this.appKeyForName(app.name),
+        };
+    }
+
+    private appKeyForId = (id: string): string => {
+        return `app:id:${id}`;
+    }
+
+    private appKeyForName = (name: string): string => {
+        return `app:name:${name}`
+    }
     
     private featureFlagKeyForId = (id: string): string => {
         return `featureFlag:id:${id}`;

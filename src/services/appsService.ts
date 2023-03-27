@@ -1,5 +1,6 @@
 import App, { IApp } from '../models/AppModel';
 import Environment from '../models/EnvironmentModel';
+import RedisCache from '../redis'
 
 class AppsService {
     async getAllApps(isActive: boolean | undefined): Promise<Array<IApp>> {
@@ -9,6 +10,7 @@ class AppsService {
         } else {
             apps = await App.find();
         }
+        RedisCache.setCacheForAllApps(apps)
         return apps;
     }
 
