@@ -1,6 +1,6 @@
 import FeatureFlag from '../models/FeatureFlagModel';
 import { IFeatureFlag } from '../interfaces/IFeatureFlag';
-import { isIFeatureFlag, isIFeatureFlagArray } from '../type-guards/featureFlag';
+import { isIFeatureFlag, isIFeatureFlagArray } from '../type-guards/IFeatureFlag';
 import Environment from '../models/EnvironmentModel';
 import App from '../models/AppModel';
 import { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } from '../errors';
