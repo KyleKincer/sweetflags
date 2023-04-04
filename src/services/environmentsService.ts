@@ -1,5 +1,6 @@
 import App from '../models/AppModel';
-import Environment, { IEnvironment } from '../models/EnvironmentModel';
+import Environment from '../models/EnvironmentModel';
+import { IEnvironment } from '../interfaces/IEnvironment';
 import { AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 
 class EnvironmentsService {

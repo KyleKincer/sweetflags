@@ -1,4 +1,5 @@
-import App, { IApp } from '../models/AppModel';
+import App from '../models/AppModel';
+import { IApp } from '../interfaces/IApp';
 import Environment from '../models/EnvironmentModel';
 
 class AppsService {

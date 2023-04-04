@@ -56,7 +56,7 @@ async function getFlagsByAppName(req: Request, res: Response): Promise<void> {
         res.status(200).json(featureFlags);
     } catch (err) {
         console.error(err);
-        if (err instanceof AppNotFoundError) {
+        if (err instanceof AppNotFoundError || err instanceof FlagNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
         } else if (err instanceof Error) {
             res.status(500).json({ message: err.message });

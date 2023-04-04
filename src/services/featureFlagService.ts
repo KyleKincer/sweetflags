@@ -1,14 +1,26 @@
-import FeatureFlag, { IFeatureFlag } from '../models/FeatureFlagModel';
+import FeatureFlag from '../models/FeatureFlagModel';
+import { IFeatureFlag } from '../interfaces/IFeatureFlag';
+import { isIFeatureFlag, isIFeatureFlagArray } from '../type-guards/featureFlag';
 import Environment from '../models/EnvironmentModel';
 import App from '../models/AppModel';
 import { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 import md5 from 'md5';
+import { Document } from 'mongoose';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
-        const featureFlags = await FeatureFlag.find().populate('environments.environment').exec();
+        let featureFlags = await FeatureFlag.find().populate('environments.environment').exec();
         if (!featureFlags) {
             throw new FlagNotFoundError('No flags found');
+        }
+
+        featureFlags=featureFlags.map((flag)=>{
+            flag = flag.toObject();
+            return flag;
+        });
+
+        if (!isIFeatureFlagArray(featureFlags)) {
+            throw new Error('Invalid flags');
         }
         return featureFlags;
     }
@@ -18,6 +30,10 @@ class FeatureFlagService {
         if (!featureFlag) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
+        
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        } 
         return featureFlag;
     }
 
@@ -25,6 +41,9 @@ class FeatureFlagService {
         const featureFlag = await FeatureFlag.findOne({ name: name }).populate('environments.environment').exec();
         if (!featureFlag) {
           throw new FlagNotFoundError(`Flag '${name}' not found`);
+        }
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
         }
         return featureFlag;
       }
@@ -34,7 +53,14 @@ class FeatureFlagService {
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
         }
-        return await FeatureFlag.find({ app: app._id }).populate('environments.environment').exec();
+        let featureFlags = await FeatureFlag.find({ app: app._id }).populate('environments.environment').exec();
+        if (!featureFlags) {
+            throw new FlagNotFoundError(`No flags found for app '${appName}'`);
+        }
+        if (!isIFeatureFlagArray(featureFlags)) {
+            throw new Error('Invalid flags');
+        }
+        return featureFlags;
     }
 
     async getFlagStateForName(flagName: string, appName: string, userId: string, environmentName: string): Promise<boolean> {
@@ -94,6 +120,10 @@ class FeatureFlagService {
             environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
             featureFlag.environments = environments;
             await featureFlag.save();
+            featureFlag = featureFlag.toObject();
+            if (!isIFeatureFlag(featureFlag)) {
+                throw new Error('Invalid flag');
+            }
             return featureFlag;
         }
     }
@@ -127,7 +157,7 @@ class FeatureFlagService {
         });
 
         await featureFlag.save();
-        return featureFlag;
+        return featureFlag.toObject();
     }
 
     async isEnabled(featureFlag: IFeatureFlag, user: string, environment: string): Promise<boolean> {
