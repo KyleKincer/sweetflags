@@ -2,7 +2,7 @@ import FeatureFlagService from '../services/featureFlagService';
 import { Request, Response } from 'express';
 import { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 
-async function getAllFlags(_req: Request, res: Response) {
+async function getAllFlags(_req: Request, res: Response): Promise<void> {
     try {
         const featureFlags = await FeatureFlagService.getAllFlags();
         res.status(200).json(featureFlags);
@@ -18,7 +18,7 @@ async function getAllFlags(_req: Request, res: Response) {
     }
 }
 
-async function getFlagById(req: Request, res: Response) {
+async function getFlagById(req: Request, res: Response): Promise<void> {
     try {
         const featureFlag = await FeatureFlagService.getFlagById(req.params.id);
         res.status(200).json(featureFlag);
@@ -34,7 +34,7 @@ async function getFlagById(req: Request, res: Response) {
     }
 }
 
-async function getFlagByName(req: Request, res: Response) {
+async function getFlagByName(req: Request, res: Response): Promise<void> {
     try {
         const featureFlag = await FeatureFlagService.getFlagByName(req.params.name);
         res.status(200).json(featureFlag);
@@ -50,7 +50,7 @@ async function getFlagByName(req: Request, res: Response) {
     }
 }
 
-async function getFlagsByAppName(req: Request, res: Response) {
+async function getFlagsByAppName(req: Request, res: Response): Promise<void> {
     try {
         const featureFlags = await FeatureFlagService.getFlagsByAppName(req.params.appName);
         res.status(200).json(featureFlags);
@@ -66,7 +66,7 @@ async function getFlagsByAppName(req: Request, res: Response) {
     }
 }
 
-async function getFlagStateForFlagName(req: Request, res: Response) {
+async function getFlagStateForFlagName(req: Request, res: Response): Promise<void> {
     try {
         const state = await FeatureFlagService.getFlagStateForName(req.body.flagName, req.body.appName, req.body.userId, req.body.environmentName);
         res.status(200).json(state);
@@ -83,7 +83,7 @@ async function getFlagStateForFlagName(req: Request, res: Response) {
     }
 }
 
-async function getFlagStatesForUserId(req: Request, res: Response) {
+async function getFlagStatesForUserId(req: Request, res: Response): Promise<void> {
     try {
         const states = await FeatureFlagService.getFlagStatesForUserId(req.body.userId, req.body.appName, req.body.environmentName);
         res.status(200).json(states);
@@ -99,7 +99,7 @@ async function getFlagStatesForUserId(req: Request, res: Response) {
     }
 }
 
-async function toggleFlag(req: Request, res: Response) {
+async function toggleFlag(req: Request, res: Response): Promise<void> {
     try {
         const featureFlag = await FeatureFlagService.toggleFlag(req.body.flagName, req.body.id, req.body.appName, req.body.environmentName);
         res.status(200).json(featureFlag);
@@ -117,7 +117,7 @@ async function toggleFlag(req: Request, res: Response) {
     }
 }
 
-async function createFlag(req: Request, res: Response) {
+async function createFlag(req: Request, res: Response): Promise<void> {
     try {
         const featureFlag = await FeatureFlagService.createFlag(
             req.body.flagName,
