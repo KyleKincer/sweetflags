@@ -30,7 +30,7 @@ class AppsService {
     }
 
     async createApp(name: string, description: string, isActive: boolean, createdBy: string): Promise<IApp> {
-        let app = new App({
+        let appDoc = new App({
             name: name,
             description: description,
             isActive: isActive,
@@ -38,7 +38,7 @@ class AppsService {
         });
 
         try {
-            app = await App.create(app);
+            appDoc = await App.create(appDoc);
         } catch (err: unknown) {
             throw new Error((err as Error).message);
         }
@@ -47,7 +47,7 @@ class AppsService {
         const environment = new Environment({
             name: 'Production',
             description: 'Production environment',
-            app: app._id,
+            app: appDoc._id,
             isActive: true,
             createdBy: createdBy
         });
@@ -56,6 +56,11 @@ class AppsService {
             const newEnvironment = await Environment.create(environment);
         } catch (err: unknown) {
             throw new Error((err as Error).message);
+        }
+
+        const app = appDoc.toObject();
+        if (!isIApp(app)) {
+            throw new Error('Invalid app data');
         }
 
         return app;
