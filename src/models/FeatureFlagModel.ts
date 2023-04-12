@@ -26,7 +26,12 @@ const featureFlagSchema: Schema = new Schema({
   timestamps: true,
   toObject: {
     transform: function (_doc, ret) {
-      ret.id = ret._id;
+      ret.id = ret._id.toString();
+      ret.environments = ret.environments.map((env) => {
+        env.id = env._id.toString();
+        delete env._id;
+        return env;
+      });
       delete ret._id;
       delete ret.__v;
     }

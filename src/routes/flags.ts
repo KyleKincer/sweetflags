@@ -244,6 +244,8 @@ router.get('/app/:appName', flagsController.getFlagsByAppName)
  */
 router.get('/state/name', flagsController.getFlagStateForFlagName)
 
+// TODO: add get flag state for flag id
+
 /**
  * @swagger
  * /api/flags/state/user:
@@ -314,7 +316,7 @@ router.get('/state/name', flagsController.getFlagStateForFlagName)
  *                   description: A message explaining the error
  *                   example: Internal server error
  */
-router.get('/user', flagsController.getFlagStatesForUserId)
+router.get('/state/user', flagsController.getFlagStatesForUserId)
 
 /**
  * @swagger

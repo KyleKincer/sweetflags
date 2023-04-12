@@ -9,12 +9,12 @@ import { Document } from 'mongoose';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
-        let featureFlags = await FeatureFlag.find().populate('environments.environment').exec();
-        if (!featureFlags) {
+        let featureFlagDocs = await FeatureFlag.find().populate('environments.environment').exec();
+        if (!featureFlagDocs) {
             throw new FlagNotFoundError('No flags found');
         }
 
-        featureFlags=featureFlags.map((flag)=>{
+        const featureFlags = featureFlagDocs.map((flag)=>{
             flag = flag.toObject();
             return flag;
         });
@@ -26,11 +26,12 @@ class FeatureFlagService {
     }
 
     async getFlagById(id: string): Promise<IFeatureFlag> {
-        const featureFlag = await FeatureFlag.findById(id).populate('environments.environment').exec();
-        if (!featureFlag) {
+        const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment').exec();
+        if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
         
+        let featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         } 
@@ -38,10 +39,12 @@ class FeatureFlagService {
     }
 
     async getFlagByName(name: string): Promise<IFeatureFlag> {
-        const featureFlag = await FeatureFlag.findOne({ name: name }).populate('environments.environment').exec();
-        if (!featureFlag) {
+        const featureFlagDoc = await FeatureFlag.findOne({ name: name }).populate('environments.environment').exec();
+        if (!featureFlagDoc) {
           throw new FlagNotFoundError(`Flag '${name}' not found`);
         }
+
+        const featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
@@ -53,10 +56,16 @@ class FeatureFlagService {
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
         }
-        let featureFlags = await FeatureFlag.find({ app: app._id }).populate('environments.environment').exec();
-        if (!featureFlags) {
+        let featureFlagDocs = await FeatureFlag.find({ app: app._id }).populate('environments.environment').exec();
+        if (!featureFlagDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appName}'`);
         }
+
+        const featureFlags = featureFlagDocs.map((flag)=>{
+            flag = flag.toObject();
+            return flag;
+        });
+
         if (!isIFeatureFlagArray(featureFlags)) {
             throw new Error('Invalid flags');
         }
@@ -99,30 +108,32 @@ class FeatureFlagService {
             throw new EnvironmentNotFoundError(`Environment '${environmentName}' not found`);
         }
 
-        let featureFlag: IFeatureFlag | null = new FeatureFlag();
+        let featureFlagDoc: IFeatureFlag | null = new FeatureFlag();
         if (id) {
-            featureFlag = await FeatureFlag.findOne({ app: app._id, _id: id }).exec();
+            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, _id: id }).exec();
         } else if (flagName) {
-            featureFlag = await FeatureFlag.findOne({ app: app._id, name: flagName }).exec();
+            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, name: flagName }).exec();
         } else {
             throw new FlagNotFoundError(`Either the id or name property is required`);
         }
 
-        if (!featureFlag) {
+        if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id || flagName}' not found`);
         }
 
-        const environments = featureFlag.environments;
+        const environments = featureFlagDoc.environments;
         const environmentIndex = environments.findIndex(e => e.environment.toString() === environment._id.toString());
         if (environmentIndex === -1) {
             throw new FlagNotFoundError(`Flag ${id || flagName} does not exist for environment ${environment._id}`);
         } else {
             environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
-            featureFlag.environments = environments;
-            await featureFlag.save();
-            featureFlag = featureFlag.toObject();
+            featureFlagDoc.environments = environments;
+            await featureFlagDoc.save();
+            featureFlagDoc = await featureFlagDoc.populate('app');
+            featureFlagDoc = await featureFlagDoc.populate('environments.environment');
+            const featureFlag = featureFlagDoc.toObject();
             if (!isIFeatureFlag(featureFlag)) {
-                throw new Error('Invalid flag');
+                 throw new Error('Invalid flag');
             }
             return featureFlag;
         }
@@ -148,7 +159,7 @@ class FeatureFlagService {
             disallowedUsers: disallowedUsers
         }));
 
-        const featureFlag = new FeatureFlag({
+        const featureFlagDoc = new FeatureFlag({
             name: name,
             description: description,
             app: app._id,
@@ -156,22 +167,29 @@ class FeatureFlagService {
             createdBy: createdBy
         });
 
-        await featureFlag.save();
-        return featureFlag.toObject();
+        await featureFlagDoc.save();
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        
+        return featureFlag;
     }
 
     async isEnabled(featureFlag: IFeatureFlag, user: string, environment: string): Promise<boolean> {
-        let environmentData = await Environment.findOne({ flagName: environment, app: featureFlag.app }).exec();
+        let environmentDoc = await Environment.findOne({ name: environment, app: featureFlag.app }).exec();
 
-        if (!environmentData) {
+        if (!environmentDoc) {
             // Default to production
-            environmentData = await Environment.findOne({ flagName: "Production" }).exec();
-            if (!environmentData) {
+            environmentDoc = await Environment.findOne({ flagName: "Production" }).exec();
+            if (!environmentDoc) {
                 return false;
             }
         }
         
-        const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentData!._id.toString());
+        const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentDoc!._id.toString());
         if (!flagData) {
             return false;
         }

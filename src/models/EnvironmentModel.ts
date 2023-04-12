@@ -14,7 +14,7 @@ const environmentSchema: Schema = new mongoose.Schema({
     timestamps: true,
     toObject: {
         transform: function (_doc, ret) {
-            ret.id = ret._id;
+            ret.id = ret._id.toString();
             delete ret._id;
             delete ret.__v;
         }

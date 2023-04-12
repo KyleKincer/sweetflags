@@ -1,6 +1,7 @@
 import { IFeatureFlag } from '../interfaces/IFeatureFlag';
 import { isIApp } from './IApp'; 
 import { isIEnvironment } from './IEnvironment'; 
+import { ObjectId } from 'mongodb';
 
 function isIFeatureFlag(obj: any): obj is IFeatureFlag {
   const hasValidEnvironments = (environments: any[]): boolean => {
@@ -16,12 +17,24 @@ function isIFeatureFlag(obj: any): obj is IFeatureFlag {
     });
   };
 
+  const isObjectId = (id: any): boolean => {
+    try {
+      return ObjectId.isValid(id) && new ObjectId(id).toString() === id.toString();
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const isAppReference = (app: any): boolean => {
+    return typeof app === 'string' || isIApp(app) || isObjectId(app);
+  };
+  
   return (
     obj &&
     typeof obj.id === 'string' &&
     typeof obj.name === 'string' &&
     (typeof obj.description === 'undefined' || typeof obj.description === 'string') &&
-    (typeof obj.app === 'string' || isIApp(obj.app)) &&
+    isAppReference(obj.app) &&
     Array.isArray(obj.environments) &&
     hasValidEnvironments(obj.environments) &&
     typeof obj.createdBy === 'string' &&
