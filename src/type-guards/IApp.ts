@@ -10,4 +10,12 @@ function isIApp(obj: any): obj is IApp {
   );
 }
 
-export { isIApp };
+function isIAppArray(obj: any): obj is Array<IApp> {
+  return (
+    obj &&
+    Array.isArray(obj) &&
+    obj.every((item) => isIApp(item))
+  );
+}
+
+export { isIApp, isIAppArray };

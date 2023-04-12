@@ -1,15 +1,31 @@
 import App from '../models/AppModel';
 import { IApp } from '../interfaces/IApp';
 import Environment from '../models/EnvironmentModel';
+import { AppNotFoundError } from '../errors';
+import { isIApp, isIAppArray } from '../type-guards/IApp';
+import { Document } from 'mongoose';
 
 class AppsService {
     async getAllApps(isActive: boolean | undefined): Promise<Array<IApp>> {
-        let apps = [] as Array<IApp>;
-        if (isActive) {
-            apps = await App.find({ isActive: isActive });
+        let appDocs: Array<Document & IApp> = [];
+        if (isActive === undefined) {
+            appDocs = await App.find().exec();
         } else {
-            apps = await App.find();
+            appDocs = await App.find({ isActive: isActive }).exec();
         }
+
+        if (!appDocs) {
+            throw new AppNotFoundError('No apps found');
+        }
+
+        const apps = appDocs.map((app) => {
+            return app.toObject();
+        });
+
+        if (!isIAppArray(apps)) {
+            throw new Error('Invalid app data');
+        }
+
         return apps;
     }
 

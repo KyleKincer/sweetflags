@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import AppsService from '../services/appsService';
+import { AppNotFoundError } from '../errors';
 
 interface CreateAppBody {
     name: string;
@@ -15,6 +16,9 @@ async function getAllApps(req: Request, res: Response): Promise<void> {
         res.status(200).json(apps);
     } catch (err: unknown) {
         console.error(err);
+        if (err instanceof AppNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message })
+        }
         if (err instanceof Error) {
             res.status(500).json({ message: err.message })
         } else {
