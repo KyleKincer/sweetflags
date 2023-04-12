@@ -28,4 +28,8 @@ function isIEnvironment(obj: any): obj is IEnvironment {
   );
 }
 
-export { isIEnvironment };
+function isIEnvironmentArray(obj: any): obj is Array<IEnvironment> {
+  return Array.isArray(obj) && obj.every((item) => isIEnvironment(item));
+}
+
+export { isIEnvironment, isIEnvironmentArray };
