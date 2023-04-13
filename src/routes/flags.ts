@@ -183,7 +183,7 @@ router.get('/app/:appName', flagsController.getFlagsByAppName)
 
 /**
  * @swagger
- * /api/flags/state/name:
+ * /api/flags/state:
  *   get:
  *     summary: Returns the feature flag state
  *     tags: [Flags]
@@ -198,18 +198,20 @@ router.get('/app/:appName', flagsController.getFlagsByAppName)
  *                 type: string
  *               flagName:
  *                 type: string
+ *               flagId:
+ *                 type: string
  *               userId:
  *                 type: string
  *               environmentName:
  *                 type: string
  *             required:
  *               - appName
- *               - flagName
  *               - userId
  *               - environmentName
+ *               - one of [flagName, flagId]
  *     responses:
  *       200:
- *         description: Feature flag state for the given app, environment name, user id, and flag name
+ *         description: Feature flag state for the given app, environment name, user id, and flag name or flag id
  *         content:
  *           application/json:
  *             schema:
@@ -242,9 +244,7 @@ router.get('/app/:appName', flagsController.getFlagsByAppName)
  *               required:
  *                 - message
  */
-router.get('/state/name', flagsController.getFlagStateForFlagName)
-
-// TODO: add get flag state for flag id
+router.get('/state', flagsController.getFlagState)
 
 /**
  * @swagger

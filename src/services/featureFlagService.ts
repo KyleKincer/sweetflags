@@ -72,18 +72,26 @@ class FeatureFlagService {
         return featureFlags;
     }
 
-    async getFlagStateForName(flagName: string, appName: string, userId: string, environmentName: string): Promise<boolean> {
+    async getFlagState(flagName: string | undefined, flagId: string | undefined, appName: string, userId: string, environmentName: string): Promise<boolean> {
         const app = await App.findOne({ name: appName });
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
         }
 
-        const featureFlag = await FeatureFlag.findOne({ app: app._id, name: flagName }).exec();
-        if (!featureFlag) {
+        let featureFlagDoc: (Document & IFeatureFlag) | null;
+        if (flagId) {
+            featureFlagDoc = await FeatureFlag.findById(flagId).exec();
+        } else if (flagName) {
+            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, name: flagName }).exec();
+        } else {
+            throw new FlagNotFoundError(`Either the id or name property is required`);
+        }
+
+        if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${flagName}' not found`);
         }
 
-        return await this.isEnabled(featureFlag, userId, environmentName);
+        return await this.isEnabled(featureFlagDoc, userId, environmentName);
     }
 
     async getFlagStatesForUserId(appName: string, userId: string, environmentName: string): Promise<Array<{ name: string; isEnabled: boolean }>> {
