@@ -43,7 +43,7 @@ router.get('/', environmentsController.getAllEnvironments);
 /**
  * @swagger
  * paths:
- *   /api/environments/id/{id}:
+ *   /api/environments/{id}:
  *     get:
  *       summary: Return environment data for a given id
  *       tags: [Environments]
@@ -73,7 +73,7 @@ router.get('/', environmentsController.getAllEnvironments);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/id/:id', environmentsController.getEnvironmentById);
+router.get('/:id', environmentsController.getEnvironmentById);
 
 /**
  * @swagger
