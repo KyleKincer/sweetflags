@@ -78,7 +78,7 @@ router.get('/:id', environmentsController.getEnvironmentById);
 /**
  * @swagger
  * paths:
- *   /api/environments/{appName}:
+ *   /api/environments/app/{appName}:
  *     get:
  *       summary: Return environment data for all environments for a given app name
  *       tags: [Environments]
@@ -121,7 +121,7 @@ router.get('/:id', environmentsController.getEnvironmentById);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/:appName', environmentsController.getEnvironmentsByAppName);
+router.get('/app/:appName', environmentsController.getEnvironmentsByAppName);
 
 /**
  * @swagger
