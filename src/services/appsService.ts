@@ -29,6 +29,34 @@ class AppsService {
         return apps;
     }
 
+    async getAppById(id: string): Promise<IApp> {
+        const appDoc = await App.findById(id).exec();
+        if (!appDoc) {
+            throw new AppNotFoundError(`App with id ${id} not found`);
+        }
+
+        const app = appDoc.toObject();
+        if (!isIApp(app)) {
+            throw new Error('Invalid app data');
+        }
+
+        return app;
+    }
+
+    async getAppByName(name: string): Promise<IApp> {
+        const appDoc = await App.find({ name: name }).exec();
+        if (!appDoc) {
+            throw new AppNotFoundError(`App with name ${name} not found`);
+        }
+
+        const app = appDoc[0].toObject();
+        if (!isIApp(app)) {
+            throw new Error('Invalid app data');
+        }
+
+        return app;
+    }
+
     async createApp(name: string, description: string, isActive: boolean, createdBy: string): Promise<IApp> {
         let appDoc = new App({
             name: name,
