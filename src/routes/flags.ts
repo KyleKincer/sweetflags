@@ -50,7 +50,7 @@ router.get('/', flagsController.getAllFlags);
 
 /**
  * @swagger
- * /api/flags/id/{id}:
+ * /api/flags/{id}:
  *   get:
  *     summary: Returns feature flag data for a given id
  *     tags: [Flags]
@@ -89,7 +89,7 @@ router.get('/', flagsController.getAllFlags);
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/id/:id', flagsController.getFlagById);
+router.get('/:id', flagsController.getFlagById);
 
 /**
  * @swagger
