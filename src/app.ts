@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import flagRouter from './routes/flags';
@@ -23,6 +24,7 @@ async function connectToDb() {
 
   // Set up Swagger UI
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+  app.use(cors());
   app.use(bodyParser.json());
   app.use('/api/flags', flagRouter);
   app.use('/api/apps', appRouter);
