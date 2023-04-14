@@ -394,6 +394,9 @@ router.put('/toggle', flagsController.toggleFlag);
  *               flagName:
  *                 type: string
  *                 description: The name of the feature flag.
+ *               description:
+ *                 type: string
+ *                 description: The description of the feature flag.
  *               appName:
  *                 type: string
  *                 description: The name of the application associated with the feature flag.
