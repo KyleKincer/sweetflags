@@ -378,6 +378,69 @@ router.get('/state/user', flagsController.getFlagStatesForUserId)
  */
 router.put('/toggle', flagsController.toggleFlag);
 
+/**
+ * @swagger
+ * paths:
+ *   /api/flags/{id}:
+ *     put:
+ *       summary: Update a feature flag
+ *       tags: [Flags]
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: The ID of the feature flag to update
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 flagName:
+ *                   type: string
+ *                   description: The new name of the feature flag
+ *                 description:
+ *                   type: string
+ *                   description: The new description of the feature flag
+ *                 app:
+ *                   type: string
+ *                   description: The id of the application the feature flag belongs to
+ *                 updatedBy:
+ *                   type: string
+ *                   description: The name of the user who updates the flag
+ *       responses:
+ *         200:
+ *           description: Feature flag data for the updated record.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/FeatureFlag'
+ *         404:
+ *           description: The specified flag, application, or environment was not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Flag 'myFlag' not found
+ *         500:
+ *           description: An unexpected error occurred
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Internal server error
+ */
 router.put('/:id', flagsController.updateFlag)
 
 /**
