@@ -147,6 +147,21 @@ class FeatureFlagService {
         }
     }
 
+    async updateFlag(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
+        const featureFlagDoc = await FeatureFlag.findByIdAndUpdate(id, { name: name, description: description, app: app, updatedBy: updatedBy }, { new: true }).exec();
+        if (!featureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            console.log(featureFlag)
+            throw new Error('Invalid flag');
+        }
+        return featureFlag;
+    }
+
     async createFlag(name: string, description: string, appName: string, isActive: boolean, evaluationStrategy: string, evaluationPercentage: number, allowedUsers: Array<string>, disallowedUsers: Array<string>, createdBy: string): Promise<IFeatureFlag> {
         const app = await App.findOne({ name: appName }).exec();
         if (!app) {

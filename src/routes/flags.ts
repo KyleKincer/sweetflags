@@ -378,6 +378,8 @@ router.get('/state/user', flagsController.getFlagStatesForUserId)
  */
 router.put('/toggle', flagsController.toggleFlag);
 
+router.put('/:id', flagsController.updateFlag)
+
 /**
  * @swagger
  * /api/flags:
