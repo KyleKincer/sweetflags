@@ -36,6 +36,27 @@ class EnvironmentsService {
         return environment;
     }
 
+    async getEnvironmentsByAppId(appId: string): Promise<Array<IEnvironment>> {
+        const appDoc = await App.findById(appId).exec();
+        if (!appDoc) {
+            throw new AppNotFoundError(`App '${appId}' not found`);
+        }
+        const environmentDocs = await Environment.find({ app: appDoc._id }).populate('app').exec();
+        if (!environmentDocs) {
+            throw new EnvironmentNotFoundError(`No environments found for app '${appId}'`);
+        }
+
+        const environments = environmentDocs.map((environment) => {
+            return environment.toObject();
+        });
+
+        if (!isIEnvironmentArray(environments)) {
+            throw new Error('Invalid environment data');
+        }
+
+        return environments;
+    }
+
     async getEnvironmentsByAppName(appName: string): Promise<Array<IEnvironment>> {
         const appDoc = await App.findOne({ name: appName }).exec();
         if (!appDoc) {
