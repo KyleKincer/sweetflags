@@ -14,7 +14,7 @@ class FeatureFlagService {
             throw new FlagNotFoundError('No flags found');
         }
 
-        const featureFlags = featureFlagDocs.map((flag)=>{
+        const featureFlags = featureFlagDocs.map((flag) => {
             flag = flag.toObject();
             return flag;
         });
@@ -30,18 +30,18 @@ class FeatureFlagService {
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
-        
+
         let featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
-        } 
+        }
         return featureFlag;
     }
 
     async getFlagByName(name: string): Promise<IFeatureFlag> {
         const featureFlagDoc = await FeatureFlag.findOne({ name: name }).populate('environments.environment').populate('app').exec();
         if (!featureFlagDoc) {
-          throw new FlagNotFoundError(`Flag '${name}' not found`);
+            throw new FlagNotFoundError(`Flag '${name}' not found`);
         }
 
         const featureFlag = featureFlagDoc.toObject();
@@ -49,7 +49,29 @@ class FeatureFlagService {
             throw new Error('Invalid flag');
         }
         return featureFlag;
-      }
+    }
+
+    async getFlagsByAppId(appId: string): Promise<Array<IFeatureFlag>> {
+        const app = await App.findById(appId);
+        if (!app) {
+            throw new AppNotFoundError(`App '${appId}' not found`);
+        }
+        let featureFlagDocs = await FeatureFlag.find({ app: app._id }).populate('environments.environment').populate('app').exec();
+        if (!featureFlagDocs) {
+            throw new FlagNotFoundError(`No flags found for app '${appId}'`);
+        }
+
+        const featureFlags = featureFlagDocs.map((flag) => {
+            flag = flag.toObject();
+            return flag;
+        });
+
+        if (!isIFeatureFlagArray(featureFlags)) {
+            throw new Error('Invalid flags');
+        }
+
+        return featureFlags;
+    }
 
     async getFlagsByAppName(appName: string): Promise<Array<IFeatureFlag>> {
         const app = await App.findOne({ name: appName });
@@ -61,7 +83,7 @@ class FeatureFlagService {
             throw new FlagNotFoundError(`No flags found for app '${appName}'`);
         }
 
-        const featureFlags = featureFlagDocs.map((flag)=>{
+        const featureFlags = featureFlagDocs.map((flag) => {
             flag = flag.toObject();
             return flag;
         });
@@ -141,7 +163,7 @@ class FeatureFlagService {
             featureFlagDoc = await featureFlagDoc.populate('environments.environment');
             const featureFlag = featureFlagDoc.toObject();
             if (!isIFeatureFlag(featureFlag)) {
-                 throw new Error('Invalid flag');
+                throw new Error('Invalid flag');
             }
             return featureFlag;
         }
@@ -198,7 +220,7 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
-        
+
         return featureFlag;
     }
 
@@ -212,7 +234,7 @@ class FeatureFlagService {
                 return false;
             }
         }
-        
+
         const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentDoc!._id.toString());
         if (!flagData) {
             return false;

@@ -136,7 +136,54 @@ router.get('/name/:name', flagsController.getFlagByName)
 
 /**
  * @swagger
- * /api/flags/app/{appName}:
+ * /api/flags/app/{appId}:
+ *   get:
+ *     summary: Returns all feature flag data for a given app ID
+ *     tags: [Flags]
+ *     parameters:
+ *       - in: path
+ *         name: appId
+ *         description: The ID of the app to retrieve feature flags for
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: An array of feature flag objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/FeatureFlag'
+ *       404:
+ *         description: Invalid app ID provided or no flags found for the app
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message explaining the issue with the request
+ *               example:
+ *                 message: App '1234' not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message explaining the issue with the server
+ */
+router.get('/app/:appId', flagsController.getFlagsByAppId)
+
+/**
+ * @swagger
+ * /api/flags/app/name/{appName}:
  *   get:
  *     summary: Returns all feature flag data for a given app name
  *     tags: [Flags]
@@ -179,7 +226,7 @@ router.get('/name/:name', flagsController.getFlagByName)
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/app/:appName', flagsController.getFlagsByAppName)
+router.get('/app/name/:appName', flagsController.getFlagsByAppName)
 
 /**
  * @swagger

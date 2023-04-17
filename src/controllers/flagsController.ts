@@ -50,6 +50,22 @@ async function getFlagByName(req: Request, res: Response): Promise<void> {
     }
 }
 
+async function getFlagsByAppId(req: Request, res: Response): Promise<void> {
+    try {
+        const featureFlags = await FeatureFlagService.getFlagsByAppId(req.params.appId);
+        res.status(200).json(featureFlags);
+    } catch (err) {
+        console.error(err);
+        if (err instanceof AppNotFoundError || err instanceof FlagNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message });
+        } else if (err instanceof Error) {
+            res.status(500).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' });
+        }
+    }
+}
+
 async function getFlagsByAppName(req: Request, res: Response): Promise<void> {
     try {
         const featureFlags = await FeatureFlagService.getFlagsByAppName(req.params.appName);
@@ -172,6 +188,7 @@ export {
     getAllFlags,
     getFlagById,
     getFlagByName,
+    getFlagsByAppId,
     getFlagsByAppName,
     getFlagState,
     getFlagStatesForUserId,
