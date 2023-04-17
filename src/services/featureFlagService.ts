@@ -9,7 +9,7 @@ import { Document } from 'mongoose';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
-        let featureFlagDocs = await FeatureFlag.find().populate('environments.environment').exec();
+        let featureFlagDocs = await FeatureFlag.find().populate('environments.environment').populate('app').exec();
         if (!featureFlagDocs) {
             throw new FlagNotFoundError('No flags found');
         }
@@ -26,7 +26,7 @@ class FeatureFlagService {
     }
 
     async getFlagById(id: string): Promise<IFeatureFlag> {
-        const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment').exec();
+        const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment').populate('app').exec();
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
@@ -39,7 +39,7 @@ class FeatureFlagService {
     }
 
     async getFlagByName(name: string): Promise<IFeatureFlag> {
-        const featureFlagDoc = await FeatureFlag.findOne({ name: name }).populate('environments.environment').exec();
+        const featureFlagDoc = await FeatureFlag.findOne({ name: name }).populate('environments.environment').populate('app').exec();
         if (!featureFlagDoc) {
           throw new FlagNotFoundError(`Flag '${name}' not found`);
         }
@@ -56,7 +56,7 @@ class FeatureFlagService {
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
         }
-        let featureFlagDocs = await FeatureFlag.find({ app: app._id }).populate('environments.environment').exec();
+        let featureFlagDocs = await FeatureFlag.find({ app: app._id }).populate('environments.environment').populate('app').exec();
         if (!featureFlagDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appName}'`);
         }
@@ -148,6 +148,7 @@ class FeatureFlagService {
     }
 
     async updateFlag(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
+        console.log(id, name, description, app, updatedBy)
         const featureFlagDoc = await FeatureFlag.findByIdAndUpdate(id, { name: name, description: description, app: app, updatedBy: updatedBy }, { new: true }).exec();
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
