@@ -13,3 +13,13 @@ export interface IUser extends Document {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface IUserInputDTO {
+    externalId: string;
+    name?: string;
+    app: Schema.Types.ObjectId | IApp;
+    metadata?: Record<string, any>;
+    isActive: boolean;
+    createdBy: string;
+    updatedBy?: string;
+}
