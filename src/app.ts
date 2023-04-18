@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import flagRouter from './routes/flags';
 import appRouter from './routes/apps';
 import environmentRouter from './routes/environments';
+import userRouter from './routes/users';
 import config from './config';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
@@ -29,6 +30,7 @@ async function connectToDb() {
   app.use('/api/flags', flagRouter);
   app.use('/api/apps', appRouter);
   app.use('/api/environments', environmentRouter);
+  app.use('/api/users', userRouter);
 
   app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
