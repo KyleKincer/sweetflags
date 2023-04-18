@@ -78,48 +78,48 @@ router.get('/:id', environmentsController.getEnvironmentById);
 /**
  * @swagger
  * paths:
- *  /api/environments/app/{appId}:
- *   get:
- *    summary: Return environment data for all environments for a given app id
- *   tags: [Environments]
- *  parameters:
- *  - in: path
- *   name: appId
- *  schema:
- *  type: string
- * required: true
- * description: App ID
- * responses:
- * 200:
- * description: An array of environment objects
- * content:
- * application/json:
- * schema:
- * type: array
- * items:
- * $ref: '#/components/schemas/Environment'
- * 404:
- * description: Bad request
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * message:
- * type: string
- * description: A message explaining the error
- * example: App 'AppName' not found
- * 500:
- * description: An unexpected error occurred
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * message:
- * type: string
- * description: A message explaining the error
- * example: Internal server error
+ *   /api/environments/app/{appId}:
+ *     get:
+ *       summary: Return environment data for all environments for a given app id
+ *       tags: [Environments]
+ *       parameters:
+ *         - in: path
+ *           name: appId
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: App ID
+ *       responses:
+ *         200:
+ *           description: An array of environment objects
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Environment'
+ *         404:
+ *           description: Bad request
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: App 'AppName' not found
+ *         500:
+ *           description: An unexpected error occurred
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Internal server error
  */
 router.get('/app/:appId', environmentsController.getEnvironmentsByAppId)
 
