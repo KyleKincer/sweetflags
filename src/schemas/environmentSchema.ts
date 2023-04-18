@@ -1,11 +1,18 @@
-const { App } = require('./appSchema');
+import { App } from './appSchema';
 
 const Environment = {
     type: 'object',
     properties: {
-      name: { type: 'string', description: 'The name of the environment' },
+      id: { 
+        type: 'string', 
+        description: 'The ID of the environment' },
+      name: { 
+        type: 'string', 
+        description: 'The name of the environment' },
       app: App,
-      description: { type: 'string', description: 'A description of the environment' },
+      description: { 
+        type: 'string', 
+        description: 'A description of the environment' },
       isActive: {
         type: 'boolean',
         description: 'Whether the environment is active or not',
@@ -32,7 +39,4 @@ const Environment = {
     },
   };
   
-  module.exports = {
-    Environment,
-  };
-  
+export { Environment };

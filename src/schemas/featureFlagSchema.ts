@@ -1,8 +1,9 @@
-const { Environment } = require('./environmentSchema');
+import { Environment } from './environmentSchema';
 
 const FeatureFlag = {
     type: 'object',
     properties: {
+      id: { type: 'string', description: 'The ID of the feature flag' },
       name: { type: 'string', description: 'The name of the feature flag' },
       description: { type: 'string', description: 'A description of the feature flag' },
       app: { type: 'string', description: 'The ID of the app associated with the feature flag' },
@@ -20,7 +21,7 @@ const FeatureFlag = {
             evaluationStrategy: {
               type: 'string',
               description: 'The strategy used to evaluate the feature flag',
-              enum: ['IMMEDIATE', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
+              enum: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
             },
             evaluationPercentage: {
               type: 'number',
@@ -67,7 +68,5 @@ const FeatureFlag = {
     },
   };
   
-  module.exports = {
-    FeatureFlag
-  };
+export { FeatureFlag };
   

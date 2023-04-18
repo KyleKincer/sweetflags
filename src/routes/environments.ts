@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import environmentsController from '../controllers/environmentsController';
+
 const router = express.Router();
-const environmentController = require('../controllers/environmentsController');
 
 /**
  * @swagger
@@ -37,12 +38,12 @@ const environmentController = require('../controllers/environmentsController');
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/', environmentController.getAllEnvironments);
+router.get('/', environmentsController.getAllEnvironments);
 
 /**
  * @swagger
  * paths:
- *   /api/environments/id/{id}:
+ *   /api/environments/{id}:
  *     get:
  *       summary: Return environment data for a given id
  *       tags: [Environments]
@@ -72,12 +73,60 @@ router.get('/', environmentController.getAllEnvironments);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/id/:id', environmentController.getEnvironmentById);
+router.get('/:id', environmentsController.getEnvironmentById);
 
 /**
  * @swagger
  * paths:
- *   /api/environments/{appName}:
+ *  /api/environments/app/{appId}:
+ *   get:
+ *    summary: Return environment data for all environments for a given app id
+ *   tags: [Environments]
+ *  parameters:
+ *  - in: path
+ *   name: appId
+ *  schema:
+ *  type: string
+ * required: true
+ * description: App ID
+ * responses:
+ * 200:
+ * description: An array of environment objects
+ * content:
+ * application/json:
+ * schema:
+ * type: array
+ * items:
+ * $ref: '#/components/schemas/Environment'
+ * 404:
+ * description: Bad request
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * description: A message explaining the error
+ * example: App 'AppName' not found
+ * 500:
+ * description: An unexpected error occurred
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * description: A message explaining the error
+ * example: Internal server error
+ */
+router.get('/app/:appId', environmentsController.getEnvironmentsByAppId)
+
+/**
+ * @swagger
+ * paths:
+ *   /api/environments/app/name/{appName}:
  *     get:
  *       summary: Return environment data for all environments for a given app name
  *       tags: [Environments]
@@ -97,7 +146,7 @@ router.get('/id/:id', environmentController.getEnvironmentById);
  *                 type: array
  *                 items:
  *                   $ref: '#/components/schemas/Environment'
- *         400:
+ *         404:
  *           description: Bad request
  *           content:
  *             application/json:
@@ -120,7 +169,7 @@ router.get('/id/:id', environmentController.getEnvironmentById);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/:appName', environmentController.getEnvironmentsByAppName);
+router.get('/app/name/:appName', environmentsController.getEnvironmentsByAppName);
 
 /**
  * @swagger
@@ -186,6 +235,6 @@ router.get('/:appName', environmentController.getEnvironmentsByAppName);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.post('/', environmentController.createEnvironment);
+router.post('/', environmentsController.createEnvironment);
 
-module.exports = router;
+export default router;
