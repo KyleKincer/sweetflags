@@ -1,6 +1,8 @@
 import { Document, Schema } from 'mongoose';
 import { IEnvironment } from './IEnvironment';
 import { IApp } from './IApp';
+import { IUser } from './IUser';
+import { ObjectId } from 'mongoose';
 
 export interface IFeatureFlag extends Document {
     id: string;
@@ -12,11 +14,23 @@ export interface IFeatureFlag extends Document {
         isActive: boolean;
         evaluationStrategy: string;
         evaluationPercentage?: number;
-        allowedUsers?: string[];
-        disallowedUsers?: string[];
+        allowedUsers?: Schema.Types.ObjectId[] | IUser[];
+        disallowedUsers?: Schema.Types.ObjectId[] | IUser[];
       }[];
     createdBy: string;
     updatedBy?: string;
     createdAt: Date;
     updatedAt: Date;
   }
+
+  export interface IFeatureFlagInputDTO {
+    name: string;
+    appId: string;
+    isActive: boolean;
+    createdBy: string;
+    description?: string;
+    evaluationStrategy: string;
+    evaluationPercentage?: number;
+    allowedUsers?: Array<ObjectId>;
+    disallowedUsers?: Array<ObjectId>;
+}

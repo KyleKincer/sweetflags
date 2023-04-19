@@ -1,6 +1,7 @@
 import { IFeatureFlag } from '../interfaces/IFeatureFlag';
 import { isIApp } from './IApp'; 
 import { isIEnvironment } from './IEnvironment'; 
+import { isIUserArray } from './IUser';
 import { ObjectId } from 'mongodb';
 
 function isIFeatureFlag(obj: any): obj is IFeatureFlag {
@@ -11,8 +12,8 @@ function isIFeatureFlag(obj: any): obj is IFeatureFlag {
         typeof env.isActive === 'boolean' &&
         typeof env.evaluationStrategy === 'string' &&
         (typeof env.evaluationPercentage === 'undefined' || typeof env.evaluationPercentage === 'number') &&
-        (typeof env.allowedUsers === 'undefined' || Array.isArray(env.allowedUsers)) &&
-        (typeof env.disallowedUsers === 'undefined' || Array.isArray(env.disallowedUsers))
+        (typeof env.allowedUsers === 'undefined' || env.allowedUsers.every(isObjectId)) || isIUserArray(env.allowedUsers) &&
+        (typeof env.disallowedUsers === 'undefined' || env.disallowedUsers.every(isObjectId) || isIUserArray(env.disallowedUsers))
       );
     });
   };

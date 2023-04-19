@@ -158,16 +158,7 @@ async function updateFlag(req: Request, res: Response): Promise<void> {
 
 async function createFlag(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.createFlag(
-            req.body.flagName,
-            req.body.description,
-            req.body.appName,
-            req.body.isActive,
-            req.body.evaluationStrategy,
-            req.body.evaluationPercentage,
-            req.body.allowedUsers,
-            req.body.disallowedUsers,
-            req.body.createdBy);
+        const featureFlag = await FeatureFlagService.createFlag(req.body);
         res.status(201).json(featureFlag);
     } catch (err) {
         console.error(err);
