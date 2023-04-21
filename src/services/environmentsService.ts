@@ -1,5 +1,6 @@
 import App from '../models/AppModel';
 import Environment from '../models/EnvironmentModel';
+import FeatureFlag from '../models/FeatureFlagModel';
 import { IEnvironment } from '../interfaces/IEnvironment';
 import { AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 import { isIEnvironment, isIEnvironmentArray } from '../type-guards/IEnvironment';
@@ -111,7 +112,19 @@ class EnvironmentsService {
             throw new EnvironmentNotFoundError(`Environment '${id}' not found`);
         }
 
-        await environmentDoc.populate('app');
+        // Remove environment from feature flags
+        const featureFlagDocs = await FeatureFlag.find({ app: environmentDoc.app }).exec();
+        if (featureFlagDocs) {
+            for (const featureFlagDoc of featureFlagDocs) {
+                const environments = featureFlagDoc.environments.filter((environment) => {
+                    return environment.environment.toString() !== environmentDoc._id.toString();
+                }
+                );
+                featureFlagDoc.environments = environments;
+                await featureFlagDoc.save();
+            }
+        }
+
         const environment = environmentDoc.toObject();
         if (!isIEnvironment(environment)) {
             throw new Error('Invalid environment data');
