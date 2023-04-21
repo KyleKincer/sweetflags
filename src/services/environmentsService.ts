@@ -79,10 +79,10 @@ class EnvironmentsService {
         return environments;
     }
 
-    async createEnvironment(name: string, description: string, appName: string, isActive: boolean, createdBy: string): Promise<IEnvironment> {
-        const appDoc = await App.findOne({ name: appName }).exec();
+    async createEnvironment(name: string, description: string, appId: string, isActive: boolean, createdBy: string): Promise<IEnvironment> {
+        const appDoc = await App.findById(appId).exec();
         if (!appDoc) {
-            throw new AppNotFoundError(`App '${appName}' not found`);
+            throw new AppNotFoundError(`App '${appId}' not found`);
         }
         let environmentDoc = new Environment({
             name: name,

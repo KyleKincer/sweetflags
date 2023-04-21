@@ -193,10 +193,10 @@ router.get('/app/name/:appName', environmentsController.getEnvironmentsByAppName
  *                   type: string
  *                   description: A description of the environment
  *                   example: Development environment
- *                 appName:
+ *                 appId:
  *                   type: string
- *                   description: The name of the app the environment is associated with
- *                   example: Symphony
+ *                   description: The ID of the app the environment is associated with
+ *                   example: 6442ea44ce25a8db1e791403
  *                 isActive:
  *                   type: boolean
  *                   description: Whether the environment is active

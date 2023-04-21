@@ -67,9 +67,9 @@ async function getEnvironmentsByAppName(req: Request, res: Response): Promise<vo
 }
 
 async function createEnvironment(req: Request, res: Response): Promise<void> {
-    const { name, description, appName, isActive, createdBy } = req.body;
+    const { name, description, appId, isActive, createdBy } = req.body;
     try {
-        const environment = await EnvironmentsService.createEnvironment(name, description, appName, isActive, createdBy);
+        const environment = await EnvironmentsService.createEnvironment(name, description, appId, isActive, createdBy);
         res.status(201).json(environment);
     } catch (err: unknown) {
         console.error(err);
