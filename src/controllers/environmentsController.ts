@@ -83,10 +83,27 @@ async function createEnvironment(req: Request, res: Response): Promise<void> {
     }
 }
 
+async function deleteEnvironment(req: Request, res: Response): Promise<void> {
+    try {
+        const deletedEnvironment = await EnvironmentsService.deleteEnvironment(req.params.id);
+        res.status(200).json(deletedEnvironment);
+    } catch (err: unknown) {
+        console.error(err);
+        if (err instanceof EnvironmentNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message });
+        } else if (err instanceof Error) {
+            res.status(500).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' });
+        }
+    }
+}
+
 export default {
     getAllEnvironments,
     getEnvironmentById,
     getEnvironmentsByAppId,
     getEnvironmentsByAppName,
-    createEnvironment
+    createEnvironment,
+    deleteEnvironment,
 };

@@ -564,4 +564,7 @@ router.put('/:id', flagsController.updateFlag)
  */
 router.post('/', flagsController.createFlag);
 
+
+router.delete('/:id', flagsController.deleteFlag);
+
 export default router;

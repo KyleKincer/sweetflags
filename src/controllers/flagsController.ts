@@ -174,6 +174,24 @@ async function createFlag(req: Request, res: Response): Promise<void> {
     }
 }
 
+async function deleteFlag(req: Request, res: Response): Promise<void> {
+    try {
+        const featureFlag = await FeatureFlagService.deleteFlag(req.params.id);
+        res.status(200).json(featureFlag);
+    } catch (err) {
+        console.error(err);
+        if (err instanceof FlagNotFoundError ||
+            err instanceof AppNotFoundError ||
+            err instanceof EnvironmentNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message });
+        } else if (err instanceof Error) {
+            res.status(500).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' });
+        }
+    }
+}
+
 
 export {
     getAllFlags,
@@ -185,5 +203,6 @@ export {
     getFlagStatesForUserId,
     toggleFlag,
     updateFlag,
-    createFlag
+    createFlag,
+    deleteFlag,
 };

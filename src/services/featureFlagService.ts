@@ -263,6 +263,22 @@ class FeatureFlagService {
         return featureFlag;
     }
 
+    async deleteFlag(id: string): Promise<IFeatureFlag> {
+        const featureFlagDoc = await FeatureFlag.findByIdAndDelete(id).exec();
+        if (!featureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        return featureFlag;
+    }
+
 
     async isEnabled(featureFlag: IFeatureFlag, user: string, environment: string): Promise<boolean> {
         let environmentDoc = await Environment.findOne({ name: environment, app: featureFlag.app }).exec();

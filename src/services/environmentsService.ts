@@ -104,6 +104,21 @@ class EnvironmentsService {
 
         return environment;
     }
+
+    async deleteEnvironment(id: string): Promise<IEnvironment> {
+        const environmentDoc = await Environment.findByIdAndDelete(id).exec();
+        if (!environmentDoc) {
+            throw new EnvironmentNotFoundError(`Environment '${id}' not found`);
+        }
+
+        await environmentDoc.populate('app');
+        const environment = environmentDoc.toObject();
+        if (!isIEnvironment(environment)) {
+            throw new Error('Invalid environment data');
+        }
+
+        return environment;
+    }
 }
 
 export default new EnvironmentsService();

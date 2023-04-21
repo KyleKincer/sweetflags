@@ -237,4 +237,40 @@ router.get('/app/name/:appName', environmentsController.getEnvironmentsByAppName
  */
 router.post('/', environmentsController.createEnvironment);
 
+/**
+ * @swagger
+ * /api/environments/{id}:
+ *   delete:
+ *     summary: Delete an environment by ID
+ *     tags: [Environments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the environment to delete
+ *     responses:
+ *       200:
+ *         description: The environment was deleted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Environment'
+ *       404:
+ *         description: Resource not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message explaining the error
+ *                   example: Environment '{id}' not found
+ *       500:
+ *         description: An error occurred while deleting the environment.
+ */
+router.delete('/:id', environmentsController.deleteEnvironment);
+
 export default router;
