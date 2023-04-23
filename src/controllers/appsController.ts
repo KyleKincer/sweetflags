@@ -1,13 +1,7 @@
 import { Request, Response } from 'express';
 import AppsService from '../services/appsService';
 import { AppNotFoundError } from '../errors';
-
-interface CreateAppBody {
-    name: string;
-    description: string;
-    isActive: boolean;
-    createdBy: string;
-}
+import { IAppInputDTO } from '../interfaces/IApp';
 
 async function getAllApps(req: Request, res: Response): Promise<void> {
     const isActive = req.query.isActive as boolean | undefined;
@@ -64,7 +58,7 @@ async function getAppByName(req: Request, res: Response): Promise<void> {
 }
 
 async function createApp(req: Request, res: Response): Promise<void> {
-    const { name, description, isActive, createdBy } = req.body as CreateAppBody;
+    const { name, description, isActive, createdBy } = req.body as IAppInputDTO;
     try {
         const app = await AppsService.createApp(name, description, isActive, createdBy);
         res.status(201).json(app);
