@@ -16,6 +16,7 @@ export interface IFeatureFlag extends Document {
         evaluationPercentage?: number;
         allowedUsers?: Schema.Types.ObjectId[] | IUser[];
         disallowedUsers?: Schema.Types.ObjectId[] | IUser[];
+        updatedBy?: string;
       }[];
     createdBy: string;
     updatedBy?: string;
@@ -33,4 +34,14 @@ export interface IFeatureFlag extends Document {
     evaluationPercentage?: number;
     allowedUsers?: Array<ObjectId>;
     disallowedUsers?: Array<ObjectId>;
+}
+
+export interface IFeatureFlagUpdateDTO {
+    environmentId: string;
+    isActive?: boolean;
+    evaluationStrategy?: string;
+    evaluationPercentage?: number;
+    allowedUsers?: Array<ObjectId>;
+    disallowedUsers?: Array<ObjectId>;
+    updatedBy: string;
 }

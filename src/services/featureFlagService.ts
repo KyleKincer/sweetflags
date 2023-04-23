@@ -1,5 +1,5 @@
 import FeatureFlag from '../models/FeatureFlagModel';
-import { IFeatureFlag, IFeatureFlagInputDTO } from '../interfaces/IFeatureFlag';
+import { IFeatureFlag, IFeatureFlagInputDTO, IFeatureFlagUpdateDTO } from '../interfaces/IFeatureFlag';
 import { isIFeatureFlag, isIFeatureFlagArray } from '../type-guards/IFeatureFlag';
 import Environment from '../models/EnvironmentModel';
 import App from '../models/AppModel';
@@ -213,6 +213,39 @@ class FeatureFlagService {
         await featureFlagDoc.populate('environments.allowedUsers');
         await featureFlagDoc.populate('environments.disallowedUsers');
 
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        return featureFlag;
+    }
+
+    async updateFlag(id: String, data: IFeatureFlagUpdateDTO): Promise<IFeatureFlag> {
+        const { environmentId, isActive, updatedBy, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+        const featureFlagDoc = await FeatureFlag.findById(id).exec();
+        if (!featureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+        
+        const environments = featureFlagDoc.environments;
+        const environmentIndex = environments.findIndex(e => e.environment.toString() === environmentId);
+        if (environmentIndex === -1) {
+            throw new EnvironmentNotFoundError(`Environment ${environmentId} not found`);
+        }
+
+        environments[environmentIndex].isActive = typeof isActive === 'undefined' ? environments[environmentIndex].isActive : isActive;
+        environments[environmentIndex].evaluationStrategy = typeof evaluationStrategy === 'undefined' ? environments[environmentIndex].evaluationStrategy : evaluationStrategy;
+        environments[environmentIndex].evaluationPercentage = typeof evaluationPercentage === 'undefined' ? environments[environmentIndex].evaluationPercentage : evaluationPercentage;
+        environments[environmentIndex].allowedUsers = typeof allowedUsers === 'undefined' ? environments[environmentIndex].allowedUsers : allowedUsers;
+        environments[environmentIndex].disallowedUsers = typeof disallowedUsers === 'undefined' ? environments[environmentIndex].disallowedUsers : disallowedUsers;
+        environments[environmentIndex].updatedBy = updatedBy;
+
+        featureFlagDoc.environments = environments;
+        await featureFlagDoc.save();
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
         const featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');

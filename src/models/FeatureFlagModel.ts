@@ -17,7 +17,8 @@ const featureFlagSchema: Schema = new Schema({
       evaluationStrategy: { type: String, enum: evaluationStrategyEnum, required: true },
       evaluationPercentage: { type: Number },
       allowedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-      disallowedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      disallowedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+      updatedBy: { type: String }
     }
   ],
   createdBy: { type: String, required: true },

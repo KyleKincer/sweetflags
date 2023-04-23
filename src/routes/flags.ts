@@ -428,7 +428,7 @@ router.put('/toggle', flagsController.toggleFlag);
 /**
  * @swagger
  * paths:
- *   /api/flags/{id}:
+ *   /api/flags/{id}/metadata:
  *     put:
  *       summary: Update a feature flag's metadata
  *       tags: [Flags]
@@ -488,7 +488,10 @@ router.put('/toggle', flagsController.toggleFlag);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.put('/:id', flagsController.updateFlagMetadata)
+router.put('/:id/metadata', flagsController.updateFlagMetadata)
+
+
+router.put('/:id', flagsController.updateFlag)
 
 /**
  * @swagger
