@@ -133,9 +133,9 @@ async function toggleFlag(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function updateFlag(req: Request, res: Response): Promise<void> {
+async function updateFlagMetadata(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.updateFlag(
+        const featureFlag = await FeatureFlagService.updateFlagMetadata(
             req.params.id,
             req.body.flagName,
             req.body.description,
@@ -202,7 +202,7 @@ export {
     getFlagState,
     getFlagStatesForUserId,
     toggleFlag,
-    updateFlag,
+    updateFlagMetadata,
     createFlag,
     deleteFlag,
 };

@@ -203,7 +203,7 @@ class FeatureFlagService {
         }
     }
 
-    async updateFlag(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
+    async updateFlagMetadata(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
         const featureFlagDoc = await FeatureFlag.findByIdAndUpdate(id, { name: name, description: description, app: app, updatedBy: updatedBy }, { new: true }).exec();
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);

@@ -430,7 +430,7 @@ router.put('/toggle', flagsController.toggleFlag);
  * paths:
  *   /api/flags/{id}:
  *     put:
- *       summary: Update a feature flag
+ *       summary: Update a feature flag's metadata
  *       tags: [Flags]
  *       parameters:
  *         - in: path
@@ -488,7 +488,7 @@ router.put('/toggle', flagsController.toggleFlag);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.put('/:id', flagsController.updateFlag)
+router.put('/:id', flagsController.updateFlagMetadata)
 
 /**
  * @swagger
@@ -564,7 +564,49 @@ router.put('/:id', flagsController.updateFlag)
  */
 router.post('/', flagsController.createFlag);
 
-
+/**
+ * @swagger
+ * /api/flags/{id}:
+ *   delete:
+ *     summary: Delete a feature flag by ID
+ *     tags: [Flags]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the feature flag to delete.
+ *     responses:
+ *       200:
+ *         description: The feature flag was deleted successfully.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/FeatureFlag'
+ *       404:
+ *         description: Resource not found.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Flag '{id}' not found
+ *       500:
+ *         description: An error occurred while deleting the feature flag.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: An unknown error occurred
+ */
 router.delete('/:id', flagsController.deleteFlag);
 
 export default router;
