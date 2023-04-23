@@ -1,5 +1,5 @@
 import FeatureFlag from '../models/FeatureFlagModel';
-import { IFeatureFlag, IFeatureFlagInputDTO, IFeatureFlagUpdateDTO } from '../interfaces/IFeatureFlag';
+import { IFeatureFlag, IFeatureFlagInputDTO, IFeatureFlagUpdateDTO, IFeatureFlagToggleDTO } from '../interfaces/IFeatureFlag';
 import { isIFeatureFlag, isIFeatureFlagArray } from '../type-guards/IFeatureFlag';
 import Environment from '../models/EnvironmentModel';
 import App from '../models/AppModel';
@@ -159,10 +159,11 @@ class FeatureFlagService {
         return this.areEnabled(featureFlags, userId, environmentName);
     }
 
-    async toggleFlag(flagName: string, id: string, appName: string, environmentName: string): Promise<IFeatureFlag> {
-        const app = await App.findOne({ name: appName }).exec();
+    async toggleFlag(data: IFeatureFlagToggleDTO): Promise<IFeatureFlag> {
+        const { id, name, appId, environmentName, updatedBy } = data;
+        const app = await App.findById(appId).exec();
         if (!app) {
-            throw new AppNotFoundError(`App '${appName}' not found`);
+            throw new AppNotFoundError(`App '${appId}' not found`);
         }
 
         const environment = await Environment.findOne({ app: app._id, name: environmentName }).exec();
@@ -173,34 +174,35 @@ class FeatureFlagService {
         let featureFlagDoc: IFeatureFlag | null = new FeatureFlag();
         if (id) {
             featureFlagDoc = await FeatureFlag.findOne({ app: app._id, _id: id }).exec();
-        } else if (flagName) {
-            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, name: flagName }).exec();
+        } else if (name) {
+            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, name: name }).exec();
         } else {
             throw new FlagNotFoundError(`Either the id or name property is required`);
         }
 
         if (!featureFlagDoc) {
-            throw new FlagNotFoundError(`Flag '${id || flagName}' not found`);
+            throw new FlagNotFoundError(`Flag '${id || name}' not found`);
         }
 
         const environments = featureFlagDoc.environments;
         const environmentIndex = environments.findIndex(e => e.environment.toString() === environment._id.toString());
         if (environmentIndex === -1) {
-            throw new FlagNotFoundError(`Flag ${id || flagName} does not exist for environment ${environment._id}`);
-        } else {
-            environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
-            featureFlagDoc.environments = environments;
-            await featureFlagDoc.save();
-            await featureFlagDoc.populate('app');
-            await featureFlagDoc.populate('environments.environment');
-            await featureFlagDoc.populate('environments.allowedUsers');
-            await featureFlagDoc.populate('environments.disallowedUsers');
-            const featureFlag = featureFlagDoc.toObject();
-            if (!isIFeatureFlag(featureFlag)) {
-                throw new Error('Invalid flag');
-            }
-            return featureFlag;
+            throw new FlagNotFoundError(`Flag ${id || name} does not exist for environment ${environment._id}`);
         }
+        
+        environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
+        featureFlagDoc.environments = environments;
+        featureFlagDoc.updatedBy = updatedBy;
+        await featureFlagDoc.save();
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        return featureFlag;
     }
 
     async updateFlagMetadata(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
@@ -226,7 +228,7 @@ class FeatureFlagService {
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
-        
+
         const environments = featureFlagDoc.environments;
         const environmentIndex = environments.findIndex(e => e.environment.toString() === environmentId);
         if (environmentIndex === -1) {

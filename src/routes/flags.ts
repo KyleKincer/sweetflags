@@ -393,6 +393,10 @@ router.get('/state/user', flagsController.getFlagStatesForUserId)
  *                   type: string
  *                   description: The name of the environment the feature flag belongs to
  *                   required: true
+ *                 updatedBy:
+ *                   type: string
+ *                   description: The name of the user who is updating the feature flag
+ *                   required: true
  *       responses:
  *         200:
  *           description: Feature flag data for the updated record. 

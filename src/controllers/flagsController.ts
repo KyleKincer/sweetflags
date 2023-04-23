@@ -117,7 +117,7 @@ async function getFlagStatesForUserId(req: Request, res: Response): Promise<void
 
 async function toggleFlag(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.toggleFlag(req.body.flagName, req.body.id, req.body.appName, req.body.environmentName);
+        const featureFlag = await FeatureFlagService.toggleFlag(req.body);
         res.status(200).json(featureFlag);
     } catch (err) {
         console.error(err);
