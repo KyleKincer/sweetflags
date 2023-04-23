@@ -490,7 +490,76 @@ router.put('/toggle', flagsController.toggleFlag);
  */
 router.put('/:id/metadata', flagsController.updateFlagMetadata)
 
-
+/**
+ * @swagger
+ * /api/flags/{id}:
+ *   put:
+ *     summary: Update a feature flag's state, evaluation strategy, and users for a given environment
+ *     tags: [Flags]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the feature flag to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               environmentId:
+ *                 type: string
+ *                 description: The ID of the environment to update settings for
+ *               isActive:
+ *                 type: boolean
+ *                 description: Indicates whether the feature flag is active or not
+ *               updatedBy:
+ *                 type: string
+ *                 description: The name of the user who updated the feature flag
+ *               evaluationStrategy:
+ *                 type: string
+ *                 enum: [BOOLEAN, PERCENTAGE, USER, PROBABILISTIC]
+ *                 description: The evaluation strategy used for the feature flag
+ *               evaluationPercentage:
+ *                 type: integer
+ *                 description: The percentage of users that the feature flag is enabled for. Required if evaluationStrategy is PERCENTAGE
+ *               allowedUsers:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: The list of users who are allowed to see the feature flag. Required if evaluationStrategy is USER
+ *               disallowedUsers:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: The list of users who are not allowed to see the feature flag. Required if evaluationStrategy is USER
+ *             required:
+ *               - environmentId
+ *               - updatedBy
+ *     responses:
+ *       200:
+ *         description: The feature flag was updated successfully.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/FeatureFlag'
+ *       404:
+ *         description: Resource not found.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Flag {id} not found
+ *       500:
+ *         description: An error occurred while updating the feature flag.
+ */
 router.put('/:id', flagsController.updateFlag)
 
 /**
