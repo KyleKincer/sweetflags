@@ -46,7 +46,7 @@ class FeatureFlagService {
             // If not, query the database
             const featureFlagDoc = await
             FeatureFlag.findById(id)
-                .populate('environments.environment', 'app')
+                .populate('environments.environment')
                 .populate('environments.allowedUsers')
                 .populate('environments.disallowedUsers')
                 .populate('app')
@@ -76,7 +76,7 @@ class FeatureFlagService {
         } else {
             const featureFlagDoc = await
             FeatureFlag.findOne({ name: name })
-                .populate('environments.environment', 'app')
+                .populate('environments.environment')
                 .populate('environments.allowedUsers')
                 .populate('environments.disallowedUsers')
                 .populate('app')
@@ -181,7 +181,7 @@ class FeatureFlagService {
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${flagName}' not found`);
         }
-        RedisCache.setCacheForFeatureFlag(featureFlag);
+        RedisCache.setCacheForFeatureFlag(featureFlagDoc.toObject());
         return await this.isEnabled(featureFlagDoc, userId, environmentName);
     }
 
@@ -213,8 +213,8 @@ class FeatureFlagService {
             throw new EnvironmentNotFoundError(`Environment '${environmentName}' not found`);
         }
 
-        let featureFlagDoc = await RedisCache.getFeatureFlag({id: id, name: flagName})
-        if (!featureFlag && id) {
+        let featureFlagDoc = await RedisCache.getFeatureFlag({id: id, name: name})
+        if (!featureFlagDoc && id) {
             featureFlagDoc = await FeatureFlag.findOne({ app: app._id, _id: id }).populate('environments.environment', 'app').exec();
         } else if (name) {
             featureFlagDoc = await FeatureFlag.findOne({ app: app._id, name: name }).populate('environments.environment', 'app').exec();
@@ -225,11 +225,11 @@ class FeatureFlagService {
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id || name}' not found`);
         }
-
+        
         const environments = featureFlagDoc.environments;
-        const environmentIndex = environments.findIndex(e => e.environment.toString() === environment._id.toString());
+        const environmentIndex = environments.findIndex(e => e.environment._id.toString() === environment.id.toString());
         if (environmentIndex === -1) {
-            throw new FlagNotFoundError(`Flag ${id || name} does not exist for environment ${environment._id}`);
+            throw new FlagNotFoundError(`Flag ${id || name} does not exist for environment ${environment.id}`);
         }
         
         environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
@@ -244,8 +244,8 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
-            // invalidate cache
-            RedisCache.deleteCacheForFeatureFlag(featureFlag);
+        // invalidate cache
+        RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
     }
 

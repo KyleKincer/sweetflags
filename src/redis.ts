@@ -1,8 +1,7 @@
-// redis.ts\
 import Redis from 'ioredis';
 import config from './config';
-import { IFeatureFlag } from './models/FeatureFlagModel';
-import { IApp } from './models/AppModel';
+import { IFeatureFlag } from './interfaces/IFeatureFlag';
+import { IApp } from './interfaces/IApp';
 
 
 class RedisCache {
@@ -104,8 +103,8 @@ class RedisCache {
         );
         // Delete the cache for featureFlagsByApp
         const appName = 
-        this.delAsync(`featureFlagsByApp:${featureFlag.app.name}`).catch((error) =>
-            console.error(`Error deleting cache for key 'featureFlagsByApp:${featureFlag.app.name}': ${error}`)
+        this.delAsync(`featureFlagsByApp:${(featureFlag.app as IApp).name}`).catch((error) =>
+            console.error(`Error deleting cache for key 'featureFlagsByApp:${(featureFlag.app as IApp).name}': ${error}`)
         );
     }
 
@@ -184,7 +183,7 @@ class RedisCache {
 
     private appKeys = (app: IApp): { idKey: string, nameKey: string } => {
         return {
-            idKey: this.appKeyForId(app._id),
+            idKey: this.appKeyForId(app.id),
             nameKey: this.appKeyForName(app.name),
         };
     }

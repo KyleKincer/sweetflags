@@ -1,7 +1,5 @@
 import { Schema, Model, model } from 'mongoose';
 import { IFeatureFlag } from '../interfaces/IFeatureFlag';
-import { IEnvironment } from './EnvironmentModel';
-import { IApp } from './AppModel';
 
 const evaluationStrategyEnum = {
   values: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
