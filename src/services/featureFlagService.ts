@@ -37,7 +37,7 @@ class FeatureFlagService {
             throw new Error('Invalid flags');
         }
         // Cache the result
-        RedisCache.setCacheForFeatureFlags(featureFlags);
+        RedisCache.setCacheForAllFeatureFlags(featureFlags);
         return featureFlags;
     }
 
@@ -378,6 +378,7 @@ class FeatureFlagService {
         }
 
         // Update the cache
+        RedisCache.deleteCacheForFeatureFlag(featureFlag);
         RedisCache.setCacheForFeatureFlag(featureFlag);
         return featureFlag;
     }

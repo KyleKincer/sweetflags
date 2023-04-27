@@ -8,6 +8,11 @@ import { Document } from 'mongoose';
 
 class AppsService {
     async getAllApps(isActive: boolean | undefined): Promise<Array<IApp>> {
+        const cachedApps = await RedisCache.getAllApps();
+        if (cachedApps) {
+            return cachedApps;
+        }
+
         let appDocs: Array<Document & IApp> = [];
         if (isActive === undefined) {
             appDocs = await App.find().exec();
@@ -31,6 +36,11 @@ class AppsService {
     }
 
     async getAppById(id: string): Promise<IApp> {
+        const cachedApp = await RedisCache.getAppById(id);
+        if (cachedApp) {
+            return cachedApp;
+        }
+
         const appDoc = await App.findById(id).exec();
         if (!appDoc) {
             throw new AppNotFoundError(`App with id ${id} not found`);
@@ -41,10 +51,16 @@ class AppsService {
             throw new Error('Invalid app data');
         }
 
+        RedisCache.setCacheForApp(app)
         return app;
     }
 
     async getAppByName(name: string): Promise<IApp> {
+        const cachedApp = await RedisCache.getAppByName(name);
+        if (cachedApp) {
+            return cachedApp;
+        }
+
         const appDoc = await App.find({ name: name }).exec();
         if (!appDoc) {
             throw new AppNotFoundError(`App with name ${name} not found`);
@@ -55,6 +71,7 @@ class AppsService {
             throw new Error('Invalid app data');
         }
 
+        RedisCache.setCacheForApp(app)
         return app;
     }
 
@@ -92,6 +109,7 @@ class AppsService {
             throw new Error('Invalid app data');
         }
 
+        RedisCache.setCacheForApp(app)
         return app;
     }
 }

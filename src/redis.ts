@@ -140,6 +140,30 @@ class RedisCache {
 
     // Apps
 
+    public getAllApps = async () => {
+        const cachedData = await this.getAsync("allApps");
+        if (cachedData)
+            return JSON.parse(cachedData);
+        else
+            return null;
+    }
+
+    public getAppById = async (appId: string) => {
+        const cachedData = await this.getAsync(`app:id:${appId}`);
+        if (cachedData)
+            return JSON.parse(cachedData);
+        else
+            return null;
+    }
+
+    public getAppByName = async (appName: string) => {
+        const cachedData = await this.getAsync(`app:name:${appName}`);
+        if (cachedData)
+            return JSON.parse(cachedData);
+        else
+            return null;
+    }
+
     public setCacheForAllApps = async (apps : Array<IApp>) => {
         const serializedApps = JSON.stringify(apps);
         this.setAsync("allApps", serializedApps).catch((error) => 
@@ -162,6 +186,19 @@ class RedisCache {
         this.setAsync(nameKey, serializedApp).catch((error) => 
             console.error(`Error setting cache for key '${nameKey}': ${error}`)
         )
+    }
+
+    public deleteCacheForApp = async (app: IApp) => {
+        const { idKey, nameKey } = this.appKeys(app);
+        this.delAsync(idKey).catch((error) =>
+            console.error(`Error deleting cache for key '${idKey}': ${error}`)
+        );
+        this.delAsync(nameKey).catch((error) =>
+            console.error(`Error deleting cache for key '${nameKey}': ${error}`)
+        );
+        this.delAsync('allApps').catch((error) =>
+            console.error(`Error deleting cache for key 'allApps': ${error}`)
+        );
     }
 
     public deleteKeysByPrefix = async (prefix: string): Promise<void> => {
