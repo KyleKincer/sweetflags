@@ -132,6 +132,10 @@ class RedisCache {
         this.delAsync(`featureFlagsByAppId:${(featureFlag.app as IApp).id}`).catch((error) =>
             console.error(`Error deleting cache for key 'featureFlagsByApp:${(featureFlag.app as IApp).id}': ${error}`)
         );
+        // Delete the cache for featureFlagsByUserId
+        this.deleteKeysByPrefix(`featureFlagsByUserId:${(featureFlag.app as IApp).id}:`).catch((error) =>
+            console.error(`Error deleting cache for key 'featureFlagsByUserId:${(featureFlag.app as IApp).id}:': ${error}`)
+        );
     }
 
     // Apps
@@ -160,6 +164,14 @@ class RedisCache {
         )
     }
 
+    public deleteKeysByPrefix = async (prefix: string): Promise<void> => {
+        const matchingKeys = await this.scanKeys(`${prefix}*`);
+        if (matchingKeys.length > 0) {
+            await this.client.del(...matchingKeys);
+        }
+    };
+    
+
     // Private methods
     
     private getAsync = async (key: string): Promise<string | null> => {
@@ -177,6 +189,20 @@ class RedisCache {
     private delAsync = async (key: string): Promise<number> => {
         return await this.client.del(key);
     };
+
+    private scanKeys = async (pattern: string): Promise<string[]> => {
+        let cursor = '0';
+        const matchingKeys: string[] = [];
+    
+        do {
+            const res = await this.client.scan(cursor, 'MATCH', pattern);
+            cursor = res[0];
+            matchingKeys.push(...res[1]);
+        } while (cursor !== '0');
+    
+        return matchingKeys;
+    };
+    
     
     private getFeatureFlagById = async (id: string) => {
         const cacheKey = this.featureFlagKeyForId(id);

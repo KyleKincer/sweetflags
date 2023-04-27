@@ -198,6 +198,7 @@ class FeatureFlagService {
     async getFlagStatesForUserId(appId: string, userId: string, environmentId: string): Promise<Array<{ id: string; name: string; isEnabled: boolean }>> {
         const cachedData = await RedisCache.getFeatureFlagsByUserId(appId, userId)
         if (cachedData) {
+            console.log('Cache hit');
             return this.areEnabled(cachedData, userId, environmentId)
         }
 
@@ -397,7 +398,8 @@ class FeatureFlagService {
                 // Allowed users take precedence over disallowed users
                 return (
                     flagData.isActive &&
-                    (flagData.allowedUsers.some(allowedUser => allowedUser.equals(userId)) || !flagData.disallowedUsers.some(disallowedUser => disallowedUser.equals(userId)))
+                    (flagData.allowedUsers.some(allowedUser => new ObjectId(allowedUser).equals(userId)) ||
+                        !flagData.disallowedUsers.some(disallowedUser => new ObjectId(disallowedUser).equals(userId)))
                 );
 
             // Percentage is deterministic based on the user id
