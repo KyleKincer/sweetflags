@@ -1,6 +1,5 @@
 import { Schema, Model, model } from 'mongoose';
 import { IFeatureFlag } from '../interfaces/IFeatureFlag';
-import { createAuditLog } from '../middleware/auditLogMiddleware';
 
 const evaluationStrategyEnum = {
   values: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
@@ -40,38 +39,6 @@ const featureFlagSchema: Schema = new Schema({
   }
 }
 );
-
-featureFlagSchema.post('findOneAndUpdate', async function (updatedDoc, next) {
-  try {
-    const originalDoc = await this.model.findOne(this.getFilter()).exec();
-    await createAuditLog(originalDoc, updatedDoc, 'update', updatedDoc.get('updatedBy'));
-    next();
-  } catch (err) {
-    console.error(err)
-    next();
-  }
-});
-
-featureFlagSchema.pre('save', async function (next) {
-  if (this.isModified()) {
-    try {
-      const model = this.constructor as Model<IFeatureFlag>;
-      const originalDoc = await model.findById(this._id).exec();
-      if (originalDoc) {
-        await createAuditLog(originalDoc, this, 'update', this.get('updatedBy'));
-      } else {
-        await createAuditLog(null, this, 'create', this.get('createdBy'));
-      }
-      next();
-    } catch (err) {
-      console.error(err)
-      next();
-    }
-  } else {
-    next();
-  }
-});
-
 
 const FeatureFlag: Model<IFeatureFlag> = model<IFeatureFlag>('FeatureFlag', featureFlagSchema);
 
