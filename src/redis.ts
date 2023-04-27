@@ -43,8 +43,8 @@ class RedisCache {
             return null;
     };
 
-    public getFeatureFlagsByUserId = async (appName: string, userId: string) => {
-        const cachedData = await this.getAsync(`featureFlagsByUserId:${appName}:${userId}`);
+    public getFeatureFlagsByUserId = async (appId: string, userId: string) => {
+        const cachedData = await this.getAsync(`featureFlagsByUserId:${appId}:${userId}`);
         if (cachedData) {
             return JSON.parse(cachedData);
         } else {
@@ -103,10 +103,10 @@ class RedisCache {
         this.setCacheForFeatureFlags(featureFlags);
     };
 
-    public setCacheForFeatureFlagsByUserId = async (featureFlags: Array<IFeatureFlag>, appName: string, userId: string) => {
+    public setCacheForFeatureFlagsByUserId = async (featureFlags: Array<IFeatureFlag>, appId: string, userId: string) => {
         const serializedFeatureFlags = JSON.stringify(featureFlags);
-        this.setAsync(`featureFlagsByUserId:${appName}:${userId}`, serializedFeatureFlags).catch((error) => 
-            console.error(`Error setting cache for key 'featureFlagsByUserId:${appName}:${userId}': ${error}`)
+        this.setAsync(`featureFlagsByUserId:${appId}:${userId}`, serializedFeatureFlags).catch((error) => 
+            console.error(`Error setting cache for key 'featureFlagsByUserId:${appId}:${userId}': ${error}`)
         );
         this.setCacheForFeatureFlags(featureFlags);
     }
