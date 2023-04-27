@@ -112,6 +112,9 @@ router.get('/:id', usersController.getUserById);
  */
 router.get('/app/:appId', usersController.getUsersByAppId);
 
+// get user by appid and externalid
+router.get('/app/:appId/:externalId', usersController.getUserByAppIdAndExternalId);
+
 /**
  * @swagger
  * paths:

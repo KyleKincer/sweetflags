@@ -43,6 +43,20 @@ async function getUsersByAppId(req: Request, res: Response): Promise<void> {
     }
 }
 
+async function getUserByAppIdAndExternalId(req: Request, res: Response): Promise<void> {
+    try {
+        const user = await UserService.getUserByAppIdAndExternalId(req.params.appId, req.params.externalId);
+        res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+        if (err instanceof Error) {
+            res.status(500).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' });
+        }
+    }
+}
+
 async function createUser(req: Request, res: Response): Promise<void> {
     try {
         const user = await UserService.createUser(req.body);
@@ -89,6 +103,7 @@ export {
     getAllUsers,
     getUserById,
     getUsersByAppId,
+    getUserByAppIdAndExternalId,
     createUser,
     updateUser,
     deleteUser
