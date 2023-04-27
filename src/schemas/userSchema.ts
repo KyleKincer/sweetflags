@@ -38,6 +38,7 @@ const User = {
         type: 'object',
         additionalProperties: true,
         description: 'Additional metadata about the user',
+        nullable: true,
       },
       isActive: { type: 'boolean', description: 'Whether the user is active' },
       createdBy: { type: 'string', description: 'The ID of the user who created this user' },

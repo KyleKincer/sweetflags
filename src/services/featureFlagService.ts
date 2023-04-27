@@ -1,15 +1,22 @@
 import FeatureFlag from '../models/FeatureFlagModel';
-import { IFeatureFlag } from '../interfaces/IFeatureFlag';
+import { IFeatureFlag, IFeatureFlagInputDTO, IFeatureFlagUpdateDTO, IFeatureFlagToggleDTO } from '../interfaces/IFeatureFlag';
 import { isIFeatureFlag, isIFeatureFlagArray } from '../type-guards/IFeatureFlag';
 import Environment from '../models/EnvironmentModel';
 import App from '../models/AppModel';
 import { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 import md5 from 'md5';
 import { Document } from 'mongoose';
+import { ObjectId } from 'mongodb';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
-        let featureFlagDocs = await FeatureFlag.find().populate('environments.environment').populate('app').exec();
+        let featureFlagDocs = await
+            FeatureFlag.find()
+                .populate('environments.environment')
+                .populate('app')
+                .populate('environments.allowedUsers')
+                .populate('environments.disallowedUsers')
+                .exec();
         if (!featureFlagDocs) {
             throw new FlagNotFoundError('No flags found');
         }
@@ -26,12 +33,19 @@ class FeatureFlagService {
     }
 
     async getFlagById(id: string): Promise<IFeatureFlag> {
-        const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment').populate('app').exec();
+        const featureFlagDoc = await
+            FeatureFlag.findById(id)
+                .populate('environments.environment')
+                .populate('environments.allowedUsers')
+                .populate('environments.disallowedUsers')
+                .populate('app')
+                .exec();
+
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
 
-        let featureFlag = featureFlagDoc.toObject();
+        const featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
@@ -39,7 +53,13 @@ class FeatureFlagService {
     }
 
     async getFlagByName(name: string): Promise<IFeatureFlag> {
-        const featureFlagDoc = await FeatureFlag.findOne({ name: name }).populate('environments.environment').populate('app').exec();
+        const featureFlagDoc = await
+            FeatureFlag.findOne({ name: name })
+                .populate('environments.environment')
+                .populate('environments.allowedUsers')
+                .populate('environments.disallowedUsers')
+                .populate('app')
+                .exec();
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${name}' not found`);
         }
@@ -56,7 +76,13 @@ class FeatureFlagService {
         if (!app) {
             throw new AppNotFoundError(`App '${appId}' not found`);
         }
-        let featureFlagDocs = await FeatureFlag.find({ app: app._id }).populate('environments.environment').populate('app').exec();
+        let featureFlagDocs = await
+            FeatureFlag.find({ app: app._id })
+                .populate('environments.environment')
+                .populate('environments.allowedUsers')
+                .populate('environments.disallowedUsers')
+                .populate('app')
+                .exec();
         if (!featureFlagDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
         }
@@ -78,7 +104,13 @@ class FeatureFlagService {
         if (!app) {
             throw new AppNotFoundError(`App '${appName}' not found`);
         }
-        let featureFlagDocs = await FeatureFlag.find({ app: app._id }).populate('environments.environment').populate('app').exec();
+        let featureFlagDocs = await
+            FeatureFlag.find({ app: app._id })
+                .populate('environments.environment')
+                .populate('environments.allowedUsers')
+                .populate('environments.disallowedUsers')
+                .populate('app')
+                .exec();
         if (!featureFlagDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appName}'`);
         }
@@ -127,10 +159,11 @@ class FeatureFlagService {
         return this.areEnabled(featureFlags, userId, environmentName);
     }
 
-    async toggleFlag(flagName: string, id: string, appName: string, environmentName: string): Promise<IFeatureFlag> {
-        const app = await App.findOne({ name: appName }).exec();
+    async toggleFlag(data: IFeatureFlagToggleDTO): Promise<IFeatureFlag> {
+        const { id, name, appId, environmentName, updatedBy } = data;
+        const app = await App.findById(appId).exec();
         if (!app) {
-            throw new AppNotFoundError(`App '${appName}' not found`);
+            throw new AppNotFoundError(`App '${appId}' not found`);
         }
 
         const environment = await Environment.findOne({ app: app._id, name: environmentName }).exec();
@@ -141,41 +174,30 @@ class FeatureFlagService {
         let featureFlagDoc: IFeatureFlag | null = new FeatureFlag();
         if (id) {
             featureFlagDoc = await FeatureFlag.findOne({ app: app._id, _id: id }).exec();
-        } else if (flagName) {
-            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, name: flagName }).exec();
+        } else if (name) {
+            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, name: name }).exec();
         } else {
             throw new FlagNotFoundError(`Either the id or name property is required`);
         }
 
         if (!featureFlagDoc) {
-            throw new FlagNotFoundError(`Flag '${id || flagName}' not found`);
+            throw new FlagNotFoundError(`Flag '${id || name}' not found`);
         }
 
         const environments = featureFlagDoc.environments;
         const environmentIndex = environments.findIndex(e => e.environment.toString() === environment._id.toString());
         if (environmentIndex === -1) {
-            throw new FlagNotFoundError(`Flag ${id || flagName} does not exist for environment ${environment._id}`);
-        } else {
-            environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
-            featureFlagDoc.environments = environments;
-            await featureFlagDoc.save();
-            featureFlagDoc = await featureFlagDoc.populate('app');
-            featureFlagDoc = await featureFlagDoc.populate('environments.environment');
-            const featureFlag = featureFlagDoc.toObject();
-            if (!isIFeatureFlag(featureFlag)) {
-                throw new Error('Invalid flag');
-            }
-            return featureFlag;
+            throw new FlagNotFoundError(`Flag ${id || name} does not exist for environment ${environment._id}`);
         }
-    }
-
-    async updateFlag(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
-        const featureFlagDoc = await FeatureFlag.findByIdAndUpdate(id, { name: name, description: description, app: app, updatedBy: updatedBy }, { new: true }).exec();
-        if (!featureFlagDoc) {
-            throw new FlagNotFoundError(`Flag '${id}' not found`);
-        }
+        
+        environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
+        featureFlagDoc.environments = environments;
+        featureFlagDoc.updatedBy = updatedBy;
+        await featureFlagDoc.save();
         await featureFlagDoc.populate('app');
         await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
         const featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
@@ -183,29 +205,81 @@ class FeatureFlagService {
         return featureFlag;
     }
 
-    async createFlag(name: string, description: string, appName: string, isActive: boolean, evaluationStrategy: string, evaluationPercentage: number, allowedUsers: Array<string>, disallowedUsers: Array<string>, createdBy: string): Promise<IFeatureFlag> {
-        const app = await App.findOne({ name: appName }).exec();
+    async updateFlagMetadata(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
+        const featureFlagDoc = await FeatureFlag.findByIdAndUpdate(id, { name: name, description: description, app: app, updatedBy: updatedBy }, { new: true }).exec();
+        if (!featureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
+
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        return featureFlag;
+    }
+
+    async updateFlag(id: String, data: IFeatureFlagUpdateDTO): Promise<IFeatureFlag> {
+        const { environmentId, isActive, updatedBy, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+        const featureFlagDoc = await FeatureFlag.findById(id).exec();
+        if (!featureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+
+        const environments = featureFlagDoc.environments;
+        const environmentIndex = environments.findIndex(e => e.environment.toString() === environmentId);
+        if (environmentIndex === -1) {
+            throw new EnvironmentNotFoundError(`Environment ${environmentId} not found`);
+        }
+
+        environments[environmentIndex].isActive = typeof isActive === 'undefined' ? environments[environmentIndex].isActive : isActive;
+        environments[environmentIndex].evaluationStrategy = typeof evaluationStrategy === 'undefined' ? environments[environmentIndex].evaluationStrategy : evaluationStrategy;
+        environments[environmentIndex].evaluationPercentage = typeof evaluationPercentage === 'undefined' ? environments[environmentIndex].evaluationPercentage : evaluationPercentage;
+        environments[environmentIndex].allowedUsers = typeof allowedUsers === 'undefined' ? environments[environmentIndex].allowedUsers : allowedUsers;
+        environments[environmentIndex].disallowedUsers = typeof disallowedUsers === 'undefined' ? environments[environmentIndex].disallowedUsers : disallowedUsers;
+        environments[environmentIndex].updatedBy = updatedBy;
+
+        featureFlagDoc.environments = environments;
+        await featureFlagDoc.save();
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        return featureFlag;
+    }
+
+    async createFlag(data: IFeatureFlagInputDTO): Promise<IFeatureFlag> {
+        const { name, appId, isActive, createdBy, description, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+
+        const app = await App.findById(appId).exec();
         if (!app) {
-            throw new AppNotFoundError(`App '${appName}' not found`);
+            throw new AppNotFoundError(`App with ID '${appId}' not found`);
         }
 
         const environments = await Environment.find({ app: app._id }).exec();
         if (!environments) {
-            throw new EnvironmentNotFoundError(`No environments found for app '${appName}'`);
+            throw new EnvironmentNotFoundError(`No environments found for app with ID '${appId}'`);
         }
 
         const environmentsArray = environments.map((env) => ({
             environment: env._id,
             isActive: isActive,
-            evaluationStrategy: evaluationStrategy,
-            evaluationPercentage: evaluationPercentage,
-            allowedUsers: allowedUsers,
-            disallowedUsers: disallowedUsers
+            evaluationStrategy: evaluationStrategy || 'BOOLEAN',
+            evaluationPercentage: evaluationPercentage || 0,
+            allowedUsers: allowedUsers || [],
+            disallowedUsers: disallowedUsers || []
         }));
 
         const featureFlagDoc = new FeatureFlag({
             name: name,
-            description: description,
+            description: description || '',
             app: app._id,
             environments: environmentsArray,
             createdBy: createdBy
@@ -214,6 +288,8 @@ class FeatureFlagService {
         await featureFlagDoc.save();
         await featureFlagDoc.populate('app');
         await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
         const featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
@@ -221,6 +297,23 @@ class FeatureFlagService {
 
         return featureFlag;
     }
+
+    async deleteFlag(id: string): Promise<IFeatureFlag> {
+        const featureFlagDoc = await FeatureFlag.findByIdAndDelete(id).exec();
+        if (!featureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        return featureFlag;
+    }
+
 
     async isEnabled(featureFlag: IFeatureFlag, user: string, environment: string): Promise<boolean> {
         let environmentDoc = await Environment.findOne({ name: environment, app: featureFlag.app }).exec();
@@ -243,6 +336,8 @@ class FeatureFlagService {
                 return flagData.isActive;
 
             case 'USER':
+                const userId = new ObjectId(user);
+
                 // If there is nothing in either of these arrays, then we can't evaluate the flag
                 if (!flagData.allowedUsers || !flagData.disallowedUsers) {
                     return false;
@@ -250,7 +345,7 @@ class FeatureFlagService {
                 // Allowed users take precedence over disallowed users
                 return (
                     flagData.isActive &&
-                    (flagData.allowedUsers.includes(user) || !flagData.disallowedUsers.includes(user))
+                    (flagData.allowedUsers.some(allowedUser => allowedUser.equals(userId)) || !flagData.disallowedUsers.some(disallowedUser => disallowedUser.equals(userId)))
                 );
 
             // Percentage is deterministic based on the user id
@@ -272,6 +367,7 @@ class FeatureFlagService {
                 return false;
         }
     }
+
 
     async areEnabled(featureFlags: Array<IFeatureFlag>, user: string, environment: string): Promise<Array<{ name: string; isEnabled: boolean }>> {
         const promises = featureFlags.map(async (flag) => {
