@@ -230,7 +230,7 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
 
 /**
  * @swagger
- * /api/flags/state:
+ * /api/flags/state/id:
  *   get:
  *     summary: Returns the feature flag state
  *     tags: [Flags]
@@ -291,7 +291,7 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
  *               required:
  *                 - message
  */
-router.get('/state', flagsController.getFlagState)
+router.get('/state/id', flagsController.getFlagState)
 
 /**
  * @swagger

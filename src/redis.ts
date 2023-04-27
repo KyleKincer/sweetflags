@@ -35,6 +35,14 @@ class RedisCache {
             return null;
     };
 
+    public getFeatureFlagsByAppId = async (appId: string) => {
+        const cachedData = await this.getAsync(`featureFlagsByAppId:${appId}`);
+        if (cachedData)
+            return JSON.parse(cachedData);
+        else
+            return null;
+    };
+
     public getFeatureFlagsByUserId = async (appName: string, userId: string) => {
         const cachedData = await this.getAsync(`featureFlagsByUserId:${appName}:${userId}`);
         if (cachedData) {
@@ -43,6 +51,14 @@ class RedisCache {
             return null;
         }
     }
+
+    public getAllFeatureFlags = async () => {
+        const cachedData = await this.getAsync('allFeatureFlags');
+        if (cachedData)
+            return JSON.parse(cachedData);
+        else
+            return null;
+    };
 
     public setCacheForFeatureFlag = async (featureFlag: IFeatureFlag) => {
         const { idKey, nameKey } = this.featureFlagKeys(featureFlag);
@@ -79,6 +95,14 @@ class RedisCache {
         this.setCacheForFeatureFlags(featureFlags);
     };
 
+    public setCacheForFeatureFlagsByAppId = async (featureFlags: Array<IFeatureFlag>, appId: string) => {
+        const serializedFeatureFlags = JSON.stringify(featureFlags);
+        this.setAsync(`featureFlagsByAppId:${appId}`, serializedFeatureFlags).catch((error) =>
+            console.error(`Error setting cache for key 'featureFlagsByAppId:${appId}': ${error}`)
+        );
+        this.setCacheForFeatureFlags(featureFlags);
+    };
+
     public setCacheForFeatureFlagsByUserId = async (featureFlags: Array<IFeatureFlag>, appName: string, userId: string) => {
         const serializedFeatureFlags = JSON.stringify(featureFlags);
         this.setAsync(`featureFlagsByUserId:${appName}:${userId}`, serializedFeatureFlags).catch((error) => 
@@ -101,10 +125,12 @@ class RedisCache {
         this.delAsync('allFeatureFlags').catch((error) =>
             console.error(`Error deleting cache for key 'allFeatureFlags': ${error}`)
         );
-        // Delete the cache for featureFlagsByApp
-        const appName = 
-        this.delAsync(`featureFlagsByApp:${(featureFlag.app as IApp).name}`).catch((error) =>
+        // Delete the cache for featureFlagsByAppName and featureFlagsByAppId
+        this.delAsync(`featureFlagsByAppName:${(featureFlag.app as IApp).name}`).catch((error) =>
             console.error(`Error deleting cache for key 'featureFlagsByApp:${(featureFlag.app as IApp).name}': ${error}`)
+        );
+        this.delAsync(`featureFlagsByAppId:${(featureFlag.app as IApp).id}`).catch((error) =>
+            console.error(`Error deleting cache for key 'featureFlagsByApp:${(featureFlag.app as IApp).id}': ${error}`)
         );
     }
 
@@ -176,7 +202,7 @@ class RedisCache {
     
     private featureFlagKeys = (featureFlag: IFeatureFlag): { idKey: string; nameKey: string } => {
         return {
-            idKey: this.featureFlagKeyForId(featureFlag._id),
+            idKey: this.featureFlagKeyForId(featureFlag.id),
             nameKey: this.featureFlagKeyForName(featureFlag.name),
         };
     };

@@ -11,6 +11,12 @@ import { ObjectId } from 'mongodb';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
+        // Try to get the flags from the cache
+        const cachedData = await RedisCache.getAllFeatureFlags();
+        if (cachedData) {
+            return cachedData;
+        }
+
         let featureFlagDocs = await
             FeatureFlag.find()
                 .populate('environments.environment')
@@ -37,65 +43,67 @@ class FeatureFlagService {
 
     async getFlagById(id: string): Promise<IFeatureFlag> {
         // Try to get the flag from the cache
-        const cachedData = await RedisCache.getFeatureFlag({id: id});
+        const cachedData = await RedisCache.getFeatureFlag({ id: id });
         if (cachedData) {
-            // If it's in the cache return it
             console.log('Cache hit');
             return cachedData;
-        } else {
-            // If not, query the database
-            const featureFlagDoc = await
+        }
+
+        const featureFlagDoc = await
             FeatureFlag.findById(id)
                 .populate('environments.environment')
                 .populate('environments.allowedUsers')
                 .populate('environments.disallowedUsers')
                 .populate('app')
                 .exec();
-    
+
         if (!featureFlagDoc) {
-                throw new FlagNotFoundError(`Flag '${id}' not found`);
-            }
-            
-            const featureFlag = featureFlagDoc.toObject();
-            if (!isIFeatureFlag(featureFlag)) {
-                throw new Error('Invalid flag');
-            }
-            // Cache the result
-            RedisCache.setCacheForFeatureFlag(featureFlag);
-        return featureFlag;
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
+
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        // Cache the result
+        RedisCache.setCacheForFeatureFlag(featureFlag);
+        return featureFlag;
     }
 
     async getFlagByName(name: string): Promise<IFeatureFlag> {
         // Try to get the flag from the cache
-        const cachedData = await RedisCache.getFeatureFlag({name: name})
+        const cachedData = await RedisCache.getFeatureFlag({ name: name })
         if (cachedData) {
-            // If it's in the cache return it
-            console.log('Cache hit');
             return cachedData;
         } else {
             const featureFlagDoc = await
-            FeatureFlag.findOne({ name: name })
-                .populate('environments.environment')
-                .populate('environments.allowedUsers')
-                .populate('environments.disallowedUsers')
-                .populate('app')
-                .exec();
+                FeatureFlag.findOne({ name: name })
+                    .populate('environments.environment')
+                    .populate('environments.allowedUsers')
+                    .populate('environments.disallowedUsers')
+                    .populate('app')
+                    .exec();
             if (!featureFlagDoc) {
-                  throw new FlagNotFoundError(`Flag '${name}' not found`);
+                throw new FlagNotFoundError(`Flag '${name}' not found`);
             }
-            
+
             const featureFlag = featureFlagDoc.toObject();
             if (!isIFeatureFlag(featureFlag)) {
                 throw new Error('Invalid flag');
             }
             // Cache the result
             RedisCache.setCacheForFeatureFlag(featureFlag);
-        return featureFlag;
-      }
+            return featureFlag;
+        }
     }
 
     async getFlagsByAppId(appId: string): Promise<Array<IFeatureFlag>> {
+        // Try to get the flags from the cache
+        const cachedData = await RedisCache.getFeatureFlagsByAppId(appId);
+        if (cachedData) {
+            console.log('Cache hit');
+            return cachedData;
+        }
         const app = await App.findById(appId);
         if (!app) {
             throw new AppNotFoundError(`App '${appId}' not found`);
@@ -119,6 +127,8 @@ class FeatureFlagService {
         if (!isIFeatureFlagArray(featureFlags)) {
             throw new Error('Invalid flags');
         }
+        // Cache the result
+        RedisCache.setCacheForFeatureFlagsByAppId(featureFlags, appId);
 
         return featureFlags;
     }
@@ -159,7 +169,11 @@ class FeatureFlagService {
     }
 
     async getFlagState(flagName: string | undefined, flagId: string | undefined, appName: string, userId: string, environmentName: string): Promise<boolean> {
-        const cachedData = await RedisCache.getFeatureFlag({name: flagName});
+        if (!flagName && !flagId) {
+            throw new Error('Either the id or name property is required');
+        }
+        // Try to get the flag from the cache
+        const cachedData = await RedisCache.getFeatureFlag({ name: flagName, id: flagId });
         if (cachedData) {
             console.log('Cache hit');
             return await this.isEnabled(cachedData, userId, environmentName);
@@ -213,7 +227,7 @@ class FeatureFlagService {
             throw new EnvironmentNotFoundError(`Environment '${environmentName}' not found`);
         }
 
-        let featureFlagDoc = await RedisCache.getFeatureFlag({id: id, name: name})
+        let featureFlagDoc = await RedisCache.getFeatureFlag({ id: id, name: name })
         if (!featureFlagDoc && id) {
             featureFlagDoc = await FeatureFlag.findOne({ app: app._id, _id: id }).populate('environments.environment', 'app').exec();
         } else if (name) {
@@ -225,13 +239,13 @@ class FeatureFlagService {
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id || name}' not found`);
         }
-        
+
         const environments = featureFlagDoc.environments;
         const environmentIndex = environments.findIndex(e => e.environment._id.toString() === environment.id.toString());
         if (environmentIndex === -1) {
             throw new FlagNotFoundError(`Flag ${id || name} does not exist for environment ${environment.id}`);
         }
-        
+
         environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
         featureFlagDoc.environments = environments;
         featureFlagDoc.updatedBy = updatedBy;
@@ -263,8 +277,8 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
-            // invalidate cache
-            RedisCache.deleteCacheForFeatureFlag(featureFlag);
+        // invalidate cache
+        RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
     }
 
@@ -409,7 +423,7 @@ class FeatureFlagService {
                 // multiply by 100 to get a percentage value
                 const userPercentage = normalized * 100;
                 return userPercentage <= percentage;
-            
+
             // Probabalistic is random
             case 'PROBABALISTIC':
                 const probabalisticPercentage = flagData.evaluationPercentage || 0;
