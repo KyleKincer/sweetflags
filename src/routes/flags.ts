@@ -332,6 +332,10 @@ router.get('/state/id', flagsController.getFlagState)
  *               items:
  *                 type: object
  *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: The ID of the feature flag
+ *                     example: 6442ea44ce25a8db1e791402
  *                   name:
  *                     type: string
  *                     description: The name of the feature flag

@@ -182,7 +182,8 @@ class RedisCache {
         if (mode && duration) {
             return await this.client.set(key, value, mode, duration);
         } else {
-            return await this.client.set(key, value);
+            // Default to 1 hour
+            return await this.client.set(key, value, 'EX', 60 * 60);
         }
     };
 
