@@ -264,11 +264,33 @@ class FeatureFlagService {
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
+        
+        // if the app has changed, update the environments as well
+        if (app) {
+            const environments = await Environment.find({ app: app }).exec();
+            if (!environments) {
+                throw new EnvironmentNotFoundError(`No environments found for app with ID '${app}'`);
+            }
+            
+            const environmentsArray = environments.map((env) => ({
+                environment: env,
+                isActive: false,
+                evaluationStrategy: 'BOOLEAN',
+                evaluationPercentage: 0,
+                allowedUsers: [],
+                disallowedUsers: [],
+                updatedBy: updatedBy,
+            }));            
+            
+            featureFlagDoc.environments = environmentsArray;
+            await featureFlagDoc.save();
+        }
+        
         await featureFlagDoc.populate('app');
         await featureFlagDoc.populate('environments.environment');
         await featureFlagDoc.populate('environments.allowedUsers');
         await featureFlagDoc.populate('environments.disallowedUsers');
-
+        
         const featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
