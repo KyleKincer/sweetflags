@@ -34,6 +34,22 @@ async function getEnvironmentById(req: Request, res: Response): Promise<void> {
     }
 }
 
+async function getEnvironmentsByAppId(req: Request, res: Response): Promise<void> {
+    try {
+        const environments = await EnvironmentsService.getEnvironmentsByAppId(req.params.appId);
+        res.status(200).json(environments);
+    } catch (err: unknown) {
+        console.error(err);
+        if (err instanceof AppNotFoundError || err instanceof EnvironmentNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message });
+        } else if (err instanceof Error) {
+            res.status(500).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' });
+        }
+    }
+}
+
 async function getEnvironmentsByAppName(req: Request, res: Response): Promise<void> {
     try {
         const environments = await EnvironmentsService.getEnvironmentsByAppName(req.params.appName);
@@ -51,9 +67,9 @@ async function getEnvironmentsByAppName(req: Request, res: Response): Promise<vo
 }
 
 async function createEnvironment(req: Request, res: Response): Promise<void> {
-    const { name, description, appName, isActive, createdBy } = req.body;
+    const { name, description, appId, isActive, createdBy } = req.body;
     try {
-        const environment = await EnvironmentsService.createEnvironment(name, description, appName, isActive, createdBy);
+        const environment = await EnvironmentsService.createEnvironment(name, description, appId, isActive, createdBy);
         res.status(201).json(environment);
     } catch (err: unknown) {
         console.error(err);
@@ -67,9 +83,27 @@ async function createEnvironment(req: Request, res: Response): Promise<void> {
     }
 }
 
+async function deleteEnvironment(req: Request, res: Response): Promise<void> {
+    try {
+        const deletedEnvironment = await EnvironmentsService.deleteEnvironment(req.params.id);
+        res.status(200).json(deletedEnvironment);
+    } catch (err: unknown) {
+        console.error(err);
+        if (err instanceof EnvironmentNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message });
+        } else if (err instanceof Error) {
+            res.status(500).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' });
+        }
+    }
+}
+
 export default {
     getAllEnvironments,
     getEnvironmentById,
+    getEnvironmentsByAppId,
     getEnvironmentsByAppName,
-    createEnvironment
+    createEnvironment,
+    deleteEnvironment,
 };

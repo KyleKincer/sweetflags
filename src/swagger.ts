@@ -1,7 +1,8 @@
 import swaggerJSDoc from 'swagger-jsdoc';
-import { FeatureFlag } from './schemas/featureFlagSchema';
+import { FeatureFlag, IFeatureFlagInputDTO } from './schemas/featureFlagSchema';
 import { App } from './schemas/appSchema';
 import { Environment } from './schemas/environmentSchema';
+import { User, UserInputDTO } from './schemas/userSchema';
 import path from 'path';
 
 const options: swaggerJSDoc.Options = {
@@ -21,8 +22,11 @@ const options: swaggerJSDoc.Options = {
     components: {
       schemas: {
         FeatureFlag,
+        IFeatureFlagInputDTO,
         App,
         Environment,
+        User,
+        UserInputDTO,
       },
     },
   },

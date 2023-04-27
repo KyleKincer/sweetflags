@@ -1,9 +1,11 @@
 import express from 'express';
+import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import flagRouter from './routes/flags';
 import appRouter from './routes/apps';
 import environmentRouter from './routes/environments';
+import userRouter from './routes/users';
 import config from './config';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
@@ -23,10 +25,12 @@ async function connectToDb() {
 
   // Set up Swagger UI
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+  app.use(cors());
   app.use(bodyParser.json());
   app.use('/api/flags', flagRouter);
   app.use('/api/apps', appRouter);
   app.use('/api/environments', environmentRouter);
+  app.use('/api/users', userRouter);
 
   app.listen(port, () => {
     console.log(`Server listening on port ${port}`);

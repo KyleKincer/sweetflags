@@ -43,7 +43,7 @@ router.get('/', environmentsController.getAllEnvironments);
 /**
  * @swagger
  * paths:
- *   /api/environments/id/{id}:
+ *   /api/environments/{id}:
  *     get:
  *       summary: Return environment data for a given id
  *       tags: [Environments]
@@ -73,22 +73,22 @@ router.get('/', environmentsController.getAllEnvironments);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/id/:id', environmentsController.getEnvironmentById);
+router.get('/:id', environmentsController.getEnvironmentById);
 
 /**
  * @swagger
  * paths:
- *   /api/environments/{appName}:
+ *   /api/environments/app/{appId}:
  *     get:
- *       summary: Return environment data for all environments for a given app name
+ *       summary: Return environment data for all environments for a given app id
  *       tags: [Environments]
  *       parameters:
  *         - in: path
- *           name: appName
+ *           name: appId
  *           schema:
  *             type: string
  *           required: true
- *           description: App name
+ *           description: App ID
  *       responses:
  *         200:
  *           description: An array of environment objects
@@ -98,7 +98,7 @@ router.get('/id/:id', environmentsController.getEnvironmentById);
  *                 type: array
  *                 items:
  *                   $ref: '#/components/schemas/Environment'
- *         400:
+ *         404:
  *           description: Bad request
  *           content:
  *             application/json:
@@ -121,7 +121,55 @@ router.get('/id/:id', environmentsController.getEnvironmentById);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/:appName', environmentsController.getEnvironmentsByAppName);
+router.get('/app/:appId', environmentsController.getEnvironmentsByAppId)
+
+/**
+ * @swagger
+ * paths:
+ *   /api/environments/app/name/{appName}:
+ *     get:
+ *       summary: Return environment data for all environments for a given app name
+ *       tags: [Environments]
+ *       parameters:
+ *         - in: path
+ *           name: appName
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: App name
+ *       responses:
+ *         200:
+ *           description: An array of environment objects
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Environment'
+ *         404:
+ *           description: Bad request
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: App 'AppName' not found
+ *         500:
+ *           description: An unexpected error occurred
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Internal server error
+ */
+router.get('/app/name/:appName', environmentsController.getEnvironmentsByAppName);
 
 /**
  * @swagger
@@ -145,10 +193,10 @@ router.get('/:appName', environmentsController.getEnvironmentsByAppName);
  *                   type: string
  *                   description: A description of the environment
  *                   example: Development environment
- *                 appName:
+ *                 appId:
  *                   type: string
- *                   description: The name of the app the environment is associated with
- *                   example: Symphony
+ *                   description: The ID of the app the environment is associated with
+ *                   example: 6442ea44ce25a8db1e791403
  *                 isActive:
  *                   type: boolean
  *                   description: Whether the environment is active
@@ -188,5 +236,41 @@ router.get('/:appName', environmentsController.getEnvironmentsByAppName);
  *                     example: Internal server error
  */
 router.post('/', environmentsController.createEnvironment);
+
+/**
+ * @swagger
+ * /api/environments/{id}:
+ *   delete:
+ *     summary: Delete an environment by ID
+ *     tags: [Environments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the environment to delete
+ *     responses:
+ *       200:
+ *         description: The environment was deleted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Environment'
+ *       404:
+ *         description: Resource not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message explaining the error
+ *                   example: Environment '{id}' not found
+ *       500:
+ *         description: An error occurred while deleting the environment.
+ */
+router.delete('/:id', environmentsController.deleteEnvironment);
 
 export default router;

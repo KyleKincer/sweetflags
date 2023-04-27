@@ -50,7 +50,7 @@ router.get('/', flagsController.getAllFlags);
 
 /**
  * @swagger
- * /api/flags/id/{id}:
+ * /api/flags/{id}:
  *   get:
  *     summary: Returns feature flag data for a given id
  *     tags: [Flags]
@@ -89,7 +89,7 @@ router.get('/', flagsController.getAllFlags);
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/id/:id', flagsController.getFlagById);
+router.get('/:id', flagsController.getFlagById);
 
 /**
  * @swagger
@@ -136,7 +136,54 @@ router.get('/name/:name', flagsController.getFlagByName)
 
 /**
  * @swagger
- * /api/flags/app/{appName}:
+ * /api/flags/app/{appId}:
+ *   get:
+ *     summary: Returns all feature flag data for a given app ID
+ *     tags: [Flags]
+ *     parameters:
+ *       - in: path
+ *         name: appId
+ *         description: The ID of the app to retrieve feature flags for
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: An array of feature flag objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/FeatureFlag'
+ *       404:
+ *         description: Invalid app ID provided or no flags found for the app
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message explaining the issue with the request
+ *               example:
+ *                 message: App '1234' not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message explaining the issue with the server
+ */
+router.get('/app/:appId', flagsController.getFlagsByAppId)
+
+/**
+ * @swagger
+ * /api/flags/app/name/{appName}:
  *   get:
  *     summary: Returns all feature flag data for a given app name
  *     tags: [Flags]
@@ -179,11 +226,11 @@ router.get('/name/:name', flagsController.getFlagByName)
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/app/:appName', flagsController.getFlagsByAppName)
+router.get('/app/name/:appName', flagsController.getFlagsByAppName)
 
 /**
  * @swagger
- * /api/flags/state/name:
+ * /api/flags/state:
  *   get:
  *     summary: Returns the feature flag state
  *     tags: [Flags]
@@ -198,18 +245,20 @@ router.get('/app/:appName', flagsController.getFlagsByAppName)
  *                 type: string
  *               flagName:
  *                 type: string
+ *               flagId:
+ *                 type: string
  *               userId:
  *                 type: string
  *               environmentName:
  *                 type: string
  *             required:
  *               - appName
- *               - flagName
  *               - userId
  *               - environmentName
+ *               - one of [flagName, flagId]
  *     responses:
  *       200:
- *         description: Feature flag state for the given app, environment name, user id, and flag name
+ *         description: Feature flag state for the given app, environment name, user id, and flag name or flag id
  *         content:
  *           application/json:
  *             schema:
@@ -242,7 +291,7 @@ router.get('/app/:appName', flagsController.getFlagsByAppName)
  *               required:
  *                 - message
  */
-router.get('/state/name', flagsController.getFlagStateForFlagName)
+router.get('/state', flagsController.getFlagState)
 
 /**
  * @swagger
@@ -344,6 +393,10 @@ router.get('/state/user', flagsController.getFlagStatesForUserId)
  *                   type: string
  *                   description: The name of the environment the feature flag belongs to
  *                   required: true
+ *                 updatedBy:
+ *                   type: string
+ *                   description: The name of the user who is updating the feature flag
+ *                   required: true
  *       responses:
  *         200:
  *           description: Feature flag data for the updated record. 
@@ -378,6 +431,143 @@ router.put('/toggle', flagsController.toggleFlag);
 
 /**
  * @swagger
+ * paths:
+ *   /api/flags/{id}/metadata:
+ *     put:
+ *       summary: Update a feature flag's metadata
+ *       tags: [Flags]
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: The ID of the feature flag to update
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 flagName:
+ *                   type: string
+ *                   description: The new name of the feature flag
+ *                 description:
+ *                   type: string
+ *                   description: The new description of the feature flag
+ *                 app:
+ *                   type: string
+ *                   description: The id of the application the feature flag belongs to
+ *                 updatedBy:
+ *                   type: string
+ *                   description: The name of the user who updates the flag
+ *       responses:
+ *         200:
+ *           description: Feature flag data for the updated record.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/FeatureFlag'
+ *         404:
+ *           description: The specified flag, application, or environment was not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Flag 'myFlag' not found
+ *         500:
+ *           description: An unexpected error occurred
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Internal server error
+ */
+router.put('/:id/metadata', flagsController.updateFlagMetadata)
+
+/**
+ * @swagger
+ * /api/flags/{id}:
+ *   put:
+ *     summary: Update a feature flag's state, evaluation strategy, and users for a given environment
+ *     tags: [Flags]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the feature flag to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               environmentId:
+ *                 type: string
+ *                 description: The ID of the environment to update settings for
+ *               isActive:
+ *                 type: boolean
+ *                 description: Indicates whether the feature flag is active or not
+ *               updatedBy:
+ *                 type: string
+ *                 description: The name of the user who updated the feature flag
+ *               evaluationStrategy:
+ *                 type: string
+ *                 enum: [BOOLEAN, PERCENTAGE, USER, PROBABILISTIC]
+ *                 description: The evaluation strategy used for the feature flag
+ *               evaluationPercentage:
+ *                 type: integer
+ *                 description: The percentage of users that the feature flag is enabled for. Required if evaluationStrategy is PERCENTAGE
+ *               allowedUsers:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: The list of users who are allowed to see the feature flag. Required if evaluationStrategy is USER
+ *               disallowedUsers:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: The list of users who are not allowed to see the feature flag. Required if evaluationStrategy is USER
+ *             required:
+ *               - environmentId
+ *               - updatedBy
+ *     responses:
+ *       200:
+ *         description: The feature flag was updated successfully.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/FeatureFlag'
+ *       404:
+ *         description: Resource not found.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Flag {id} not found
+ *       500:
+ *         description: An error occurred while updating the feature flag.
+ */
+router.put('/:id', flagsController.updateFlag)
+
+/**
+ * @swagger
  * /api/flags:
  *   post:
  *     summary: Create a new feature flag
@@ -392,6 +582,9 @@ router.put('/toggle', flagsController.toggleFlag);
  *               flagName:
  *                 type: string
  *                 description: The name of the feature flag.
+ *               description:
+ *                 type: string
+ *                 description: The description of the feature flag.
  *               appName:
  *                 type: string
  *                 description: The name of the application associated with the feature flag.
@@ -446,5 +639,50 @@ router.put('/toggle', flagsController.toggleFlag);
  *         description: An error occurred while creating the feature flag.
  */
 router.post('/', flagsController.createFlag);
+
+/**
+ * @swagger
+ * /api/flags/{id}:
+ *   delete:
+ *     summary: Delete a feature flag by ID
+ *     tags: [Flags]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the feature flag to delete.
+ *     responses:
+ *       200:
+ *         description: The feature flag was deleted successfully.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/FeatureFlag'
+ *       404:
+ *         description: Resource not found.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Flag '{id}' not found
+ *       500:
+ *         description: An error occurred while deleting the feature flag.
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: An unknown error occurred
+ */
+router.delete('/:id', flagsController.deleteFlag);
 
 export default router;

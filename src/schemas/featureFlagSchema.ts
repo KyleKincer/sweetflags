@@ -3,6 +3,7 @@ import { Environment } from './environmentSchema';
 const FeatureFlag = {
     type: 'object',
     properties: {
+      id: { type: 'string', description: 'The ID of the feature flag' },
       name: { type: 'string', description: 'The name of the feature flag' },
       description: { type: 'string', description: 'A description of the feature flag' },
       app: { type: 'string', description: 'The ID of the app associated with the feature flag' },
@@ -30,7 +31,7 @@ const FeatureFlag = {
             allowedUsers: {
               type: 'array',
               description:
-                'The list of user IDs that are allowed to see the feature flag when the evaluation strategy is "USER"',
+                'The list of user IDs for whom the feature flag is enabled when the evaluation strategy is "USER"',
               items: {
                 type: 'string',
               },
@@ -38,7 +39,7 @@ const FeatureFlag = {
             disallowedUsers: {
               type: 'array',
               description:
-                'The list of user IDs that are not allowed to see the feature flag when the evaluation strategy is "USER"',
+                'The list of user IDs for whom the feature flag is disabled when the evaluation strategy is "USER"',
               items: {
                 type: 'string',
               },
@@ -66,6 +67,59 @@ const FeatureFlag = {
       },
     },
   };
+
+  const IFeatureFlagInputDTO = {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        description: 'The name of the feature flag',
+      },
+      appId: {
+        type: 'string',
+        description: 'The ID of the app the feature flag belongs to',
+      },
+      isActive: {
+        type: 'boolean',
+        description: 'The initial active state of the feature flag',
+      },
+      createdBy: {
+        type: 'string',
+        description: 'The ID of the user who created the feature flag',
+      },
+      description: {
+        type: 'string',
+        description: 'The description of the feature flag',
+        nullable: true,
+      },
+      evaluationStrategy: {
+        type: 'string',
+        description: 'The evaluation strategy for the feature flag',
+      },
+      evaluationPercentage: {
+        type: 'number',
+        description: 'The evaluation percentage for the feature flag',
+        nullable: true,
+      },
+      allowedUsers: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+        description: 'The list of allowed user ObjectIds for the feature flag',
+        nullable: true,
+      },
+      disallowedUsers: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+        description: 'The list of disallowed user ObjectIds for the feature flag',
+        nullable: true,
+      },
+    },
+    required: ['name', 'appId', 'isActive', 'createdBy'],
+  };
   
-export { FeatureFlag };
+export { FeatureFlag, IFeatureFlagInputDTO };
   

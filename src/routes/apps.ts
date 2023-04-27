@@ -49,6 +49,98 @@ router.get('/', appsController.getAllApps);
 /**
  * @swagger
  * paths:
+ *   /api/apps/{id}:
+ *     get:
+ *       summary: Return app by ID
+ *       tags: [Apps]
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: The app ID
+ *       responses:
+ *         200:
+ *           description: An app object
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/App'
+ *         404:
+ *           description: App not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: App with id {id} not found
+ *         500:
+ *           description: An unexpected error occurred
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Internal server error
+ */
+router.get('/:id', appsController.getAppById);
+
+/**
+ * @swagger
+ * paths:
+ *   /api/apps/name/{name}:
+ *     get:
+ *       summary: Return app by name
+ *       tags: [Apps]
+ *       parameters:
+ *         - in: path
+ *           name: name
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: The app name
+ *       responses:
+ *         200:
+ *           description: An app object
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/App'
+ *         404:
+ *           description: App not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: App with name {name} not found
+ *         500:
+ *           description: An unexpected error occurred
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: A message explaining the error
+ *                     example: Internal server error
+ */
+router.get('/name/:name', appsController.getAppByName);
+
+/**
+ * @swagger
+ * paths:
  *   /api/apps:
  *     post:
  *       summary: Create a new app
