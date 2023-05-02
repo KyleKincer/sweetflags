@@ -195,17 +195,25 @@ class FeatureFlagService {
         return await this.isEnabled(featureFlagDoc, userId, environmentId);
     }
 
-    async getFlagStatesForUserId(appId: string, userId: string, environmentId: string): Promise<Array<{ id: string; name: string; isEnabled: boolean }>> {
+    async getFlagStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: {id: string; name: string; isEnabled: boolean}[] }> {
         const cachedData = await RedisCache.getFeatureFlagsByUserId(appId, userId)
         if (cachedData) {
             console.log('Cache hit');
             return this.areEnabled(cachedData, userId, environmentId)
         }
 
-        const featureFlags = await FeatureFlag.find({ app: appId }).exec();
+        const featureFlagsDocs = await FeatureFlag.find({ app: appId }).exec();
+        if (!featureFlagsDocs) {
+            throw new FlagNotFoundError(`No flags found for app '${appId}'`);
+        }
+
+        const featureFlags = featureFlagsDocs.map((flag) => {
+            flag = flag.toObject();
+            return flag;
+        });
         RedisCache.setCacheForFeatureFlagsByUserId(featureFlags, appId, userId);
 
-        return this.areEnabled(featureFlags, userId, environmentId);
+        return this.areEnabled(featureFlagsDocs, userId, environmentId);
     }
 
     async toggleFlag(data: IFeatureFlagToggleDTO): Promise<IFeatureFlag> {
@@ -447,15 +455,18 @@ class FeatureFlagService {
     }
 
 
-    async areEnabled(featureFlags: Array<IFeatureFlag>, user: string, environment: string): Promise<Array<{ id: string; name: string; isEnabled: boolean }>> {
+    async areEnabled(featureFlags: Array<IFeatureFlag>, user: string, environment: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
         const promises = featureFlags.map(async (flag) => {
             return {
-                id: flag._id,
+                id: flag.id,
                 name: flag.name,
                 isEnabled: await this.isEnabled(flag, user, environment)
             };
         });
-        return await Promise.all(promises);
+        const flags = await Promise.all(promises);
+        return {
+            flags: flags
+        }
     }
 }
 
