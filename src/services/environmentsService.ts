@@ -37,7 +37,7 @@ class EnvironmentsService {
         return environment;
     }
 
-    async getEnvironmentsByAppId(appId: string): Promise<Array<IEnvironment>> {
+    async getEnvironmentsByAppId(appId: string): Promise<{ environments: IEnvironment[] }> {
         const appDoc = await App.findById(appId).exec();
         if (!appDoc) {
             throw new AppNotFoundError(`App '${appId}' not found`);
@@ -55,7 +55,9 @@ class EnvironmentsService {
             throw new Error('Invalid environment data');
         }
 
-        return environments;
+        return {
+            environments: environments,
+        }
     }
 
     async getEnvironmentsByAppName(appName: string): Promise<Array<IEnvironment>> {
