@@ -28,6 +28,13 @@ const options: swaggerJSDoc.Options = {
         User,
         UserInputDTO,
       },
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
     },
   },
   apis: [path.join(__dirname, './routes/*.ts')],

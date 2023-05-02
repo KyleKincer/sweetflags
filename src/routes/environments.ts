@@ -1,5 +1,6 @@
 import express from 'express';
 import environmentsController from '../controllers/environmentsController';
+import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 
@@ -17,6 +18,8 @@ const router = express.Router();
  *     get:
  *       summary: Return all environments
  *       tags: [Environments]
+ *       security:
+ *         - bearerAuth: []
  *       responses:
  *         200:
  *           description: An array of environment objects
@@ -47,6 +50,8 @@ router.get('/', environmentsController.getAllEnvironments);
  *     get:
  *       summary: Return environment data for a given id
  *       tags: [Environments]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: id
@@ -82,6 +87,8 @@ router.get('/:id', environmentsController.getEnvironmentById);
  *     get:
  *       summary: Return environment data for all environments for a given app id
  *       tags: [Environments]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: appId
@@ -130,6 +137,8 @@ router.get('/app/:appId', environmentsController.getEnvironmentsByAppId)
  *     get:
  *       summary: Return environment data for all environments for a given app name
  *       tags: [Environments]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: appName
@@ -178,6 +187,8 @@ router.get('/app/name/:appName', environmentsController.getEnvironmentsByAppName
  *     post:
  *       summary: Create a new environment
  *       tags: [Environments]
+ *       security:
+ *         - bearerAuth: []
  *       requestBody:
  *         required: true
  *         content:
@@ -243,6 +254,8 @@ router.post('/', environmentsController.createEnvironment);
  *   delete:
  *     summary: Delete an environment by ID
  *     tags: [Environments]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id

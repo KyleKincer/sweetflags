@@ -1,5 +1,6 @@
 import express from 'express';
 import * as usersController from '../controllers/usersController';
+import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 
@@ -17,6 +18,8 @@ const router = express.Router();
  *     get:
  *       summary: Return all users
  *       tags: [Users]
+ *       security:
+ *         - bearerAuth: []
  *       responses:
  *         200:
  *           description: An array of user objects
@@ -38,7 +41,7 @@ const router = express.Router();
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/', usersController.getAllUsers);
+router.get('/', checkJwt, usersController.getAllUsers);
 
 /**
  * @swagger
@@ -47,6 +50,8 @@ router.get('/', usersController.getAllUsers);
  *     get:
  *       summary: Return user data by user ID
  *       tags: [Users]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: id
@@ -73,7 +78,7 @@ router.get('/', usersController.getAllUsers);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/:id', usersController.getUserById);
+router.get('/:id', checkJwt, usersController.getUserById);
 
 /**
  * @swagger
@@ -82,6 +87,8 @@ router.get('/:id', usersController.getUserById);
  *     get:
  *       summary: Return user data for all users belonging to a specific app by app ID
  *       tags: [Users]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: appId
@@ -110,10 +117,58 @@ router.get('/:id', usersController.getUserById);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/app/:appId', usersController.getUsersByAppId);
+router.get('/app/:appId', checkJwt, usersController.getUsersByAppId);
 
-// get user by appid and externalid
-router.get('/app/:appId/:externalId', usersController.getUserByAppIdAndExternalId);
+/**
+ * @swagger
+ * /api/users/app/{appId}/{externalId}:
+ *   get:
+ *     summary: Get a user by appId and externalId
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: appId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the app associated with the user
+ *       - in: path
+ *         name: externalId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The external ID of the user
+ *     responses:
+ *       200:
+ *         description: User data for the given appId and externalId
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: The user with the given appId and externalId was not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'User not found'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message explaining the issue with the server
+ */
+router.get('/app/:appId/:externalId', checkJwt, usersController.getUserByAppIdAndExternalId);
 
 /**
  * @swagger
@@ -122,6 +177,8 @@ router.get('/app/:appId/:externalId', usersController.getUserByAppIdAndExternalI
  *     post:
  *       summary: Create a new user
  *       tags: [Users]
+ *       security:
+ *         - bearerAuth: []
  *       requestBody:
  *         required: true
  *         content:
@@ -147,7 +204,7 @@ router.get('/app/:appId/:externalId', usersController.getUserByAppIdAndExternalI
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.post('/', usersController.createUser);
+router.post('/', checkJwt, usersController.createUser);
 
 /**
  * @swagger
@@ -156,6 +213,8 @@ router.post('/', usersController.createUser);
  *     put:
  *       summary: Update an existing user
  *       tags: [Users]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: id
@@ -188,7 +247,7 @@ router.post('/', usersController.createUser);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.put('/:id', usersController.updateUser);
+router.put('/:id', checkJwt, usersController.updateUser);
 
 /**
  * @swagger
@@ -197,6 +256,8 @@ router.put('/:id', usersController.updateUser);
  *     delete:
  *       summary: Delete a user
  *       tags: [Users]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: id
@@ -223,6 +284,6 @@ router.put('/:id', usersController.updateUser);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.delete('/:id', usersController.deleteUser);
+router.delete('/:id', checkJwt, usersController.deleteUser);
 
 export default router;
