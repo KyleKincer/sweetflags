@@ -84,7 +84,7 @@ async function getFlagsByAppName(req: Request, res: Response): Promise<void> {
 
 async function getFlagState(req: Request, res: Response): Promise<void> {
     try {
-        const state = await FeatureFlagService.getFlagState(req.body.flagName, req.body.flagId, req.body.appName, req.body.userId, req.body.environmentName);
+        const state = await FeatureFlagService.getFlagState(req.body.flagName, req.body.flagId, req.body.appId, req.body.userId, req.body.environmentId);
         res.status(200).json(state);
 
     } catch (err) {
@@ -101,7 +101,7 @@ async function getFlagState(req: Request, res: Response): Promise<void> {
 
 async function getFlagStatesForUserId(req: Request, res: Response): Promise<void> {
     try {
-        const states = await FeatureFlagService.getFlagStatesForUserId(req.body.appName, req.body.userId, req.body.environmentName);
+        const states = await FeatureFlagService.getFlagStatesForUserId(req.body.appId, req.body.userId, req.body.environmentId);
         res.status(200).json(states);
     } catch (err) {
         console.error(err);

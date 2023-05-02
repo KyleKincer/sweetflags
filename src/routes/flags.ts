@@ -230,7 +230,7 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
 
 /**
  * @swagger
- * /api/flags/state:
+ * /api/flags/state/id:
  *   get:
  *     summary: Returns the feature flag state
  *     tags: [Flags]
@@ -241,7 +241,7 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
  *           schema:
  *             type: object
  *             properties:
- *               appName:
+ *               appId:
  *                 type: string
  *               flagName:
  *                 type: string
@@ -249,16 +249,16 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
  *                 type: string
  *               userId:
  *                 type: string
- *               environmentName:
+ *               environmentId:
  *                 type: string
  *             required:
- *               - appName
+ *               - appId
  *               - userId
- *               - environmentName
+ *               - environmentId
  *               - one of [flagName, flagId]
  *     responses:
  *       200:
- *         description: Feature flag state for the given app, environment name, user id, and flag name or flag id
+ *         description: Feature flag state for the given app, environment, user id, and flag name or flag id
  *         content:
  *           application/json:
  *             schema:
@@ -291,13 +291,13 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
  *               required:
  *                 - message
  */
-router.get('/state', flagsController.getFlagState)
+router.get('/state/id', flagsController.getFlagState)
 
 /**
  * @swagger
  * /api/flags/state/user:
  *   get:
- *     summary: Returns the state of all feature flags for a given user ID, app name, and environment name
+ *     summary: Returns the state of all feature flags for a given user ID, app, and environment
  *     tags: [Flags]
  *     requestBody:
  *       required: true
@@ -306,22 +306,22 @@ router.get('/state', flagsController.getFlagState)
  *           schema:
  *             type: object
  *             properties:
- *               appName:
+ *               appId:
  *                 type: string
- *                 description: The name of the application
- *                 example: myApp
+ *                 description: The ID of the application
+ *                 example: 6442ea44ce25a8db1e791401
  *               userId:
  *                 type: string
  *                 description: The ID of the user
  *                 example: 123
- *               environmentName:
+ *               environmentId:
  *                 type: string
- *                 description: The name of the environment
- *                 example: Production
+ *                 description: The ID of the environment
+ *                 example: 6442ea44ce25a8db1e791403
  *             required:
- *               - appName
+ *               - appId
  *               - userId
- *               - environmentName
+ *               - environmentId
  *     responses:
  *       200:
  *         description: Returns an array of objects representing the state of each feature flag for the given user
@@ -332,6 +332,10 @@ router.get('/state', flagsController.getFlagState)
  *               items:
  *                 type: object
  *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: The ID of the feature flag
+ *                     example: 6442ea44ce25a8db1e791402
  *                   name:
  *                     type: string
  *                     description: The name of the feature flag

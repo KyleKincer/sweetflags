@@ -59,6 +59,25 @@ class UserService {
         return users;
     }
 
+    async getUserByAppIdAndExternalId(appId: string, externalId: string): Promise<IUser> {
+        const appDoc = await App.findById(appId);
+        if (!appDoc) {
+            throw new Error('App not found');
+        }
+
+        const userDoc = await User.findOne({ app: appId, externalId: externalId }).populate('app').exec();
+        if (!userDoc) {
+            throw new Error('User not found');
+        }
+
+        const user = userDoc.toObject();
+        if (!isIUser(user)) {
+            throw new Error('Invalid user data');
+        }
+
+        return user;
+    }
+
     async createUser(user: IUserInputDTO): Promise<IUser> {
         if (!isIUserInputDTO(user)) {
             throw new Error('Invalid user data');
