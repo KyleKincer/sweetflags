@@ -109,6 +109,7 @@ class AppsService {
             throw new Error('Invalid app data');
         }
 
+        RedisCache.deleteCacheForApp(app)
         RedisCache.setCacheForApp(app)
         return app;
     }

@@ -294,79 +294,82 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
 router.get('/state/id', flagsController.getFlagState)
 
 /**
- * @swagger
- * /api/flags/state/user:
- *   get:
- *     summary: Returns the state of all feature flags for a given user ID, app, and environment
- *     tags: [Flags]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               appId:
- *                 type: string
- *                 description: The ID of the application
- *                 example: 6442ea44ce25a8db1e791401
- *               userId:
- *                 type: string
- *                 description: The ID of the user
- *                 example: 123
- *               environmentId:
- *                 type: string
- *                 description: The ID of the environment
- *                 example: 6442ea44ce25a8db1e791403
- *             required:
- *               - appId
- *               - userId
- *               - environmentId
- *     responses:
- *       200:
- *         description: Returns an array of objects representing the state of each feature flag for the given user
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     description: The ID of the feature flag
- *                     example: 6442ea44ce25a8db1e791402
- *                   name:
- *                     type: string
- *                     description: The name of the feature flag
- *                     example: featureA
- *                   isEnabled:
- *                     type: boolean
- *                     description: The state of the feature flag for the given user
- *                     example: true
- *       404:
- *         description: The specified app was not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: A message explaining the error
- *                   example: App 'myApp' not found
- *       500:
- *         description: An unexpected error occurred
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: A message explaining the error
- *                   example: Internal server error
- */
+* @swagger
+* /api/flags/state/user:
+*   get:
+*     summary: Returns the state of all feature flags for a given user ID, app, and environment
+*     tags: [Flags]
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             properties:
+*               appId:
+*                 type: string
+*                 description: The ID of the application
+*                 example: 6442ea44ce25a8db1e791401
+*               userId:
+*                 type: string
+*                 description: The ID of the user
+*                 example: 123
+*               environmentId:
+*                 type: string
+*                 description: The ID of the environment
+*                 example: 6442ea44ce25a8db1e791403
+*             required:
+*               - appId
+*               - userId
+*               - environmentId
+*     responses:
+*       200:
+*         description: Returns an object containing an array of feature flag states for the given user
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 flags:
+*                   type: array
+*                   items:
+*                     type: object
+*                     properties:
+*                       id:
+*                         type: string
+*                         description: The ID of the feature flag
+*                         example: 6442ea44ce25a8db1e791402
+*                       name:
+*                         type: string
+*                         description: The name of the feature flag
+*                         example: featureA
+*                       isEnabled:
+*                         type: boolean
+*                         description: The state of the feature flag for the given user
+*                         example: true
+*       404:
+*         description: The specified app was not found
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 message:
+*                   type: string
+*                   description: A message explaining the error
+*                   example: App 'myApp' not found
+*       500:
+*         description: An unexpected error occurred
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 message:
+*                   type: string
+*                   description: A message explaining the error
+*                   example: Internal server error
+*/
 router.get('/state/user', flagsController.getFlagStatesForUserId)
 
 /**
