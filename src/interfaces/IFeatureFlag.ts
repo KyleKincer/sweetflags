@@ -48,8 +48,6 @@ export interface IFeatureFlagUpdateDTO {
 
 export interface IFeatureFlagToggleDTO {
   id: string;
-  name: string;
-  appId: string;
-  environmentName: string;
+  environmentId: string;
   updatedBy: string;
 }

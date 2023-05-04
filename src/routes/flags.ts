@@ -1,5 +1,6 @@
 import express from 'express';
 import * as flagsController from '../controllers/flagsController';
+import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 
@@ -16,6 +17,8 @@ const router = express.Router();
  *   get:
  *     summary: Returns all feature flag data
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: An array of feature flag objects
@@ -46,7 +49,7 @@ const router = express.Router();
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/', flagsController.getAllFlags);
+router.get('/', checkJwt, flagsController.getAllFlags);
 
 /**
  * @swagger
@@ -54,6 +57,8 @@ router.get('/', flagsController.getAllFlags);
  *   get:
  *     summary: Returns feature flag data for a given id
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -89,7 +94,7 @@ router.get('/', flagsController.getAllFlags);
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/:id', flagsController.getFlagById);
+router.get('/:id', checkJwt, flagsController.getFlagById);
 
 /**
  * @swagger
@@ -97,6 +102,8 @@ router.get('/:id', flagsController.getFlagById);
  *   get:
  *     summary: Returns feature flag data for a given name
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: name
@@ -132,7 +139,7 @@ router.get('/:id', flagsController.getFlagById);
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/name/:name', flagsController.getFlagByName)
+router.get('/name/:name', checkJwt, flagsController.getFlagByName)
 
 /**
  * @swagger
@@ -140,6 +147,8 @@ router.get('/name/:name', flagsController.getFlagByName)
  *   get:
  *     summary: Returns all feature flag data for a given app ID
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: appId
@@ -179,7 +188,7 @@ router.get('/name/:name', flagsController.getFlagByName)
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/app/:appId', flagsController.getFlagsByAppId)
+router.get('/app/:appId', checkJwt, flagsController.getFlagsByAppId)
 
 /**
  * @swagger
@@ -187,6 +196,8 @@ router.get('/app/:appId', flagsController.getFlagsByAppId)
  *   get:
  *     summary: Returns all feature flag data for a given app name
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: appName
@@ -226,7 +237,7 @@ router.get('/app/:appId', flagsController.getFlagsByAppId)
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/app/name/:appName', flagsController.getFlagsByAppName)
+router.get('/app/name/:appName', checkJwt, flagsController.getFlagsByAppName)
 
 /**
  * @swagger
@@ -234,6 +245,8 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
  *   get:
  *     summary: Returns the feature flag state
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -291,7 +304,7 @@ router.get('/app/name/:appName', flagsController.getFlagsByAppName)
  *               required:
  *                 - message
  */
-router.get('/state/id', flagsController.getFlagState)
+router.get('/state/id', checkJwt, flagsController.getFlagState)
 
 /**
 * @swagger
@@ -299,6 +312,8 @@ router.get('/state/id', flagsController.getFlagState)
 *   get:
 *     summary: Returns the state of all feature flags for a given user ID, app, and environment
 *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
 *     requestBody:
 *       required: true
 *       content:
@@ -370,7 +385,7 @@ router.get('/state/id', flagsController.getFlagState)
 *                   description: A message explaining the error
 *                   example: Internal server error
 */
-router.get('/state/user', flagsController.getFlagStatesForUserId)
+router.get('/state/user', checkJwt, flagsController.getFlagStatesForUserId)
 
 /**
  * @swagger
@@ -379,6 +394,8 @@ router.get('/state/user', flagsController.getFlagStatesForUserId)
  *     put:
  *       summary: Toggle a feature flag state
  *       tags: [Flags]
+ *       security:
+ *         - bearerAuth: []
  *       requestBody:
  *         required: true
  *         content:
@@ -389,16 +406,9 @@ router.get('/state/user', flagsController.getFlagStatesForUserId)
  *                 id:
  *                   type: string
  *                   description: The ID of the feature flag to toggle
- *                 name:
+ *                 environmentId:
  *                   type: string
- *                   description: The name of the feature flag to toggle
- *                 appName:
- *                   type: string
- *                   description: The name of the application the feature flag belongs to
- *                   required: true
- *                 environmentName:
- *                   type: string
- *                   description: The name of the environment the feature flag belongs to
+ *                   description: The id of the environment the feature flag belongs to
  *                   required: true
  *                 updatedBy:
  *                   type: string
@@ -434,7 +444,13 @@ router.get('/state/user', flagsController.getFlagStatesForUserId)
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.put('/toggle', flagsController.toggleFlag);
+router.put('/toggle', checkJwt, flagsController.toggleFlag);
+
+// endpoint to enable flag by id in all environments with a single request including updatedBy
+router.put('/enable', checkJwt, flagsController.enableFlag);
+
+// endpoint to disable flag in all environments
+router.put('/disable', checkJwt, flagsController.disableFlag);
 
 /**
  * @swagger
@@ -443,6 +459,8 @@ router.put('/toggle', flagsController.toggleFlag);
  *     put:
  *       summary: Update a feature flag's metadata
  *       tags: [Flags]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: id
@@ -499,7 +517,7 @@ router.put('/toggle', flagsController.toggleFlag);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.put('/:id/metadata', flagsController.updateFlagMetadata)
+router.put('/:id/metadata', checkJwt, flagsController.updateFlagMetadata)
 
 /**
  * @swagger
@@ -507,6 +525,8 @@ router.put('/:id/metadata', flagsController.updateFlagMetadata)
  *   put:
  *     summary: Update a feature flag's state, evaluation strategy, and users for a given environment
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -571,7 +591,7 @@ router.put('/:id/metadata', flagsController.updateFlagMetadata)
  *       500:
  *         description: An error occurred while updating the feature flag.
  */
-router.put('/:id', flagsController.updateFlag)
+router.put('/:id', checkJwt, flagsController.updateFlag)
 
 /**
  * @swagger
@@ -579,6 +599,8 @@ router.put('/:id', flagsController.updateFlag)
  *   post:
  *     summary: Create a new feature flag
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -645,7 +667,7 @@ router.put('/:id', flagsController.updateFlag)
  *       500:
  *         description: An error occurred while creating the feature flag.
  */
-router.post('/', flagsController.createFlag);
+router.post('/', checkJwt, flagsController.createFlag);
 
 /**
  * @swagger
@@ -653,6 +675,8 @@ router.post('/', flagsController.createFlag);
  *   delete:
  *     summary: Delete a feature flag by ID
  *     tags: [Flags]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -690,6 +714,6 @@ router.post('/', flagsController.createFlag);
  *                     description: A message explaining the error
  *                     example: An unknown error occurred
  */
-router.delete('/:id', flagsController.deleteFlag);
+router.delete('/:id', checkJwt, flagsController.deleteFlag);
 
 export default router;

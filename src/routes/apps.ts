@@ -1,5 +1,6 @@
 import express from 'express';
 import * as appsController from '../controllers/appsController';
+import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 
@@ -17,6 +18,8 @@ const router = express.Router();
  *     get:
  *       summary: Return all apps
  *       tags: [Apps]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: query
  *           name: isActive
@@ -44,7 +47,7 @@ const router = express.Router();
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/', appsController.getAllApps);
+router.get('/', checkJwt, appsController.getAllApps);
 
 /**
  * @swagger
@@ -53,6 +56,8 @@ router.get('/', appsController.getAllApps);
  *     get:
  *       summary: Return app by ID
  *       tags: [Apps]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: id
@@ -90,7 +95,7 @@ router.get('/', appsController.getAllApps);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/:id', appsController.getAppById);
+router.get('/:id', checkJwt, appsController.getAppById);
 
 /**
  * @swagger
@@ -99,6 +104,8 @@ router.get('/:id', appsController.getAppById);
  *     get:
  *       summary: Return app by name
  *       tags: [Apps]
+ *       security:
+ *         - bearerAuth: []
  *       parameters:
  *         - in: path
  *           name: name
@@ -136,7 +143,7 @@ router.get('/:id', appsController.getAppById);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/name/:name', appsController.getAppByName);
+router.get('/name/:name', checkJwt, appsController.getAppByName);
 
 /**
  * @swagger
@@ -146,6 +153,8 @@ router.get('/name/:name', appsController.getAppByName);
  *       summary: Create a new app
  *       description: Creates a new app and default production environment.
  *       tags: [Apps]
+ *       security:
+ *         - bearerAuth: []
  *       requestBody:
  *         required: true
  *         content:
@@ -187,6 +196,6 @@ router.get('/name/:name', appsController.getAppByName);
  *                     type: string
  *                     description: Error message
  */
-router.post('/', appsController.createApp);
+router.post('/', checkJwt, appsController.createApp);
 
 export default router;
