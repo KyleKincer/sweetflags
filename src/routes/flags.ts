@@ -446,6 +446,12 @@ router.get('/state/user', checkJwt, flagsController.getFlagStatesForUserId)
  */
 router.put('/toggle', checkJwt, flagsController.toggleFlag);
 
+// endpoint to enable flag by id in all environments with a single request including updatedBy
+router.put('/enable', checkJwt, flagsController.enableFlag);
+
+// endpoint to disable flag in all environments
+router.put('/disable', checkJwt, flagsController.disableFlag);
+
 /**
  * @swagger
  * paths:

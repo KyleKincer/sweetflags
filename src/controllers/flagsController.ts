@@ -133,6 +133,42 @@ async function toggleFlag(req: Request, res: Response): Promise<void> {
     }
 }
 
+async function enableFlag(req: Request, res: Response): Promise<void> {
+    try {
+        const featureFlag = await FeatureFlagService.enableForAllEnvironments(req.body)
+        res.status(200).json(featureFlag)
+    } catch (err) {
+        console.error(err)
+        if (err instanceof FlagNotFoundError || 
+            err instanceof AppNotFoundError || 
+            err instanceof EnvironmentNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message });
+        } else if (err instanceof Error) {
+            res.status(500).json({ message: err.message });
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' });
+        }
+    }
+}
+
+async function disableFlag(req: Request, res: Response): Promise<void> {
+    try {
+        const featureFlag = await FeatureFlagService.disableForAllEnvironments(req.body)
+        res.status(200).json(featureFlag)
+    } catch (err) {
+        console.error(err)
+        if (err instanceof FlagNotFoundError ||
+            err instanceof AppNotFoundError ||
+            err instanceof EnvironmentNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message });
+        } else if (err instanceof Error) {
+            res.status(500).json({ message: err.message })
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' })
+        }
+    }
+}
+
 async function updateFlagMetadata(req: Request, res: Response): Promise<void> {
     try {
         const featureFlag = await FeatureFlagService.updateFlagMetadata(
@@ -220,6 +256,8 @@ export {
     getFlagState,
     getFlagStatesForUserId,
     toggleFlag,
+    enableFlag,
+    disableFlag,
     updateFlagMetadata,
     updateFlag,
     createFlag,

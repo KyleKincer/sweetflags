@@ -22,39 +22,4 @@ const environmentSchema: Schema = new mongoose.Schema({
 }
 );
 
-// on save, check each feature flag for the given app and add the environment if it doesn't exist
-environmentSchema.post<IEnvironment>('save', async function (doc, next) {
-    try {
-        const featureFlags = await FeatureFlag.find({ app: doc.app });
-        for (let i = 0; i < featureFlags.length; i++) {
-            // for each feature flag, check if the new environment exists, and if not, create it and set its state to the same as the production environment
-            const featureFlag = featureFlags[i];
-            const environments = featureFlag.environments;
-            const environment = environments.find((env) => env.environment.toString() === doc.id.toString());
-            if (!environment) {
-                const prod = await Environment.findOne({ name: 'Production', app: doc.app }).exec();
-                if (!prod) {
-                    next();
-                }
-                const prodFlag = environments.find((env) => env.environment.toString() === prod!._id.toString());
-
-                environments.push({
-                    environment: doc,
-                    isActive: prodFlag!.isActive,
-                    evaluationStrategy: prodFlag!.evaluationStrategy,
-                    evaluationPercentage: prodFlag!.evaluationPercentage,
-                    allowedUsers: prodFlag!.allowedUsers,
-                    disallowedUsers: prodFlag!.disallowedUsers
-                });
-                featureFlags[i].environments = environments;
-                await featureFlags[i].save();
-            }
-        }
-        next();
-    } catch (err: unknown) {
-        console.error(err);
-        next(err as Error);
-    }
-});
-
 export default mongoose.model<IEnvironment>('Environment', environmentSchema);

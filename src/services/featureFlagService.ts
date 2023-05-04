@@ -251,6 +251,64 @@ class FeatureFlagService {
         return featureFlag;
     }
 
+    async enableForAllEnvironments(data: IFeatureFlagToggleDTO): Promise<IFeatureFlag> {
+        const { id, updatedBy } = data;
+        if (!id) {
+            throw new Error('Flag id is required');
+        }
+        const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
+
+        if (!featureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+
+        const environments = featureFlagDoc.environments;
+        environments.forEach(e => e.isActive = true);
+        featureFlagDoc.environments = environments;
+        featureFlagDoc.updatedBy = updatedBy;
+        await featureFlagDoc.save();
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        // invalidate cache
+        RedisCache.deleteCacheForFeatureFlag(featureFlag);
+        return featureFlag;
+    }
+
+    async disableForAllEnvironments(data: IFeatureFlagToggleDTO): Promise<IFeatureFlag> {
+        const { id, updatedBy } = data;
+        if (!id) {
+            throw new Error('Flag id is required');
+        }
+        const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
+
+        if (!featureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+
+        const environments = featureFlagDoc.environments;
+        environments.forEach(e => e.isActive = false);
+        featureFlagDoc.environments = environments;
+        featureFlagDoc.updatedBy = updatedBy;
+        await featureFlagDoc.save();
+        await featureFlagDoc.populate('app');
+        await featureFlagDoc.populate('environments.environment');
+        await featureFlagDoc.populate('environments.allowedUsers');
+        await featureFlagDoc.populate('environments.disallowedUsers');
+        const featureFlag = featureFlagDoc.toObject();
+        if (!isIFeatureFlag(featureFlag)) {
+            throw new Error('Invalid flag');
+        }
+        // invalidate cache
+        RedisCache.deleteCacheForFeatureFlag(featureFlag);
+        return featureFlag;
+    }
+
     async updateFlagMetadata(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
         if (!name && !description && !app) {
             throw new Error('At least one of the following properties is required: name, description, app');
