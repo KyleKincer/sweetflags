@@ -8,6 +8,7 @@ import RedisCache from '../redis';
 import md5 from 'md5';
 import { Document } from 'mongoose';
 import { ObjectId } from 'mongodb';
+import { IEnvironment } from '../interfaces/IEnvironment';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
@@ -218,20 +219,17 @@ class FeatureFlagService {
 
     async toggleFlag(data: IFeatureFlagToggleDTO): Promise<IFeatureFlag> {
         const { id, environmentId, updatedBy } = data;
-
-        let featureFlagDoc = await RedisCache.getFeatureFlag({ id: id })
-        if (!featureFlagDoc && id) {
-            featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
-        } else {
-            throw new FlagNotFoundError('id is required');
+        if (!id) {
+            throw new Error('Flag id is required');
         }
+        const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
 
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
 
         const environments = featureFlagDoc.environments;
-        const environmentIndex = environments.findIndex(e => e.environment._id.toString() === environmentId);
+        const environmentIndex = environments.findIndex(e => (e.environment as IEnvironment).id === environmentId);
         if (environmentIndex === -1) {
             throw new FlagNotFoundError(`Flag ${id} does not exist for environment ${environmentId}`);
         }
