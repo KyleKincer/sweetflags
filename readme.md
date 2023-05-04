@@ -18,4 +18,10 @@ brew services start redis
 npm install
 npm run dev
 ```
+
+**Docker**
+To run using docker, simply:
+```
+docker-compose up -d
+```
 Once up and running, Swagger docs are available at http://localhost:3000/api-docs

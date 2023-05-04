@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    image: sweetflags
+    container_name: sweetflags
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017/db_name
+      - REDIS_HOST=redis
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: mongo
+    container_name: sweetflags-mongo
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis
+    container_name: sweetflags-redis
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mongo-data:
+  redis-data:
+
