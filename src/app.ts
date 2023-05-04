@@ -1,4 +1,5 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
@@ -6,13 +7,17 @@ import flagRouter from './routes/flags';
 import appRouter from './routes/apps';
 import environmentRouter from './routes/environments';
 import userRouter from './routes/users';
-import config from './config';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
 
+dotenv.config();
+
 async function connectToDb() {
   try {
-    await mongoose.connect(config.mongoConnectionString);
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is not set');
+    }
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to database');
   } catch (err) {
     console.error('Error connecting to database:', err);

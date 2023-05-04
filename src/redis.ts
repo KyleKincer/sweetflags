@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
-import config from './config';
 import { IFeatureFlag } from './interfaces/IFeatureFlag';
 import { IApp } from './interfaces/IApp';
+import { env } from 'process';
 
 
 class RedisCache {
@@ -9,8 +9,8 @@ class RedisCache {
 
     constructor() {
         this.client = new Redis({
-            host: config.redis.host,
-            port: config.redis.port
+            host: process.env.REDIS_HOST,
+            port: Number(process.env.REDIS_PORT),
         });
     }
 
