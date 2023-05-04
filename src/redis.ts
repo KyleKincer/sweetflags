@@ -1,9 +1,9 @@
 import Redis from 'ioredis';
+import dotenv from 'dotenv';
 import { IFeatureFlag } from './interfaces/IFeatureFlag';
 import { IApp } from './interfaces/IApp';
-import { env } from 'process';
 
-
+dotenv.config();
 class RedisCache {
     private client: Redis;
 
