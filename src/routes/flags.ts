@@ -406,16 +406,9 @@ router.get('/state/user', checkJwt, flagsController.getFlagStatesForUserId)
  *                 id:
  *                   type: string
  *                   description: The ID of the feature flag to toggle
- *                 name:
+ *                 environmentId:
  *                   type: string
- *                   description: The name of the feature flag to toggle
- *                 appName:
- *                   type: string
- *                   description: The name of the application the feature flag belongs to
- *                   required: true
- *                 environmentName:
- *                   type: string
- *                   description: The name of the environment the feature flag belongs to
+ *                   description: The id of the environment the feature flag belongs to
  *                   required: true
  *                 updatedBy:
  *                   type: string

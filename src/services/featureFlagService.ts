@@ -217,34 +217,23 @@ class FeatureFlagService {
     }
 
     async toggleFlag(data: IFeatureFlagToggleDTO): Promise<IFeatureFlag> {
-        const { id, name, appId, environmentName, updatedBy } = data;
-        const app = await App.findById(appId).exec();
-        if (!app) {
-            throw new AppNotFoundError(`App '${appId}' not found`);
-        }
+        const { id, environmentId, updatedBy } = data;
 
-        const environment = await Environment.findOne({ app: app._id, name: environmentName }).exec();
-        if (!environment) {
-            throw new EnvironmentNotFoundError(`Environment '${environmentName}' not found`);
-        }
-
-        let featureFlagDoc = await RedisCache.getFeatureFlag({ id: id, name: name })
+        let featureFlagDoc = await RedisCache.getFeatureFlag({ id: id })
         if (!featureFlagDoc && id) {
-            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, _id: id }).populate('environments.environment', 'app').exec();
-        } else if (name) {
-            featureFlagDoc = await FeatureFlag.findOne({ app: app._id, name: name }).populate('environments.environment', 'app').exec();
+            featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
         } else {
-            throw new FlagNotFoundError(`Either the id or name property is required`);
+            throw new FlagNotFoundError('id is required');
         }
 
         if (!featureFlagDoc) {
-            throw new FlagNotFoundError(`Flag '${id || name}' not found`);
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
 
         const environments = featureFlagDoc.environments;
-        const environmentIndex = environments.findIndex(e => e.environment._id.toString() === environment.id.toString());
+        const environmentIndex = environments.findIndex(e => e.environment._id.toString() === environmentId);
         if (environmentIndex === -1) {
-            throw new FlagNotFoundError(`Flag ${id || name} does not exist for environment ${environment.id}`);
+            throw new FlagNotFoundError(`Flag ${id} does not exist for environment ${environmentId}`);
         }
 
         environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
