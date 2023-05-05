@@ -3,9 +3,10 @@ global:
 
 env:
   config:
+    PORT: "3000"
     MONGODB_URI: mongodb-sweetflags-headless.sweetflags.svc.cluster.local:27017/sweetflags
     REDIS_HOST: sweetflags-redis.dev.gcp.sweetwater.com
-    REDIS_PORT: 6379
+    REDIS_PORT: "6379"
     AUTH0_DOMAIN: dev-sweetwater-internal.us.auth0.com
     AUTH0_API_IDENTIFIER: urn:sweetflags-api
     AUTH0_CLIENT_ID: 4oE6I2AfQ7IFN9wA41hwOghCpHL2gJ5V
@@ -17,7 +18,7 @@ env:
 datadog:
   labels:
     admission.datadoghq.com/enabled: "true"
-    tags.datadoghq.com/service: "my-app"
+    tags.datadoghq.com/service: "sweetflags"
     tags.datadoghq.com/env: ${ENVIRONMENT}
   annotations:
     ad.datadoghq.com/tags: '{"team": "production-support"}'
