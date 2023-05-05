@@ -10,6 +10,7 @@ import environmentRouter from './routes/environments';
 import userRouter from './routes/users';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
+import 'dd-trace/init';
 
 dotenv.config();
 

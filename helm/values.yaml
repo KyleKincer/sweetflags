@@ -6,7 +6,17 @@ env:
     AUTH0_DOMAIN: dev-sweetwater-internal.us.auth0.com
     AUTH0_API_IDENTIFIER: urn:sweetflags-api
     AUTH0_CLIENT_ID: 4oE6I2AfQ7IFN9wA41hwOghCpHL2gJ5V
+    NODE_ENV: ${ENVIRONMENT}
+    npm_config_cache: /tmp
   secrets: {}
+
+datadog:
+  labels:
+    admission.datadoghq.com/enabled: "true"
+    tags.datadoghq.com/service: "my-app"
+    tags.datadoghq.com/env: ${ENVIRONMENT}
+  annotations:
+    ad.datadoghq.com/tags: '{"team": "production-support"}'
 
 istio:
   hosts:
