@@ -1,4 +1,5 @@
-FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0
+# Use the official Node.js image as the base image
+FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0 as build
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
@@ -15,8 +16,13 @@ COPY . .
 # Build the TypeScript code
 RUN npm run build
 
-# Expose the port your application will run on
-EXPOSE 3000
+FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY --from=build /usr/src/app/dist /app/dist
 
 # Start the application using the compiled JavaScript
 CMD ["npm", "run", "start:prod"]

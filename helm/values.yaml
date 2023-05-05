@@ -1,3 +1,6 @@
+global:
+  mongoService: "mongodb-sweetflags"
+
 env:
   config:
     MONGODB_URI: mongodb://localhost:27017/sweetflags
@@ -8,7 +11,8 @@ env:
     AUTH0_CLIENT_ID: 4oE6I2AfQ7IFN9wA41hwOghCpHL2gJ5V
     NODE_ENV: ${ENVIRONMENT}
     npm_config_cache: /tmp
-  secrets: {}
+  secrets:
+    MONGODB_PASSWORD: "${MONGODB_PASSWORD}"
 
 datadog:
   labels:
@@ -17,10 +21,6 @@ datadog:
     tags.datadoghq.com/env: ${ENVIRONMENT}
   annotations:
     ad.datadoghq.com/tags: '{"team": "production-support"}'
-
-istio:
-  hosts:
-    - sweetflags.dev.gcp.sweetwater.com
 
 livenessProbe:
   httpGet:
@@ -38,3 +38,22 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
+
+redis:
+  name: sweetflags
+  memorySizeGb: 2
+  authEnabled: true
+
+mongodb:
+  enabled: true
+  datadogPassword: "${MONGODB_DATADOG_PASSWORD}"
+  version: 'v6'
+  auth:
+    replicaSetKey: "${MONGODB_REPLICA_SET_KEY}"
+    rootPassword: "${MONGODB_ROOT_PASSWORD}"
+    usernames:
+      - sweetflags
+    passwords:
+      - "${MONGODB_PASSWORD}"
+    databases:
+      - sweetflags
