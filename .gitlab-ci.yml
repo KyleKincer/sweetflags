@@ -1,0 +1,43 @@
+include:
+  - project: 'it/devops/ci-templates'
+    file: 
+      - 'gitlab-deployment.yaml'
+      - 'gitlab-deployment-scan.yaml'
+    ref: gl-deploy-v1
+
+stages:
+  - build
+  - image_scan
+  - deploy
+
+build_image:
+  extends: .build_default_registry
+
+  .deploy:
+  extends: .gitlab_helm_deploy
+  variables:
+    MY_SERVICE_VARIABLE: 'some cool value'
+
+deploy_dev:
+  extends: .deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'development'
+  tags:
+    - gitlab-helm-deploy
+    - dev-mis_k8s-cluster
+
+deploy_ephemeral:
+  extends: .deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^feature.*/
+  tags:
+    - gitlab-helm-deploy
+    - dev-mis_k8s-cluster
+
+deploy_prod:
+  extends: .deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+  tags:
+    - gitlab-helm-deploy
+    - prod-mis_k8s-cluster

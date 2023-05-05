@@ -1,5 +1,4 @@
-# Use the official Node.js image as the base image
-FROM node:19
+FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
