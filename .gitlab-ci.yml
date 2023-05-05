@@ -19,7 +19,7 @@ build_image:
     MY_SERVICE_VARIABLE: 'some cool value'
   secrets:
     MONGODB_DATADOG_PASSWORD:
-      vault: "shared/gke-mongodb-dev/datadog-token@secret"
+      vault: "shared/gke-mongodb-${SECRET_ENV}/datadog-token@secret"
       file: false
     MONGODB_PASSWORD:
       vault: "${SECRET_ENV}/production-support/sweetflags/env/MONGODB_PASSWORD@secret"
