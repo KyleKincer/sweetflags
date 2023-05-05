@@ -26,11 +26,11 @@ datadog:
 livenessProbe:
   httpGet:
     path: /api/healthz
-    port: 3000
+    port: 8080
 readinessProbe:
   httpGet:
     path: /api/healthz
-    port: 3000
+    port: 8080
 
 resources:
   limits:
