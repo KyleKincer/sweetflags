@@ -24,11 +24,11 @@ datadog:
 
 livenessProbe:
   httpGet:
-    path: /healthz
+    path: /api/healthz
     port: 3000
 readinessProbe:
   httpGet:
-    path: /healthz
+    path: /api/healthz
     port: 3000
 
 resources:
