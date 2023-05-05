@@ -13,7 +13,7 @@ stages:
 build_image:
   extends: .build_default_registry
 
-  .deploy:
+.deploy:
   extends: .gitlab_helm_deploy
   variables:
     MY_SERVICE_VARIABLE: 'some cool value'
@@ -22,14 +22,6 @@ deploy_dev:
   extends: .deploy
   rules:
     - if: $CI_COMMIT_BRANCH == 'development'
-  tags:
-    - gitlab-helm-deploy
-    - dev-mis_k8s-cluster
-
-deploy_ephemeral:
-  extends: .deploy
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^feature.*/
   tags:
     - gitlab-helm-deploy
     - dev-mis_k8s-cluster

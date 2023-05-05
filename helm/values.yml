@@ -1,0 +1,30 @@
+env:
+  config:
+    MONGODB_URI: mongodb://localhost:27017/sweetflags
+    REDIS_HOST: ocalhost
+    REDIS_PORT: 6379
+    AUTH0_DOMAIN: dev-sweetwater-internal.us.auth0.com
+    AUTH0_API_IDENTIFIER: urn:sweetflags-api
+    AUTH0_CLIENT_ID: 4oE6I2AfQ7IFN9wA41hwOghCpHL2gJ5V
+  secrets: {}
+
+istio:
+  hosts:
+    - sweetflags.dev.gcp.sweetwater.com
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 3000
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 3000
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
