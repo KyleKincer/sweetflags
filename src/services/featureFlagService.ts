@@ -43,6 +43,12 @@ class FeatureFlagService {
     }
 
     async getFlagById(id: string): Promise<IFeatureFlag> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         // Try to get the flag from the cache
         const cachedData = await RedisCache.getFeatureFlag({ id: id });
         if (cachedData) {
@@ -99,6 +105,12 @@ class FeatureFlagService {
     }
 
     async getFlagsByAppId(appId: string): Promise<Array<IFeatureFlag>> {
+        try {
+            new ObjectId(appId);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${appId}`);
+        }
+
         // Try to get the flags from the cache
         const cachedData = await RedisCache.getFeatureFlagsByAppId(appId);
         if (cachedData) {
@@ -182,6 +194,12 @@ class FeatureFlagService {
 
         let featureFlagDoc: (Document & IFeatureFlag) | null;
         if (flagId) {
+            try {
+                new ObjectId(flagId);
+            } catch (err: unknown) {
+                throw new Error(`Invalid id ${flagId}`);
+            }
+
             featureFlagDoc = await FeatureFlag.findById(flagId).exec();
         } else if (flagName) {
             featureFlagDoc = await FeatureFlag.findOne({ app: appId, name: flagName }).exec();
@@ -222,6 +240,13 @@ class FeatureFlagService {
         if (!id) {
             throw new Error('Flag id is required');
         }
+
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
 
         if (!featureFlagDoc) {
@@ -256,6 +281,13 @@ class FeatureFlagService {
         if (!id) {
             throw new Error('Flag id is required');
         }
+
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
 
         if (!featureFlagDoc) {
@@ -285,6 +317,13 @@ class FeatureFlagService {
         if (!id) {
             throw new Error('Flag id is required');
         }
+
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         const featureFlagDoc = await FeatureFlag.findById(id).populate('environments.environment', 'app').exec();
 
         if (!featureFlagDoc) {
@@ -310,6 +349,12 @@ class FeatureFlagService {
     }
 
     async updateFlagMetadata(id: string, name?: string, description?: string, app?: string, updatedBy?: string): Promise<IFeatureFlag> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+        
         if (!name && !description && !app) {
             throw new Error('At least one of the following properties is required: name, description, app');
         }
@@ -353,7 +398,13 @@ class FeatureFlagService {
         return featureFlag;
     }
 
-    async updateFlag(id: String, data: IFeatureFlagUpdateDTO): Promise<IFeatureFlag> {
+    async updateFlag(id: string, data: IFeatureFlagUpdateDTO): Promise<IFeatureFlag> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         const { environmentId, isActive, updatedBy, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
         const featureFlagDoc = await FeatureFlag.findById(id).exec();
         if (!featureFlagDoc) {
@@ -392,6 +443,12 @@ class FeatureFlagService {
 
     async createFlag(data: IFeatureFlagInputDTO): Promise<IFeatureFlag> {
         const { name, appId, isActive, createdBy, description, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+        
+        try {
+            new ObjectId(appId);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${appId}`);
+        }
 
         const app = await App.findById(appId).exec();
         if (!app) {
@@ -437,6 +494,12 @@ class FeatureFlagService {
     }
 
     async deleteFlag(id: string): Promise<IFeatureFlag> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+        
         const featureFlagDoc = await FeatureFlag.findByIdAndDelete(id).exec();
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);

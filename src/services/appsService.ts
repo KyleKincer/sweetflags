@@ -5,6 +5,7 @@ import RedisCache from '../redis'
 import { AppNotFoundError } from '../errors';
 import { isIApp, isIAppArray } from '../type-guards/IApp';
 import { Document } from 'mongoose';
+import { ObjectId } from 'mongodb';
 
 class AppsService {
     async getAllApps(isActive: boolean | undefined): Promise<Array<IApp>> {
@@ -36,6 +37,12 @@ class AppsService {
     }
 
     async getAppById(id: string): Promise<IApp> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+        
         const cachedApp = await RedisCache.getAppById(id);
         if (cachedApp) {
             return cachedApp;

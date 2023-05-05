@@ -5,6 +5,7 @@ import { IEnvironment } from '../interfaces/IEnvironment';
 import { AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 import { isIEnvironment, isIEnvironmentArray } from '../type-guards/IEnvironment';
 import RedisCache from '../redis'
+import { ObjectId } from 'mongodb';
 
 class EnvironmentsService {
     async getAllEnvironments(): Promise<Array<IEnvironment>> {
@@ -25,6 +26,12 @@ class EnvironmentsService {
     }
 
     async getEnvironmentById(id: string): Promise<IEnvironment> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         const environmentDoc = await Environment.findById(id).populate('app').exec();
         if (!environmentDoc) {
             throw new EnvironmentNotFoundError(`Environment '${id}' not found`);
@@ -39,6 +46,12 @@ class EnvironmentsService {
     }
 
     async getEnvironmentsByAppId(appId: string): Promise<{ environments: IEnvironment[] }> {
+        try {
+            new ObjectId(appId);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${appId}`);
+        }
+
         const appDoc = await App.findById(appId).exec();
         if (!appDoc) {
             throw new AppNotFoundError(`App '${appId}' not found`);
@@ -83,6 +96,12 @@ class EnvironmentsService {
     }
 
     async createEnvironment(name: string, description: string, appId: string, isActive: boolean, createdBy: string): Promise<IEnvironment> {
+        try {
+            new ObjectId(appId);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${appId}`);
+        }
+
         const appDoc = await App.findById(appId).exec();
         if (!appDoc) {
             throw new AppNotFoundError(`App '${appId}' not found`);
@@ -137,6 +156,12 @@ class EnvironmentsService {
     }
 
     async deleteEnvironment(id: string): Promise<IEnvironment> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         const environmentDoc = await Environment.findByIdAndDelete(id).exec();
         if (!environmentDoc) {
             throw new EnvironmentNotFoundError(`Environment '${id}' not found`);
