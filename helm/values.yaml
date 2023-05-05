@@ -12,7 +12,7 @@ env:
     NODE_ENV: ${ENVIRONMENT}
     npm_config_cache: /tmp
   secrets:
-    MONGODB_URI: "mongodb://sweetflags:${MONGODB_PASSWORD}@mongodb-sweetflags-headless.sweetflags.svc.cluster.local:27017?replicaSet=rs0&authSource=sweetflags"
+    MONGODB_URI: "mongodb://sweetflags:${MONGODB_PASSWORD}@mongodb-sweetflags-headless.sweetflags.svc.cluster.local:27017/sweetflags?replicaSet=rs0"
     MONGODB_PASSWORD: "${MONGODB_PASSWORD}"
 
 datadog:
