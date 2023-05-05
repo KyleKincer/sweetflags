@@ -21,14 +21,7 @@ async function connectToDb() {
       throw new Error('MONGODB_URI environment variable is not set');
     }
 
-    let mongodb_connection_string: string;
-    if (process.env.IS_LOCAL) {
-      mongodb_connection_string = `mongodb://sweetflags-mongo`;
-    } else {
-      mongodb_connection_string = `mongodb://sweetflags:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URI}?replicaSet=rs0&authSource=sweetflags`
-    }
-
-    await mongoose.connect(mongodb_connection_string);
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to database');
   } catch (err) {
     console.error('Error connecting to database:', err);

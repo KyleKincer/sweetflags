@@ -4,7 +4,6 @@ global:
 env:
   config:
     PORT: "3000"
-    MONGODB_URI: mongodb-sweetflags-headless.sweetflags.svc.cluster.local:27017
     REDIS_HOST: sweetflags-redis.dev.gcp.sweetwater.com
     REDIS_PORT: "6379"
     AUTH0_DOMAIN: dev-sweetwater-internal.us.auth0.com
@@ -13,6 +12,7 @@ env:
     NODE_ENV: ${ENVIRONMENT}
     npm_config_cache: /tmp
   secrets:
+    MONGODB_URI: "mongodb://sweetflags:${MONGODB_PASSWORD}@mongodb-sweetflags-headless.sweetflags.svc.cluster.local:27017?replicaSet=rs0&authSource=sweetflags"
     MONGODB_PASSWORD: "${MONGODB_PASSWORD}"
 
 datadog:
