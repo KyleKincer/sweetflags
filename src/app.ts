@@ -25,7 +25,7 @@ async function connectToDb() {
     if (process.env.IS_LOCAL) {
       mongodb_connection_string = `mongodb://sweetflags-mongo`;
     } else {
-      mongodb_connection_string = `mongodb://sweetflags:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URI}?replicaSet=rs0`
+      mongodb_connection_string = `mongodb://sweetflags:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URI}?replicaSet=rs0&authSource=sweetflags`
     }
 
     await mongoose.connect(mongodb_connection_string);
