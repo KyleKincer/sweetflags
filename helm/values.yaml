@@ -3,7 +3,7 @@ global:
 
 env:
   config:
-    PORT: "3000"
+    PORT: "8080"
     REDIS_HOST: sweetflags-redis.dev.gcp.sweetwater.com
     REDIS_PORT: "6379"
     AUTH0_DOMAIN: dev-sweetwater-internal.us.auth0.com
