@@ -13,13 +13,22 @@ import specs from './swagger';
 import 'dd-trace/init';
 
 dotenv.config();
+console.log('Starting server');
 
 async function connectToDb() {
   try {
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI environment variable is not set');
     }
-    await mongoose.connect(`mongodb://sweetflags:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URI}`);
+
+    let mongodb_connection_string: string;
+    if (process.env.IS_LOCAL) {
+      mongodb_connection_string = `mongodb://sweetflags-mongo`;
+    } else {
+      mongodb_connection_string = `mongodb://sweetflags:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URI}?replicaSet=rs0`
+    }
+
+    await mongoose.connect(mongodb_connection_string);
     console.log('Connected to database');
   } catch (err) {
     console.error('Error connecting to database:', err);

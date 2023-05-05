@@ -25,4 +25,4 @@ RUN npm ci
 COPY --from=build /usr/src/app/dist /app/dist
 
 # Start the application using the compiled JavaScript
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start"]

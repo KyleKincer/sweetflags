@@ -9,20 +9,18 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://mongo:27017/db_name
-      - REDIS_HOST=redis
+    env_file: .env
     depends_on:
-      - mongo
-      - redis
+      - sweetflags-mongo
+      - sweetflags-redis
 
-  mongo:
+  sweetflags-mongo:
     image: mongo
-    container_name: sweetflags-mongo
     volumes:
       - mongo-data:/data/db
 
-  redis:
+  sweetflags-redis:
     image: redis
-    container_name: sweetflags-redis
     volumes:
       - redis-data:/data
 
