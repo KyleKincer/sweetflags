@@ -3,7 +3,7 @@ global:
 
 env:
   config:
-    MONGODB_URI: mongodb://localhost:27017/sweetflags
+    MONGODB_URI: mongodb-sweetflags-headless.sweetflags.svc.cluster.local:27017/sweetflags
     REDIS_HOST: ocalhost
     REDIS_PORT: 6379
     AUTH0_DOMAIN: dev-sweetwater-internal.us.auth0.com
@@ -40,6 +40,7 @@ resources:
     memory: 128Mi
 
 redis:
+  enabled: true
   name: sweetflags
   memorySizeGb: 2
   authEnabled: true
