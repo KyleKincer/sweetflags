@@ -2,6 +2,7 @@ import User from '../models/UserModel';
 import App from '../models/AppModel';
 import { IUser, IUserInputDTO } from '../interfaces/IUser';
 import { isIUser, isIUserArray, isIUserInputDTO } from '../type-guards/IUser';
+import { ObjectId } from 'mongodb';
 
 class UserService {
     async getAllUsers(): Promise<IUser[]> {
@@ -23,6 +24,12 @@ class UserService {
     }
 
     async getUserById(id: string): Promise<IUser> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         const userDoc = await User.findById(id).populate('app').exec();
         if (!userDoc) {
             throw new Error('User not found');
@@ -37,6 +44,12 @@ class UserService {
     }
 
     async getUsersByAppId(appId: string): Promise<IUser[]> {
+        try {
+            new ObjectId(appId);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${appId}`);
+        }
+
         const app = await App.findById(appId);
         if (!app) {
             throw new Error('App not found');
@@ -60,6 +73,12 @@ class UserService {
     }
 
     async getUserByAppIdAndExternalId(appId: string, externalId: string): Promise<IUser> {
+        try {
+            new ObjectId(appId);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${appId}`);
+        }
+
         const appDoc = await App.findById(appId);
         if (!appDoc) {
             throw new Error('App not found');
@@ -103,6 +122,12 @@ class UserService {
             throw new Error('Invalid user data');
         }
 
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
         const userDoc = await User.findByIdAndUpdate(id, user, { new: true }).populate('app').exec();
         if (!userDoc) {
             throw new Error('User not updated');
@@ -117,6 +142,12 @@ class UserService {
     }
 
     async deleteUser(id: string): Promise<IUser> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+        
         const userDoc = await User.findByIdAndDelete(id).exec();
         if (!userDoc) {
             throw new Error('User not deleted');
