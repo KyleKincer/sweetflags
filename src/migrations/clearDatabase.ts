@@ -19,7 +19,7 @@ export async function clearDatabase() {
       }
 
     // Drop the database
-    await mongoose.connection.db.dropDatabase();
+    await mongoose.connection.dropDatabase();
 
     console.log('Database cleared.');
 
