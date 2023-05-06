@@ -19,7 +19,7 @@ console.log('Starting server');
 
 async function connectToDb() {
   // TEMPORARY MIGRATION TO CLEAR DATABASE-- REMOVE BEFORE PRODUCTION
-  await clearDatabase();
+  // await clearDatabase();
   try {
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI environment variable is not set');
