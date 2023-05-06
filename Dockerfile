@@ -1,4 +1,3 @@
-# Use the official Node.js image as the base image
 FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0 as build
 
 # Set the working directory in the container
@@ -24,5 +23,4 @@ RUN npm ci
 
 COPY --from=build /usr/src/app/dist /app/dist
 
-# Start the application using the compiled JavaScript
 CMD ["npm", "run", "start"]

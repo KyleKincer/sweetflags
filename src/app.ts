@@ -10,10 +10,14 @@ import environmentRouter from './routes/environments';
 import userRouter from './routes/users';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
+import { clearDatabase } from './migrations/clearDatabase';
 import 'dd-trace/init';
 
 dotenv.config();
 console.log('Starting server');
+
+// TEMPORARY MIGRATION TO CLEAR DATABASE-- REMOVE BEFORE PRODUCTION
+clearDatabase();
 
 async function connectToDb() {
   try {
