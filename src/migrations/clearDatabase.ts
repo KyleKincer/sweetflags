@@ -5,19 +5,6 @@ dotenv.config();
 
 export async function clearDatabase() {
   try {
-    // Connect to the database
-    try {
-        if (!process.env.MONGODB_URI) {
-          throw new Error('MONGODB_URI environment variable is not set');
-        }
-    
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('Connected to database');
-      } catch (err) {
-        console.error('Error connecting to database:', err);
-        throw err;
-      }
-
     // Drop the database
     await mongoose.connection.dropDatabase();
 

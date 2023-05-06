@@ -16,16 +16,6 @@ import 'dd-trace/init';
 dotenv.config();
 console.log('Starting server');
 
-// TEMPORARY MIGRATION TO CLEAR DATABASE-- REMOVE BEFORE PRODUCTION
-(async () => {
-  try {
-    await clearDatabase();
-    console.log('Database cleared successfully');
-  } catch (error) {
-    console.error('Error while clearing the database:', error);
-  }
-})();
-
 async function connectToDb() {
   try {
     if (!process.env.MONGODB_URI) {
@@ -38,6 +28,8 @@ async function connectToDb() {
     console.error('Error connecting to database:', err);
     throw err;
   }
+
+  clearDatabase();
 
   const app = express();
 
