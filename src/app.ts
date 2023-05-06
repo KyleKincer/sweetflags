@@ -29,8 +29,6 @@ async function connectToDb() {
     throw err;
   }
 
-  clearDatabase();
-
   const app = express();
 
   const port = process.env.PORT || 3000;
