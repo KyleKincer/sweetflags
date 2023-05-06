@@ -16,10 +16,17 @@ import 'dd-trace/init';
 dotenv.config();
 console.log('Starting server');
 
+// TEMPORARY MIGRATION TO CLEAR DATABASE-- REMOVE BEFORE PRODUCTION
+(async () => {
+  try {
+    await clearDatabase();
+    console.log('Database cleared successfully');
+  } catch (error) {
+    console.error('Error while clearing the database:', error);
+  }
+})();
 
 async function connectToDb() {
-  // TEMPORARY MIGRATION TO CLEAR DATABASE-- REMOVE BEFORE PRODUCTION
-  // await clearDatabase();
   try {
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI environment variable is not set');
