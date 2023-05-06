@@ -17,9 +17,7 @@ dotenv.config();
 console.log('Starting server');
 
 // TEMPORARY MIGRATION TO CLEAR DATABASE-- REMOVE BEFORE PRODUCTION
-(async function() {
-  await clearDatabase();
-})();
+await clearDatabase();
 
 async function connectToDb() {
   try {
