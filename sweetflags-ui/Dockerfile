@@ -13,9 +13,11 @@ RUN npm ci
 # Copy the rest of the application
 COPY . .
 
-# Define a build argument and use it in the build script
-ARG BUILD_MODE
-RUN npm run build:$BUILD_MODE
+# Set build mode argument with a default value
+ARG BUILD_MODE=development
+
+# Build the application
+RUN npm run build:${BUILD_MODE}
 
 # Production stage
 FROM nginx:alpine-slim
