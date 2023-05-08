@@ -1,8 +1,9 @@
-# Build stage
-FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0 as build
-
 # Set build mode argument with a default value
 ARG BUILD_MODE=development
+
+# Build stage
+FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0 as build
+ARG BUILD_MODE
 
 # Set the working directory
 WORKDIR /app
