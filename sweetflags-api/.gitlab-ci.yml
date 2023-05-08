@@ -18,6 +18,8 @@ scan_ui:
 
 .deploy_api:
   extends: .gitlab_helm_deploy
+  needs:
+    - build_api
   variables:
     IMAGE_NAME: 'api'
     BASE_VALUES_DIR: 'helm/api'

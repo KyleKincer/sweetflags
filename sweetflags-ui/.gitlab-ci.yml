@@ -37,6 +37,7 @@ deploy_ui_dev:
   needs:
     - job: deploy_api_dev
       optional: true
+    - build_ui
   variables:
     SECRET_ENV: dev
   rules:
@@ -54,6 +55,7 @@ deploy_ui_prod:
   needs:
     - job: deploy_api_prod
       optional: true
+    - build_api
   variables:
     SECRET_ENV: prod
   rules:
