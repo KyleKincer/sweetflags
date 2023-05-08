@@ -1,24 +1,24 @@
+before_script:
+    - > 
+        if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+            export BUILD_MODE="production"
+        else
+            export BUILD_MODE="development"
+        fi
+
 build_ui:
   extends: .build_default_registry
   variables:
     IMAGE_NAME: 'ui'
     DOCKERFILE: $CI_PROJECT_DIR/sweetflags-ui/Dockerfile
     CONTEXT: $CI_PROJECT_DIR/sweetflags-ui
+    BUILD_ARGS: "--build-arg BUILD_MODE=$BUILD_MODE"
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
         - .gitlab-ci.yml
         - helm/ui/*
         - sweetflags-ui/**/*
-  script:
-    - |
-      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
-        BUILD_MODE="production"
-      else
-        BUILD_MODE="development"
-      fi
-    - docker build --build-arg BUILD_MODE=$BUILD_MODE -t $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID -f $DOCKERFILE $CONTEXT
-    - docker push $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
 
 scan_ui:
   extends: .container_scanning
