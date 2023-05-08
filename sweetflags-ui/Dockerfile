@@ -17,7 +17,7 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN npm run "build:${BUILD_MODE}"
+RUN npm run build:$BUILD_MODE
 
 # Production stage
 FROM nginx:alpine-slim
