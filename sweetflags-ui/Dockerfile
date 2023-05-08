@@ -2,7 +2,7 @@
 FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0 as build
 
 # Set build mode argument with a default value
-ARG BUILD_MODE=development
+ENV BUILD_MODE=development
 
 # Set the working directory
 WORKDIR /app
