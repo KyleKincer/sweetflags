@@ -1,4 +1,5 @@
-FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0
+# Build stage
+FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0 as build
 
 # Set the working directory
 WORKDIR /app
@@ -12,8 +13,14 @@ RUN npm ci
 # Copy the rest of the application
 COPY . .
 
-# Expose the port your app will run on
-EXPOSE 5173
+# Define a build argument and use it in the build script
+ARG BUILD_MODE
+RUN npm run build:$BUILD_MODE
 
-# Start the application
-CMD ["npm", "run", "dev"]
+# Production stage
+FROM nginx:alpine-slim
+
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 8080
+CMD ["nginx", "-g", "daemon off;"]

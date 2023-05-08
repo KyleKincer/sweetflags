@@ -10,6 +10,15 @@ build_ui:
         - .gitlab-ci.yml
         - helm/ui/*
         - sweetflags-ui/**/*
+  script:
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        BUILD_MODE="production"
+      else
+        BUILD_MODE="development"
+      fi
+    - docker build --build-arg BUILD_MODE=$BUILD_MODE -t $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID -f $DOCKERFILE $CONTEXT
+    - docker push $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
 
 scan_ui:
   extends: .container_scanning
