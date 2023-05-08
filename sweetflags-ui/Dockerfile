@@ -19,7 +19,7 @@ COPY . .
 RUN npm run build:$BUILD_MODE
 
 # Production stage
-FROM nginx:alpine-slim
+FROM nginx:alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY default.conf /etc/nginx/conf.d/default.conf
