@@ -2,51 +2,13 @@ include:
   - project: 'it/devops/ci-templates'
     file: 
       - 'gitlab-deployment.yaml'
-      - 'gitlab-deployment-scan.yaml'
-    ref: gl-deploy-v1
+      - 'stages/scan/mono_repo_scan.yaml'
+    ref: mono-repo-scan
+  - local: sweetflags-api/.gitlab-ci.yml
+  - local: sweetflags-ui/.gitlab-ci.yml
+    # ref: gl-deploy-v1
 
 stages:
   - build
   - image_scan
   - deploy
-
-build_image:
-  extends: .build_default_registry
-
-.deploy:
-  extends: .gitlab_helm_deploy
-  variables:
-    MY_SERVICE_VARIABLE: 'some cool value'
-  secrets:
-    MONGODB_DATADOG_PASSWORD:
-      vault: "shared/gke-mongodb-${SECRET_ENV}/datadog-token@secret"
-      file: false
-    MONGODB_PASSWORD:
-      vault: "${SECRET_ENV}/production-support/sweetflags/env/MONGODB_PASSWORD@secret"
-      file: false
-    MONGODB_REPLICA_SET_KEY:
-      vault: "${SECRET_ENV}/production-support/sweetflags/env/MONGODB_REPLICA_SET_KEY@secret"
-      file: false
-    MONGODB_ROOT_PASSWORD:
-      vault: "${SECRET_ENV}/production-support/sweetflags/env/MONGODB_ROOT_PASSWORD@secret"
-      file: false
-
-deploy_dev:
-  extends: .deploy
-  variables:
-    SECRET_ENV: dev
-  rules:
-    - if: $CI_COMMIT_BRANCH == 'development'
-  tags:
-    - gitlab-helm-deploy
-    - dev-mis_k8s-cluster
-
-deploy_prod:
-  extends: .deploy
-  variables:
-    SECRET_ENV: prod
-  rules:
-    - if: $CI_COMMIT_BRANCH == 'main'
-  tags:
-    - gitlab-helm-deploy
-    - prod-mis_k8s-cluster
