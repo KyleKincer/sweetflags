@@ -15,9 +15,10 @@ COPY . .
 
 # Set build mode argument with a default value
 ARG BUILD_MODE=development
+ENV BUILD_MODE_ENV=${BUILD_MODE}
 
 # Build the application
-RUN npm run build:${BUILD_MODE}
+RUN npm run build:${BUILD_MODE_ENV}
 
 # Production stage
 FROM nginx:alpine-slim
