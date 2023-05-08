@@ -1,8 +1,7 @@
 # Build stage
 FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0 as build
-
 # Set build mode argument with a default value
-ENV BUILD_MODE=development
+ARG BUILD_MODE=development
 
 # Set the working directory
 WORKDIR /app
@@ -17,7 +16,7 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN ["npm", "run", "build:${BUILD_MODE}"]
+RUN npm run build:$BUILD_MODE
 
 # Production stage
 FROM nginx:alpine-slim

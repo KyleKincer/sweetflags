@@ -1,9 +1,9 @@
 before_script:
-    - > 
+    - >
         if [ "$CI_COMMIT_BRANCH" = "main" ]; then
-            export BUILD_MODE="production"
+            export BUILD_ARGS="--build-arg BUILD_MODE=production"
         else
-            export BUILD_MODE="development"
+            export BUILD_ARGS="--build-arg BUILD_MODE=development"
         fi
 
 build_ui:
@@ -12,7 +12,6 @@ build_ui:
     IMAGE_NAME: 'ui'
     DOCKERFILE: $CI_PROJECT_DIR/sweetflags-ui/Dockerfile
     CONTEXT: $CI_PROJECT_DIR/sweetflags-ui
-    BUILD_ARGS: "--build-arg BUILD_MODE=$BUILD_MODE"
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
