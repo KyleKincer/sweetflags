@@ -5,6 +5,8 @@ before_script:
         else
             export BUILD_MODE="development"
         fi
+variables:
+    BUILD_ARGS: "--build-arg BUILD_MODE=$BUILD_MODE"
 
 build_ui:
   extends: .build_default_registry
@@ -12,7 +14,6 @@ build_ui:
     IMAGE_NAME: 'ui'
     DOCKERFILE: $CI_PROJECT_DIR/sweetflags-ui/Dockerfile
     CONTEXT: $CI_PROJECT_DIR/sweetflags-ui
-    BUILD_ARGS: "--build-arg BUILD_MODE=$BUILD_MODE"
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
