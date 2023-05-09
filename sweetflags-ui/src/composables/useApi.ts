@@ -303,6 +303,5 @@ export default function useApi() {
     updateFlag,
     deleteFlag,
     getUsers,
-    getAuditLogsByDocumentId,
   };
 }
