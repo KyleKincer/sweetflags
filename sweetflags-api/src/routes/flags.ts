@@ -475,7 +475,7 @@ router.put('/disable', checkJwt, flagsController.disableFlag);
  *             schema:
  *               type: object
  *               properties:
- *                 flagName:
+ *                 name:
  *                   type: string
  *                   description: The new name of the feature flag
  *                 description:

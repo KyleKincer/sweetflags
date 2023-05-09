@@ -173,7 +173,7 @@ async function updateFlagMetadata(req: Request, res: Response): Promise<void> {
     try {
         const featureFlag = await FeatureFlagService.updateFlagMetadata(
             req.params.id,
-            req.body.flagName,
+            req.body.name,
             req.body.description,
             req.body.app,
             req.body.updatedBy);
