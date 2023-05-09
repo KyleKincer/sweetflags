@@ -134,11 +134,11 @@
                   <div class="flex items-center justify-end">
                     <div v-html="evaluationStrategyIcon(env.evaluationStrategy)" class="w-4 h-4 mr-2"></div>
                     <span :class="[
-                      'px-3 py-1 rounded-full text-sm font-semibold cursor-pointer transition-colors duration-100 ease-in',
-                      env.isActive
-                        ? 'bg-green-500 text-white'
-                        : 'bg-red-500 text-white',
-                    ]" @click.stop="handleToggle(env.environment.id)">
+                        'px-3 py-1 rounded-full text-sm font-semibold cursor-pointer transition-colors duration-100 ease-in',
+                        env.isActive
+                          ? 'bg-green-500 text-white'
+                          : 'bg-red-500 text-white',
+                      ]" @click.stop="handleToggle(env.environment.id)">
                       {{ env.isActive ? 'Enabled' : 'Disabled' }}
                     </span>
                   </div>
@@ -215,6 +215,7 @@ export default defineComponent({
     const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlag, getApps } = useApi();
     const { user } = useAuth0();
     const flagDetails = ref({} as FeatureFlag)
+    const originalFlagDetails = ref({} as FeatureFlag)
     const apps = ref([] as App[]);
     const editMode = ref(false);
     const editEnvironmentMode = ref(false);
@@ -231,6 +232,8 @@ export default defineComponent({
       try {
         const data = await getFeatureFlagById(id);
         flagDetails.value = data;
+        // make a copy of the flag details so we can reset them if the user cancels
+        originalFlagDetails.value = JSON.parse(JSON.stringify(data));
       } catch (err) {
         console.error('Error fetching feature flag details:', err);
       }
@@ -273,7 +276,35 @@ export default defineComponent({
 
     async function handleUpdate() {
       try {
-        const newFlag = await updateFlag(flagDetails.value.id, flagDetails.value.name, flagDetails.value.description, flagDetails.value.app.id, user.value.name ?? 'unknown');
+        // compare the original flag details with the new ones to see if anything has changed
+        if (JSON.stringify(flagDetails.value) === JSON.stringify(originalFlagDetails.value)) {
+          // nothing has changed, so just exit edit mode
+          editMode.value = false;
+          return;
+        }
+
+        // something has changed, so update the flag. only send the fields that have changed
+        // loop through the original flag details and compare each field to the new flag details
+        // if the field has changed, add it to the update object
+        const updateObj: any = {};
+        for (const [key, value] of Object.entries(originalFlagDetails.value as FeatureFlag)) {
+          if (
+            JSON.stringify(value) !==
+            JSON.stringify((flagDetails.value as FeatureFlag)[key])
+          ) {
+            updateObj[key] = (flagDetails.value as FeatureFlag)[key];
+          }
+        }
+
+        // update the flag. only send the fields that have changed
+        const newFlag = await updateFlag(
+          flagDetails.value.id,
+          user.value.name ?? 'unknown',
+          updateObj.name,
+          updateObj.description,
+          updateObj.app?.id // Use optional chaining here
+        );
+        
         flagDetails.value = newFlag;
         editMode.value = false;
       } catch (err) {

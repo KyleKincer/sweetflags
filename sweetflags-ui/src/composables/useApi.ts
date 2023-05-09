@@ -138,6 +138,9 @@ export default function useApi() {
     environmentId: string,
     updatedBy: string
   ) => {
+    isLoading.value = true;
+    error.value = null;
+
     try {
       const response = await api.put("/flags/toggle", {
         id,
@@ -149,6 +152,8 @@ export default function useApi() {
     } catch (error) {
       console.error("Failed to toggle flag:", error);
       throw error;
+    } finally {
+      isLoading.value = false;
     }
   };
 
@@ -156,6 +161,9 @@ export default function useApi() {
     id: string,
     updatedBy: string
   ) => {
+    isLoading.value = true;
+    error.value = null;
+
     try {
       const response = await api.put("/flags/enable", {
         id,
@@ -166,6 +174,8 @@ export default function useApi() {
     } catch (error) {
       console.error("Failed to enable flag:", error);
       throw error;
+    } finally {
+      isLoading.value = false;
     }
   };
 
@@ -173,6 +183,9 @@ export default function useApi() {
     id: string,
     updatedBy: string
   ) => {
+    isLoading.value = true;
+    error.value = null;
+
     try {
       const response = await api.put("/flags/disable", {
         id,
@@ -183,75 +196,88 @@ export default function useApi() {
     } catch (error) {
       console.error("Failed to disable flag:", error);
       throw error;
+    } finally {
+      isLoading.value = false;
     }
   };
 
   const createFeatureFlag = async (flag: FeatureFlagCreatePayload) => {
+    isLoading.value = true;
+    error.value = null;
+
     try {
       const response = await api.post("/flags", flag);
       return response.data;
     } catch (error) {
       console.error("Failed to create flag:", error);
       throw error;
+    } finally {
+      isLoading.value = false;
     }
   };
 
-  async function updateFlag(id: string, name: string, description: string, app: string, updatedBy: string): Promise<FeatureFlag> {
+  async function updateFlag(id: string, updatedBy: string, name?: string, description?: string | undefined, app?: string | undefined): Promise<FeatureFlag> {
+    isLoading.value = true;
+    error.value = null;
+
     try {
+      // only send the fields that are being updated
       const response = await api.put(`/flags/${id}/metadata`, {
-        "flagName": name,
-        "description": description,
-        "app": app,
-        "updatedBy": updatedBy,
+        id,
+        updatedBy,
+        name,
+        description,
+        app
       });
 
       return response.data;
     } catch (error) {
       console.error('Error updating feature flag:', error);
       throw error;
+    } finally {
+      isLoading.value = false;
     }
   }
 
   async function deleteFlag(id: string): Promise<FeatureFlag> {
+    isLoading.value = true;
+    error.value = null;
+
     try {
       const response = await api.delete(`/flags/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting feature flag:', error);
       throw error;
+    } finally {
+      isLoading.value = false;
     }
   }
 
   async function createApp(app: App) {
+    isLoading.value = true;
+    error.value = null;
+
     try {
       const response = await api.post("/apps", app);
       return response.data;
     } catch (error) {
       console.error("Failed to create app:", error);
       throw error;
-    }
-  };
-
-  async function getUsers(appId: string) {
-    isLoading.value = true;
-    try {
-      const response = await api.get(`/users/app/${appId}`);
-      return response.data;
-    } catch (error) {
-      console.error("Failed to get users:", error);
-      throw error;
     } finally {
       isLoading.value = false;
     }
   };
 
-  async function getAuditLogsByDocumentId(documentId: string, page: number = 1, limit: number = 10) {
+  async function getUsers(appId: string) {
     isLoading.value = true;
+    error.value = null;
+
     try {
-      const response = await api.get(`/auditlog/doc/${documentId}?page=${page}&limit=${limit}`);
+      const response = await api.get(`/users/app/${appId}`);
       return response.data;
     } catch (error) {
-      console.error("Failed to get audit logs:", error);
+      console.error("Failed to get users:", error);
       throw error;
     } finally {
       isLoading.value = false;
