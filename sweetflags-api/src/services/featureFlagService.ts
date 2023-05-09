@@ -214,7 +214,7 @@ class FeatureFlagService {
         return await this.isEnabled(featureFlagDoc, userId, environmentId);
     }
 
-    async getFlagStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: {id: string; name: string; isEnabled: boolean}[] }> {
+    async getFlagStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
         const cachedData = await RedisCache.getFeatureFlagsByUserId(appId, userId)
         if (cachedData) {
             console.log('Cache hit');
@@ -354,22 +354,32 @@ class FeatureFlagService {
         } catch (err: unknown) {
             throw new Error(`Invalid id ${id}`);
         }
-        
+
         if (!name && !description && !app) {
             throw new Error('At least one of the following properties is required: name, description, app');
         }
+
+        // Fetch the current feature flag document
+        const currentFeatureFlagDoc = await FeatureFlag.findById(id).exec();
+        if (!currentFeatureFlagDoc) {
+            throw new FlagNotFoundError(`Flag '${id}' not found`);
+        }
+
+        // Invalidate cache before updating the feature flag
+        await RedisCache.deleteCacheForFeatureFlag(currentFeatureFlagDoc);
+
         const featureFlagDoc = await FeatureFlag.findByIdAndUpdate(id, { name: name, description: description, app: app, updatedBy: updatedBy }, { new: true }).exec();
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
         }
-        
+
         // if the app has changed, update the environments as well
         if (app) {
             const environments = await Environment.find({ app: app }).exec();
             if (!environments) {
                 throw new EnvironmentNotFoundError(`No environments found for app with ID '${app}'`);
             }
-            
+
             const environmentsArray = environments.map((env) => ({
                 environment: env,
                 isActive: false,
@@ -378,17 +388,17 @@ class FeatureFlagService {
                 allowedUsers: [],
                 disallowedUsers: [],
                 updatedBy: updatedBy,
-            }));            
-            
+            }));
+
             featureFlagDoc.environments = environmentsArray;
             await featureFlagDoc.save();
         }
-        
+
         await featureFlagDoc.populate('app');
         await featureFlagDoc.populate('environments.environment');
         await featureFlagDoc.populate('environments.allowedUsers');
         await featureFlagDoc.populate('environments.disallowedUsers');
-        
+
         const featureFlag = featureFlagDoc.toObject();
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
@@ -443,7 +453,7 @@ class FeatureFlagService {
 
     async createFlag(data: IFeatureFlagInputDTO): Promise<IFeatureFlag> {
         const { name, appId, isActive, createdBy, description, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
-        
+
         try {
             new ObjectId(appId);
         } catch (err: unknown) {
@@ -499,7 +509,7 @@ class FeatureFlagService {
         } catch (err: unknown) {
             throw new Error(`Invalid id ${id}`);
         }
-        
+
         const featureFlagDoc = await FeatureFlag.findByIdAndDelete(id).exec();
         if (!featureFlagDoc) {
             throw new FlagNotFoundError(`Flag '${id}' not found`);
