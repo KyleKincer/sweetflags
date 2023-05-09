@@ -25,7 +25,11 @@
                 Edit
               </button>
             </div>
-            <div v-if="editMode">
+            <div v-if="editMode" class="flex items-center">
+              <button @click="cancelEdit"
+                class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-0.5 px-3 rounded mr-1">
+                Cancel
+              </button>
               <button @click="handleUpdate"
                 class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-0.5 px-3 rounded">
                 Save
@@ -162,21 +166,109 @@
                       Edit
                     </button>
                   </div>
+                  <div v-else class="flex items-center mx-1">
+                    <button @click="cancelEdit"
+                      class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-0.5 px-3 rounded mr-1">
+                      Cancel
+                    </button>
+                    <button @click="handleUpdateEnvironment(env.environment.id)"
+                      class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-0.5 px-3 rounded">
+                      Save
+                    </button>
+                  </div>
                 </div>
                 <h4 class="font-semibold">Evaluation Strategy:</h4>
                 <div class="flex items-center">
-                  <div v-html="evaluationStrategyIcon(env.evaluationStrategy)" class="w-4 h-4 mr-1"></div>
-                  <p>{{ env.evaluationStrategy }}</p>
+                  <div v-html="evaluationStrategyIcon(env.evaluationStrategy)" class="w-4 h-4 mr-2"></div>
+                  <template v-if="!editEnvironmentMode">
+                    <span>{{ env.evaluationStrategy }}</span>
+                  </template>
+                  <template v-else>
+                    <select v-model="env.evaluationStrategy"
+                      class="border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      @change="getUsersIfNeeded">
+                      <option value="BOOLEAN">Boolean</option>
+                      <option value="USER">User</option>
+                      <option value="PERCENTAGE">Percentage</option>
+                      <option value="PROBABALISTIC">Probabilistic</option>
+                    </select>
+                  </template>
                 </div>
-                <div v-if="env.evaluationStrategy === 'USER'">
-                  <h4 class="font-semibold">Allowed Users:</h4>
-                  <ul>
-                    <li v-for="user in env.allowedUsers" :key="user.id">{{ user.name }}</li>
-                  </ul>
-                  <h4 class="font-semibold">Disallowed Users:</h4>
-                  <ul>
-                    <li v-for="user in env.disallowedUsers" :key="user.id">{{ user.name }}</li>
-                  </ul>
+                <div v-if="editEnvironmentMode && env.evaluationStrategy === 'USER'">
+                  <label for="userSearch" class="block text-sm mb-2">Search Users: ({{ filteredUsers.length }})</label>
+                  <input type="text" id="userSearch" v-model="userSearch"
+                    class="w-full px-3 py-2 mb-4 border border-gray-300 rounded" placeholder="Search for users..." />
+                  <div class="relative mb-4 h-64 overflow-y-auto">
+                    <ul v-show="!isLoading">
+                      <li v-for="user in filteredUsers" :key="user.id"
+                        class="p-2 border bg-white shadow-md rounded-md flex items-center justify-between whitespace-nowrap hover:bg-gray-200 transition-colors duration-200 ease-in">
+                        <span class="flex-grow text whitespace-nowrap truncate">{{ user.name }}</span>
+                        <div v-if="env.allowedUsers?.map(user => user.id).includes(user.id)" class="ml-4 text-green-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="w-5 h-5 mr-2">
+                            <path fill-rule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                        <div v-if="env.disallowedUsers?.map(user => user.id).includes(user.id)" class="ml-4 text-red-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="w-5 h-5 mr-2">
+                            <path fill-rule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                        <div>
+                          <button @click.prevent="addToAllowedUsers(env.id, user)"
+                            class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded mr-2">
+                            Allow
+                          </button>
+                          <button @click.prevent="addToDisallowedUsers(env.id, user)"
+                            class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+                            Disallow
+                          </button>
+                        </div>
+                      </li>
+                    </ul>
+                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center">
+                      <LoadingSpinner />
+                    </div>
+                  </div>
+                  <div class="flex flex-row justify-between">
+                    <div class="w-1/2 mr-2">
+                      <h3 class="text-lg font-semibold mb-2">Allowed Users</h3>
+                      <ul class="px-2">
+                        <li v-for="user in env.allowedUsers" :key="user.id" class="mb-2 truncate">
+                          <span class="text whitespace-nowrap truncate">
+                            {{ user.name }}
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="w-1/2 ml-2">
+                      <h3 class="text-lg font-semibold mb-2">Disallowed Users</h3>
+                      <ul>
+                        <li v-for="user in env.disallowedUsers" :key="user.id" class="mb-2">
+                          {{ user.name }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="!editEnvironmentMode && env.evaluationStrategy === 'USER'">
+                  <div v-if="env.allowedUsers && env.allowedUsers.length>0">
+                    <h4 class="font-semibold">Allowed Users:</h4>
+                    <ul>
+                      <li v-for="user in env.allowedUsers" :key="user.id">{{ user.name }}</li>
+                    </ul>
+                  </div>
+                  <div v-if="env.disallowedUsers && env.disallowedUsers.length>0">
+                    <h4 class="font-semibold">Disallowed Users:</h4>
+                    <ul>
+                      <li v-for="user in env.disallowedUsers" :key="user.id">{{ user.name }}</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </Collapse>
@@ -197,12 +289,13 @@
   
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, computed } from 'vue';
+import { defineComponent, onMounted, ref, computed, watch } from 'vue';
 import { useAuth0 } from '@auth0/auth0-vue';
 import useApi from '../composables/useApi';
 import { evaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
-import { FeatureFlag, App } from 'src/types';
+import { FeatureFlag, App, User, Environment } from 'src/types';
 import router from '../router';
+import LoadingSpinner from './LoadingSpinner.vue';
 
 export default defineComponent({
   props: {
@@ -211,12 +304,17 @@ export default defineComponent({
       required: true,
     },
   },
+  components: {
+    LoadingSpinner,
+  },
   setup(props) {
-    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlag, getApps } = useApi();
+    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoading } = useApi();
     const { user } = useAuth0();
     const flagDetails = ref({} as FeatureFlag)
     const originalFlagDetails = ref({} as FeatureFlag)
     const apps = ref([] as App[]);
+    const users = ref([] as User[]);
+    const userSearch = ref('');
     const editMode = ref(false);
     const editEnvironmentMode = ref(false);
     const search = ref('');
@@ -227,6 +325,19 @@ export default defineComponent({
       await fetchFeatureFlagDetails(props.flagId);
       apps.value = await getApps();
     });
+
+    // watch for changes to flagDetails.environments and get users if evaluationstrategy is USER
+    watch(flagDetails, async (newVal, oldVal) => {
+      if (newVal.environments && newVal.environments.length > 0 && newVal.environments.some(env => env.evaluationStrategy === 'USER')) {
+        await getUsersIfNeeded();
+      }
+    });
+
+    async function getUsersIfNeeded() {
+      if (users.value.length === 0) {
+        users.value = await getUsers(flagDetails.value.app.id);
+      }
+    }
 
     async function fetchFeatureFlagDetails(id: string) {
       try {
@@ -264,6 +375,56 @@ export default defineComponent({
       });
     });
 
+    const filteredUsers = computed(() => {
+      return users.value?.filter(user => {
+        const nameMatches = !userSearch.value || user.name.toLowerCase().includes(userSearch.value.toLowerCase());
+        const externalIdMatches = !userSearch.value || user.externalId.toLowerCase().includes(userSearch.value.toLowerCase());
+        const isActive = user.isActive;
+        return (nameMatches || externalIdMatches) && isActive;
+      });
+    });
+
+    function addToAllowedUsers(envId: string, user: User) {
+      let allowedUsers = flagDetails.value.environments.find(env => env.id === envId)?.allowedUsers;
+      let disallowedUsers = flagDetails.value.environments.find(env => env.id === envId)?.disallowedUsers;
+      if (!allowedUsers) {
+        allowedUsers = [];
+      }
+      if (!disallowedUsers) {
+        disallowedUsers = [];
+      }
+      if (!allowedUsers.map(user => user.id).includes(user.id)) {
+        allowedUsers.push(user);
+        if (disallowedUsers.map(user => user.id).includes(user.id)) {
+          disallowedUsers = disallowedUsers.filter(disallowedUser => disallowedUser.id !== user.id);
+        }
+      } else {
+        allowedUsers = allowedUsers.filter(allowedUser => allowedUser.id !== user.id);
+      }
+      flagDetails.value.environments.find(env => env.id === envId)!.allowedUsers = allowedUsers;
+      flagDetails.value.environments.find(env => env.id === envId)!.disallowedUsers = disallowedUsers;
+    }
+
+    function addToDisallowedUsers(envId: string, user: User) {
+      let allowedUsers = flagDetails.value.environments.find(env => env.id === envId)?.allowedUsers;
+      let disallowedUsers = flagDetails.value.environments.find(env => env.id === envId)?.disallowedUsers;
+      if (!allowedUsers) {
+        allowedUsers = [];
+      }
+      if (!disallowedUsers) {
+        disallowedUsers = [];
+      }
+      if (!disallowedUsers?.map(user => user.id).includes(user.id)) {
+        disallowedUsers.push(user);
+        if (allowedUsers.map(user => user.id).includes(user.id)) {
+          allowedUsers = allowedUsers.filter(allowedUser => allowedUser.id !== user.id);
+        }
+      } else {
+        disallowedUsers = disallowedUsers.filter(disallowedUser => disallowedUser.id !== user.id);
+      }
+      flagDetails.value.environments.find(env => env.id === envId)!.allowedUsers = allowedUsers;
+      flagDetails.value.environments.find(env => env.id === envId)!.disallowedUsers = disallowedUsers;
+    }
 
     async function handleToggle(envId: string) {
       try {
@@ -297,20 +458,72 @@ export default defineComponent({
         }
 
         // update the flag. only send the fields that have changed
-        const newFlag = await updateFlag(
+        const newFlag = await updateFlagMetadata(
           flagDetails.value.id,
           user.value.name ?? 'unknown',
           updateObj.name,
           updateObj.description,
-          updateObj.app?.id // Use optional chaining here
+          updateObj.app?.id
         );
-        
+
         flagDetails.value = newFlag;
+        originalFlagDetails.value = JSON.parse(JSON.stringify(newFlag));
         editMode.value = false;
       } catch (err) {
         console.error('Error updating feature flag:', err);
       }
     };
+
+    async function handleUpdateEnvironment(envId: string) {
+      try {
+        // Find the original environment and the new environment by the given ID
+        const originalEnvironment = originalFlagDetails.value.environments.find(env => env.environment.id === envId);
+        const newEnvironment = flagDetails.value.environments.find(env => env.environment.id === envId);
+
+        if (!originalEnvironment || !newEnvironment) {
+          console.error('Environment not found');
+          return;
+        }
+
+        // Compare the original environment with the new one to see if anything has changed
+        if (JSON.stringify(originalEnvironment) === JSON.stringify(newEnvironment)) {
+          // nothing has changed, so just exit edit mode
+          editEnvironmentMode.value = false;
+          return;
+        }
+
+        // something has changed, so update the flag. only send the fields that have changed
+        // loop through the original environment and compare each field to the new environment
+        // if the field has changed, add it to the update object
+        const updateObj: Partial<Environment> = { id: envId };
+        for (const [key, value] of Object.entries(originalEnvironment)) {
+          if (JSON.stringify(value) !== JSON.stringify(newEnvironment[key as keyof Environment])) {
+            updateObj[key as keyof Environment] = newEnvironment[key as keyof Environment];
+          }
+        }
+
+        // Update the flag with the changed environment
+        const newFlag = await updateFlag(
+          flagDetails.value.id,
+          envId,
+          user.value.name ?? 'unknown',
+          updateObj.isActive,
+          updateObj.evaluationStrategy,
+          updateObj.evaluationPercentage,
+          updateObj.allowedUsers?.map(user => user.id),
+          updateObj.disallowedUsers?.map(user => user.id),
+        );
+
+        flagDetails.value = newFlag;
+        originalFlagDetails.value = JSON.parse(JSON.stringify(newFlag));
+        editEnvironmentMode.value = false;
+      } catch (err) {
+        console.error('Error updating feature flag:', err);
+      }
+    };
+
+
+
 
     async function handleDelete() {
       if (window.confirm('Are you sure you want to delete this feature flag?')) {
@@ -321,6 +534,13 @@ export default defineComponent({
           console.error('Error deleting feature flag:', err);
         }
       }
+    }
+
+    async function cancelEdit() {
+      // reset the flag details to the original values
+      flagDetails.value = JSON.parse(JSON.stringify(originalFlagDetails.value));
+      editMode.value = false;
+      editEnvironmentMode.value = false;
     }
 
     function copyToClipboard() {
@@ -348,6 +568,7 @@ export default defineComponent({
     function toggleRotation(envName: string) {
       if (expandedEnvironment.value === envName) {
         expandedEnvironment.value = '';
+        editEnvironmentMode.value = false;
       } else {
         expandedEnvironment.value = envName;
       }
@@ -360,7 +581,9 @@ export default defineComponent({
       formatDateTime,
       handleToggle,
       handleUpdate,
+      handleUpdateEnvironment,
       handleDelete,
+      cancelEdit,
       editMode,
       editEnvironmentMode,
       expandedEnvironment,
@@ -368,6 +591,12 @@ export default defineComponent({
       evaluationStrategyIcon,
       filteredEnvironments,
       search,
+      getUsersIfNeeded,
+      userSearch,
+      filteredUsers,
+      addToAllowedUsers,
+      addToDisallowedUsers,
+      isLoading,
       disableAllEnvironments,
       enableAllEnvironments,
     };

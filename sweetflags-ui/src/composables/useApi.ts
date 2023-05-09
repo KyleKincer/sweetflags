@@ -216,7 +216,7 @@ export default function useApi() {
     }
   };
 
-  async function updateFlag(id: string, updatedBy: string, name?: string, description?: string | undefined, app?: string | undefined): Promise<FeatureFlag> {
+  async function updateFlagMetadata(id: string, updatedBy: string, name?: string, description?: string | undefined, app?: string | undefined): Promise<FeatureFlag> {
     isLoading.value = true;
     error.value = null;
 
@@ -228,6 +228,32 @@ export default function useApi() {
         name,
         description,
         app
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error updating feature flag:', error);
+      throw error;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function updateFlag(id: string, environmentId: string, updatedBy: string, isActive?: boolean, evaluationStrategy?: string, evaluationPercentage?: number, allowedUsers?: string[], disallowedUsers?: string[]): Promise<FeatureFlag> {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      // only send the fields that are being updated
+      const response = await api.put(`/flags/${id}`, {
+        id,
+        environmentId,
+        updatedBy,
+        isActive,
+        evaluationStrategy,
+        evaluationPercentage,
+        allowedUsers,
+        disallowedUsers
       });
 
       return response.data;
@@ -300,6 +326,7 @@ export default function useApi() {
     disableFlag,
     createFeatureFlag,
     createApp,
+    updateFlagMetadata,
     updateFlag,
     deleteFlag,
     getUsers,
