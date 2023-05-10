@@ -14,6 +14,7 @@ COPY . .
 
 # Build the TypeScript code
 RUN npm run build
+RUN ls -la dist
 
 FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0
 WORKDIR /app
@@ -21,6 +22,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-COPY --from=build /usr/src/app/dist /app/dist
+COPY --from=build /usr/src/app/dist ./dist
+RUN ls -la /app/dist
 
 CMD ["npm", "run", "start"]
