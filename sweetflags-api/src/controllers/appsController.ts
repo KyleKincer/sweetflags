@@ -72,9 +72,28 @@ async function createApp(req: Request, res: Response): Promise<void> {
     }
 }
 
+async function deleteApp(req: Request, res: Response): Promise<void> {
+    const id = req.params.id;
+    try {
+        await AppsService.deleteApp(id, req.body.updatedBy);
+        res.status(204).send();
+    } catch (err: unknown) {
+        console.error(err);
+        if (err instanceof AppNotFoundError) {
+            res.status(err.statusCode).json({ message: err.message })
+        }
+        if (err instanceof Error) {
+            res.status(500).json({ message: err.message })
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred' })
+        }
+    }
+}
+
 export {
     getAllApps,
     getAppById,
     getAppByName,
-    createApp
+    createApp,
+    deleteApp,
 };

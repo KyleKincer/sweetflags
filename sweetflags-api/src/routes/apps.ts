@@ -198,4 +198,67 @@ router.get('/name/:name', checkJwt, appsController.getAppByName);
  */
 router.post('/', checkJwt, appsController.createApp);
 
+/**
+ * @swagger
+ * paths:
+ *   /api/apps/{id}:
+ *     delete:
+ *       summary: Delete an app
+ *       description: Deletes an app with the specified ID and clears its cache.
+ *       tags: [Apps]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: The ID of the app to delete
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - updatedBy
+ *               properties:
+ *                 updatedBy:
+ *                   type: string
+ *                   description: The user who deleted the app
+ *       responses:
+ *         204:
+ *           description: App deleted successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: Success message
+ *         404:
+ *           description: App not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: Error message
+ *         500:
+ *           description: Internal server error
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: Error message
+ */
+router.delete('/:id', checkJwt, appsController.deleteApp);
+
 export default router;

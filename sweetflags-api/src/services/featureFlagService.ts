@@ -9,6 +9,9 @@ import md5 from 'md5';
 import { Document } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { IEnvironment } from '../interfaces/IEnvironment';
+import logAction from '../utilities/logger';
+import User from '../models/UserModel';
+import { IApp } from '../interfaces/IApp';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
@@ -271,6 +274,27 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
+
+        // log event
+        let message = '';
+        if (featureFlag.environments[environmentIndex].evaluationStrategy === 'BOOLEAN') {
+            message = `Flag '${featureFlag.name}' was ${featureFlag.environments[environmentIndex].isActive ? 'enabled' : 'disabled'} for environment '${(featureFlag.environments[environmentIndex].environment as IEnvironment).name}'`;
+        } else if (featureFlag.environments[environmentIndex].evaluationStrategy === 'USER') {
+            if (featureFlag.environments[environmentIndex].isActive) {
+                message = `Flag '${featureFlag.name}' was enabled for environment '${(featureFlag.environments[environmentIndex].environment as IEnvironment).name}' for allowed users '${featureFlag.environments[environmentIndex].allowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}' and disallowed users '${featureFlag.environments[environmentIndex].disallowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}'.`;
+            } else {
+                message = `Flag '${featureFlag.name}' was disabled for environment '${(featureFlag.environments[environmentIndex].environment as IEnvironment).name}'.`;
+            }
+        }
+        logAction(
+            updatedBy, 
+            'TOGGLE_FLAG', 
+            'FeatureFlag', 
+            featureFlag.id, 
+            message,)
+
+        
+        
         // invalidate cache
         RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
@@ -307,6 +331,22 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
+
+        // log event
+        let message = '';
+        if (featureFlag.environments[0].evaluationStrategy === 'BOOLEAN') {
+            message = `Flag '${featureFlag.name}' was enabled for all environments`;
+        } else if (featureFlag.environments[0].evaluationStrategy === 'USER') {
+            message = `Flag '${featureFlag.name}' was enabled for all environments for allowed users '${featureFlag.environments[0].allowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}' and disallowed users '${featureFlag.environments[0].disallowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}'.`;
+        }
+        logAction(
+            updatedBy,
+            'ENABLE_FLAG',
+            'FeatureFlag',
+            featureFlag.id,
+            message,
+        );
+        
         // invalidate cache
         RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
@@ -343,6 +383,17 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
+
+        // log event
+        const message = `Flag '${featureFlag.name}' was disabled for all environments`;
+        logAction(
+            updatedBy,
+            'DISABLE_FLAG',
+            'FeatureFlag',
+            featureFlag.id,
+            message,
+        );
+
         // invalidate cache
         RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
@@ -357,6 +408,19 @@ class FeatureFlagService {
 
         if (!name && !description && !app) {
             throw new Error('At least one of the following properties is required: name, description, app');
+        }
+
+        // Validate app
+        let appDoc: IApp | null = null;
+        if (app) {
+            if (!ObjectId.isValid(app)) {
+                throw new Error(`Invalid app id ${app}`);
+            }
+
+            appDoc = await App.findById(app).exec();
+            if (!appDoc) {
+                throw new AppNotFoundError(`App with id '${app}' not found`);
+            }
         }
 
         // Fetch the current feature flag document
@@ -392,6 +456,9 @@ class FeatureFlagService {
 
             featureFlagDoc.environments = environmentsArray;
             await featureFlagDoc.save();
+
+            // log event
+            const message = `Flag '${featureFlagDoc.name}' was changed to app '${appDoc?.name}'`;
         }
 
         await featureFlagDoc.populate('app');
@@ -403,6 +470,17 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
+
+        // log event
+        const message = `Flag '${featureFlag.name}' was updated`;
+        logAction(
+            updatedBy || '',
+            'UPDATE_FLAG_METADATA',
+            'FeatureFlag',
+            featureFlag.id,
+            message,
+        );
+        
         // invalidate cache
         RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
@@ -444,6 +522,17 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
+
+        // log event
+        const message = `Flag '${featureFlag.name}' was updated for environment '${(featureFlag.environments[environmentIndex].environment as IEnvironment).name}'`;
+        logAction(
+            updatedBy,
+            'UPDATE_FLAG',
+            'FeatureFlag',
+            featureFlag.id,
+            message,
+        );
+
         // invalidate cache
         await RedisCache.deleteCacheForFeatureFlag(featureFlag);
         // update cache
@@ -497,6 +586,16 @@ class FeatureFlagService {
             throw new Error('Invalid flag');
         }
 
+        // log event
+        const message = `Flag '${featureFlag.name}' was created for app '${(featureFlag.app as IApp).name}'`;
+        logAction(
+            createdBy,
+            'CREATE_FLAG',
+            'FeatureFlag',
+            featureFlag.id,
+            message,
+        );
+
         // Update the cache
         RedisCache.deleteCacheForFeatureFlag(featureFlag);
         RedisCache.setCacheForFeatureFlag(featureFlag);
@@ -522,6 +621,17 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
+        
+        // log event
+        const message = `Flag '${featureFlag.name}' was deleted`;
+        logAction(
+            featureFlag.createdBy,
+            'DELETE_FLAG',
+            'FeatureFlag',
+            featureFlag.id,
+            message,
+        );
+        
         await RedisCache.deleteCacheForFeatureFlag(featureFlag)
         return featureFlag;
     }
