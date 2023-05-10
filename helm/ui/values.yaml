@@ -6,6 +6,9 @@ env:
     NODE_ENV: ${ENVIRONMENT}
     npm_config_cache: /tmp
 
+writablePaths:
+  - /var/cache
+
 datadog:
   labels:
     admission.datadoghq.com/enabled: "true"
