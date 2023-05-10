@@ -7,7 +7,6 @@ env:
     npm_config_cache: /tmp
 
 writablePaths:
-  # - /var/cache/nginx/
   # - /etc/nginx/
   # - /var/lib/nginx/tmp
   # - /var/lib/nginx/logs
