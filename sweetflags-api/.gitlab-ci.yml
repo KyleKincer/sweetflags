@@ -36,6 +36,15 @@ scan_ui:
     MONGODB_ROOT_PASSWORD:
       vault: "${SECRET_ENV}/production-support/sweetflags/env/MONGODB_ROOT_PASSWORD@secret"
       file: false
+    PDNS_API_KEY:
+      vault: "shared/power-dns-${SECRET_ENV}-mis/PDNS_API_KEY@secret"
+      file: false
+    TLS_CRT:
+      vault: "shared/${SECRET_ENV}-gcp-letsencrypt/cert@secret"
+      file: false
+    TLS_KEY:
+      vault: "shared/${SECRET_ENV}-gcp-letsencrypt/key@secret"
+      file: false
 
 deploy_api_dev:
   extends: .deploy_api
