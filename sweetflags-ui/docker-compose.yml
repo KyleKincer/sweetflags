@@ -9,6 +9,8 @@ services:
         BUILD_MODE: development
     ports:
       - '8080:8080'
+    read_only: true
     volumes:
-      - '.:/app'
-      - '/app/node_modules'
+      - './varcache:/var/cache/nginx'
+      - './varrun:/var/run'
+      - './tmp:/tmp'
