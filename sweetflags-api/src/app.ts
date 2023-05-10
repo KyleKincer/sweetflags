@@ -3,14 +3,12 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
-import healthRouter from './routes/health';
 import flagRouter from './routes/flags';
 import appRouter from './routes/apps';
 import environmentRouter from './routes/environments';
 import userRouter from './routes/users';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
-import { clearDatabase } from './migrations/clearDatabase';
 import 'dd-trace/init';
 
 dotenv.config();
@@ -38,7 +36,6 @@ async function connectToDb() {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
   app.use(cors());
   app.use(bodyParser.json());
-  app.use('/api/healthz', healthRouter);
   app.use('/api/flags', flagRouter);
   app.use('/api/apps', appRouter);
   app.use('/api/environments', environmentRouter);

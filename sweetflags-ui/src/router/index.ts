@@ -7,7 +7,6 @@ import FeatureFlagCreate from '../components/FeatureFlagCreate.vue';
 import FeatureFlagDetail from '../components/FeatureFlagDetail.vue';
 import EnvironmentCreate from '../components/EnvironmentCreate.vue';
 import AppManage from '../components/AppManage.vue';
-import Healthz from '../components/Healthz.vue';
 import { authGuard } from '@auth0/auth0-vue';
 
 const routes: RouteRecordRaw[] = [
@@ -64,11 +63,6 @@ const routes: RouteRecordRaw[] = [
     beforeEnter: authGuard,
     props: (route) => ({ flagId: route.params.flagId })
   },
-  {
-    path: '/healthz',
-    name: 'Healthz',
-    component: Healthz,
-  }
 ];
 
 const router = createRouter({
