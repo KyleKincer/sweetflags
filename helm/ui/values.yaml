@@ -8,6 +8,7 @@ env:
 
 writablePaths:
   - /var/cache/nginx/
+  - /etc/nginx/off
 
 datadog:
   labels:
