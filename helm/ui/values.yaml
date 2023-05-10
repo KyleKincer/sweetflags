@@ -9,6 +9,9 @@ env:
 writablePaths:
   - /var/cache/nginx/
   - /etc/nginx/
+  - /var/lib/nginx/tmp
+  - /var/lib/nginx/logs
+  - /etc/nginx/conf.d/
 
 datadog:
   labels:
