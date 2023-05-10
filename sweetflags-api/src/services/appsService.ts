@@ -6,6 +6,7 @@ import { AppNotFoundError } from '../errors';
 import { isIApp, isIAppArray } from '../type-guards/IApp';
 import { Document } from 'mongoose';
 import { ObjectId } from 'mongodb';
+import logAction from '../utilities/logger';
 
 class AppsService {
     async getAllApps(isActive: boolean | undefined): Promise<Array<IApp>> {
@@ -116,9 +117,30 @@ class AppsService {
             throw new Error('Invalid app data');
         }
 
+        // Log action
+        await logAction(createdBy, 'CREATE_APP', app.id, 'App', `Created app ${app.name}`);
+
         RedisCache.deleteCacheForApp(app)
         RedisCache.setCacheForApp(app)
         return app;
+    }
+
+    async deleteApp(id: string, updatedBy: string): Promise<void> {
+        try {
+            new ObjectId(id);
+        } catch (err: unknown) {
+            throw new Error(`Invalid id ${id}`);
+        }
+
+        const appDoc = await App.findByIdAndDelete(id).exec();
+        if (!appDoc) {
+            throw new AppNotFoundError(`App with id ${id} not found`);
+        }
+
+        // Log action
+        logAction(updatedBy, 'DELETE_APP', id, 'App', `Deleted app ${id}`);
+
+        RedisCache.deleteCacheForApp(appDoc)
     }
 }
 
