@@ -3,6 +3,7 @@ import { FeatureFlag, IFeatureFlagInputDTO } from './schemas/featureFlagSchema';
 import { App } from './schemas/appSchema';
 import { Environment } from './schemas/environmentSchema';
 import { User, UserInputDTO } from './schemas/userSchema';
+import { Log } from './schemas/logSchema';
 import path from 'path';
 
 const options: swaggerJSDoc.Options = {
@@ -27,6 +28,7 @@ const options: swaggerJSDoc.Options = {
         Environment,
         User,
         UserInputDTO,
+        Log,
       },
       securitySchemes: {
         bearerAuth: {
