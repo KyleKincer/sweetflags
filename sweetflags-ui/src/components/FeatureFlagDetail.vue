@@ -138,11 +138,11 @@
                   <div class="flex items-center justify-end">
                     <div v-html="evaluationStrategyIcon(env.evaluationStrategy)" class="w-4 h-4 mr-2"></div>
                     <span :class="[
-                        'px-3 py-1 rounded-full text-sm font-semibold cursor-pointer transition-colors duration-100 ease-in',
-                        env.isActive
-                          ? 'bg-green-500 text-white'
-                          : 'bg-red-500 text-white',
-                      ]" @click.stop="handleToggle(env.environment.id)">
+                      'px-3 py-1 rounded-full text-sm font-semibold cursor-pointer transition-colors duration-100 ease-in',
+                      env.isActive
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white',
+                    ]" @click.stop="handleToggle(env.environment.id)">
                       {{ env.isActive ? 'Enabled' : 'Disabled' }}
                     </span>
                   </div>
@@ -257,13 +257,13 @@
                   </div>
                 </div>
                 <div v-if="!editEnvironmentMode && env.evaluationStrategy === 'USER'">
-                  <div v-if="env.allowedUsers && env.allowedUsers.length>0">
+                  <div v-if="env.allowedUsers && env.allowedUsers.length > 0">
                     <h4 class="font-semibold">Allowed Users:</h4>
                     <ul>
                       <li v-for="user in env.allowedUsers" :key="user.id">{{ user.name }}</li>
                     </ul>
                   </div>
-                  <div v-if="env.disallowedUsers && env.disallowedUsers.length>0">
+                  <div v-if="env.disallowedUsers && env.disallowedUsers.length > 0">
                     <h4 class="font-semibold">Disallowed Users:</h4>
                     <ul>
                       <li v-for="user in env.disallowedUsers" :key="user.id">{{ user.name }}</li>
@@ -293,7 +293,7 @@ import { defineComponent, onMounted, ref, computed, watch } from 'vue';
 import { useAuth0 } from '@auth0/auth0-vue';
 import useApi from '../composables/useApi';
 import { evaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
-import { FeatureFlag, App, User, Environment } from 'src/types';
+import { FeatureFlag, App, User } from 'src/types';
 import router from '../router';
 import LoadingSpinner from './LoadingSpinner.vue';
 
@@ -495,10 +495,11 @@ export default defineComponent({
         // something has changed, so update the flag. only send the fields that have changed
         // loop through the original environment and compare each field to the new environment
         // if the field has changed, add it to the update object
-        const updateObj: Partial<Environment> = { id: envId };
+        const updateObj: Partial<FeatureFlag> = { id: envId };
         for (const [key, value] of Object.entries(originalEnvironment)) {
-          if (JSON.stringify(value) !== JSON.stringify(newEnvironment[key as keyof Environment])) {
-            updateObj[key as keyof Environment] = newEnvironment[key as keyof Environment];
+          const typedKey = key as keyof typeof originalEnvironment;
+          if (JSON.stringify(value) !== JSON.stringify(newEnvironment[typedKey])) {
+            updateObj[typedKey] = newEnvironment[typedKey];
           }
         }
 
@@ -510,8 +511,8 @@ export default defineComponent({
           updateObj.isActive,
           updateObj.evaluationStrategy,
           updateObj.evaluationPercentage,
-          updateObj.allowedUsers?.map(user => user.id),
-          updateObj.disallowedUsers?.map(user => user.id),
+          updateObj.allowedUsers?.map((user: User) => user.id),
+          updateObj.disallowedUsers?.map((user: User) => user.id),
         );
 
         flagDetails.value = newFlag;
