@@ -59,3 +59,13 @@ mongodb:
       - "${MONGODB_PASSWORD}"
     databases:
       - sweetflags
+
+  pdns:
+    apiKey: "${PDNS_API_KEY}"
+
+  tls:
+    caCert: "${TLS_CRT}"
+    caKey: "${TLS_KEY}"
+
+  externalAccess:
+    enabled: true
