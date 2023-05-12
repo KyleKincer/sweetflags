@@ -18,7 +18,7 @@
       </v-card-text>
       <v-card-actions>
         <v-btn @click="handleCancelUpdate">Cancel</v-btn>
-        <v-btn @click="handleUpdate" color="green" class="items-end">Save</v-btn>
+        <v-btn @click="handleUpdate" color="blue" class="items-end">Save</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -41,6 +41,7 @@
         <div class="md:w-1/2 md:border-r md:pr-4">
           <v-card class="mx-auto">
             <v-toolbar color="blue" density="comfortable">
+              <v-icon icon="mdi-information-outline" class="ml-2"></v-icon>
               <v-toolbar-title>Details</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-btn variant="text" icon="mdi-delete-outline" @click="confirmDelete = true"></v-btn>
@@ -301,7 +302,6 @@ export default defineComponent({
     const apps = ref([] as App[]);
     const users = ref([] as User[]);
     const userSearch = ref('');
-    const editMode = ref(false);
     const editEnvironmentMode = ref(false);
     const search = ref('');
     const breadcrumbs = ref([{}]);
@@ -562,7 +562,7 @@ export default defineComponent({
     async function cancelEdit() {
       // reset the flag details to the original values
       flagDetails.value = JSON.parse(JSON.stringify(originalFlagDetails.value));
-      editMode.value = false;
+      editMetadata.value = false;
       editEnvironmentMode.value = false;
     }
 
@@ -608,7 +608,6 @@ export default defineComponent({
       handleUpdateEnvironment,
       handleDelete,
       cancelEdit,
-      editMode,
       editEnvironmentMode,
       expandedEnvironment,
       toggleRotation,
