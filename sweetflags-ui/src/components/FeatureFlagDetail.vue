@@ -122,7 +122,7 @@
             </v-toolbar>
             <v-text-field label="Search environments" append-inner-icon="mdi-magnify" v-model="search" dense hide-details
               single-line></v-text-field>
-            <v-expansion-panels>
+            <v-expansion-panels variant="accordion" multiple>
               <v-expansion-panel v-for="env in filteredEnvironments" :key="env.id" :value="env.id"
                 :expand-icon="getEvaluationStrategyIcon(env.evaluationStrategy)"
                 :collapse-icon="getEvaluationStrategyIcon(env.evaluationStrategy)">
