@@ -120,7 +120,7 @@
               <v-btn variant="text" icon="mdi-block-helper" @click="confirmDisableAll = true"></v-btn>
               <v-btn variant="text" icon="mdi-check-all" @click="confirmEnableAll = true"></v-btn>
             </v-toolbar>
-            <v-text-field clearable label="Search environments" v-model="search" dense hide-details
+            <v-text-field label="Search environments" append-inner-icon="mdi-magnify" v-model="search" dense hide-details
               single-line></v-text-field>
             <v-expansion-panels>
               <v-expansion-panel v-for="env in filteredEnvironments" :key="env.id" :value="env.id"
@@ -161,9 +161,10 @@
                     </v-list-item>
                     <v-divider></v-divider>
                     <!-- Allowed Users -->
-                    <v-list-item v-if="env.evaluationStrategy==='USER' && env.allowedUsers!.length>0">
+                    <v-list-item v-if="env.evaluationStrategy === 'USER' && env.allowedUsers!.length > 0">
                       <v-list-item-title class="flex">
-                        <v-icon class="mr-1" size="small" color="green" icon="mdi-account-multiple-check-outline"></v-icon>
+                        <v-icon class="mr-1" size="small" color="green"
+                          icon="mdi-account-multiple-check-outline"></v-icon>
                         <p class="text-sm whitespace-pre-wrap">Allowed Users ({{ env.allowedUsers!.length }}):</p>
                       </v-list-item-title>
                       <v-virtual-scroll :items="env.allowedUsers" :item-height="32">
@@ -176,7 +177,7 @@
                       </v-virtual-scroll>
                     </v-list-item>
                     <!-- Disallowed Users -->
-                    <v-list-item v-if="env.evaluationStrategy==='USER' && env.disallowedUsers!.length>0">
+                    <v-list-item v-if="env.evaluationStrategy === 'USER' && env.disallowedUsers!.length > 0">
                       <v-list-item-title class="flex">
                         <v-icon class="mr-1" size="small" color="red" icon="mdi-account-multiple-remove-outline"></v-icon>
                         <p class="text-sm whitespace-pre-wrap">Disallowed Users ({{ env.disallowedUsers!.length }}):</p>
