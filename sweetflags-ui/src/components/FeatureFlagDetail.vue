@@ -22,6 +22,17 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <v-snackbar v-model="snackbar" timeout="4000" >
+    {{ snackbarText }}
+    <template v-slot:actions>
+        <v-btn
+          color="blue"
+          variant="text"
+          @click="snackbar = false"
+        >
+          Close
+        </v-btn>
+      </template></v-snackbar>
   <div v-if="flagDetails && flagDetails.app && flagDetails.app.name">
     <v-breadcrumbs class="text-sm whitespace-nowrap truncate overflow-ellipsis"
       :items="(breadcrumbs as any)"></v-breadcrumbs>
@@ -297,6 +308,8 @@ export default defineComponent({
     const panel = ref(['description'])
     const confirmDelete = ref(false);
     const editMetadata = ref(false);
+    const snackbar = ref(false);
+    const snackbarText = ref('');
 
     var expandedEnvironment = ref('')
 
@@ -447,8 +460,9 @@ export default defineComponent({
       try {
         // compare the original flag details with the new ones to see if anything has changed
         if (JSON.stringify(flagDetails.value) === JSON.stringify(originalFlagDetails.value)) {
-          // nothing has changed, so just exit edit mode
-          editMode.value = false;
+          // nothing has changed
+          snackbar.value = true;
+          snackbarText.value = 'No changes were made'; 
           return;
         }
 
@@ -478,8 +492,12 @@ export default defineComponent({
         originalFlagDetails.value = JSON.parse(JSON.stringify(newFlag));
         editMetadata.value = false;
         setBreadcrumb();
+        snackbar.value = true;
+        snackbarText.value = 'Feature flag updated successfully';
       } catch (err) {
         console.error('Error updating feature flag:', err);
+        snackbar.value = true;
+        snackbarText.value = 'Error updating feature flag';
       }
     };
 
@@ -550,7 +568,8 @@ export default defineComponent({
 
     function copyToClipboard() {
       navigator.clipboard.writeText(flagDetails.value.id).then(() => {
-        console.log('ID copied to clipboard');
+        snackbar.value = true;
+        snackbarText.value = 'ID copied to clipboard';
       }).catch((err) => {
         console.error('Failed to copy ID to clipboard:', err);
       });
@@ -609,6 +628,8 @@ export default defineComponent({
       confirmDelete,
       editMetadata,
       handleCancelUpdate,
+      snackbar,
+      snackbarText,
     };
   },
 });
