@@ -20,3 +20,18 @@ export function evaluationStrategyIcon(evaluationStrategy: string) {
         return '';
     }
 }
+
+export function getEvaluationStrategyIcon(evaluationStrategy: string): string {
+    switch (evaluationStrategy) {
+        case 'BOOLEAN':
+            return 'mdi-check-decagram-outline';
+        case 'USER':
+            return 'mdi-account-multiple-outline';
+        case 'PERCENTAGE':
+            return 'mdipercent-outline';
+        case 'PROBABALISTIC':
+            return 'mdi-dice-multiple-outline';
+        default:
+            return '';
+    }
+}

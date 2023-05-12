@@ -8,13 +8,32 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <v-dialog v-model="confirmEnableAll" width="auto">
+    <v-card>
+      <v-card-text>Are you sure you want to enable "{{ flagDetails.name }}" for all environments?</v-card-text>
+      <v-card-actions>
+        <v-btn @click="confirmEnableAll = false">Cancel</v-btn>
+        <v-btn @click="enableAllEnvironments" color="blue" class="items-end">Enable</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-dialog v-model="confirmDisableAll" width="auto">
+    <v-card>
+      <v-card-text>Are you sure you want to disable "{{ flagDetails.name }}" for all environments?</v-card-text>
+      <v-card-actions>
+        <v-btn @click="confirmDisableAll = false">Cancel</v-btn>
+        <v-btn @click="disableAllEnvironments" color="red" class="items-end">Disable</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <v-dialog v-model="editMetadata" persistent width="700">
     <v-card>
       <v-card-title>Edit Metadata</v-card-title>
       <v-card-text>
         <v-text-field v-model="flagDetails.name" label="Name" outlined></v-text-field>
         <v-textarea v-model="flagDetails.description" label="Description" outlined></v-textarea>
-        <v-select v-model="flagDetails.app.id" :items="apps" item-title="name" item-value="id" label="App" outlined></v-select>
+        <v-select v-model="flagDetails.app.id" :items="apps" item-title="name" item-value="id" label="App"
+          outlined></v-select>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="handleCancelUpdate">Cancel</v-btn>
@@ -22,23 +41,20 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-snackbar v-model="snackbar" timeout="4000" >
+  <v-snackbar v-model="snackbar" timeout="2000">
     {{ snackbarText }}
     <template v-slot:actions>
-        <v-btn
-          color="blue"
-          variant="text"
-          @click="snackbar = false"
-        >
-          Close
-        </v-btn>
-      </template></v-snackbar>
-  <div v-if="flagDetails && flagDetails.app && flagDetails.app.name">
+      <v-btn color="blue" variant="text" @click="snackbar = false">
+        Close
+      </v-btn>
+    </template></v-snackbar>
+  <div v-if="flagDetails && flagDetails.app">
     <v-breadcrumbs class="text-sm whitespace-nowrap truncate overflow-ellipsis"
       :items="(breadcrumbs as any)"></v-breadcrumbs>
-    <div class="bg-white shadow-md rounded-lg p-2">
-      <div class="flex flex-col md:flex-row md:space-x-8">
-        <div class="md:w-1/2 md:border-r md:pr-4">
+    <div class="bg-white">
+      <div class="flex flex-col md:flex-row md:space-x-4">
+        <div class="md:w-1/2">
+          <!-- Details Card -->
           <v-card class="mx-auto">
             <v-toolbar color="blue" density="comfortable">
               <v-icon icon="mdi-information-outline" class="ml-2"></v-icon>
@@ -96,170 +112,89 @@
         </div>
         <!-- Environments -->
         <div class="md:w-1/2">
-          <div class="sm:flex-row md:flex items-center justify-between mt-4">
-            <h2 class="text-2xl font-semibold">Environments</h2>
-            <div class="flex space-x-2">
-              <button @click="disableAllEnvironments"
-                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded truncate">
-                Disable All
-              </button>
-              <button @click="enableAllEnvironments"
-                class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded truncate">
-                Enable All
-              </button>
-            </div>
-          </div>
-          <input v-model="search" type="text" placeholder="Search environments"
-            class="w-full mt-4 p-1 border border-gray-300 rounded-md" />
-          <div v-for="env in filteredEnvironments" :key="env.environment.environment"
-            class="mt-4 p-4 pl-2 border border-gray-200 rounded-md cursor-pointer select-none hover:bg-gray-200 transition-colors duration-200 ease-in">
-            <div @click="toggleRotation(env.environment.name)">
-              <div class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                  stroke="currentColor" class="w-5 h-5 mr-1 transition-transform duration-500 ease-in-out"
-                  :class="{ 'rotate-90': expandedEnvironment === env.environment.name }">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-                <div class="flex w-full items-center justify-between">
-                  <h4 class="font-medium">{{ env.environment.name }}</h4>
-                  <div class="flex items-center justify-end">
-                    <div v-html="evaluationStrategyIcon(env.evaluationStrategy)" class="w-4 h-4 mr-2"></div>
-                    <span :class="[
-                      'px-3 py-1 rounded-full text-sm font-semibold cursor-pointer transition-colors duration-100 ease-in',
-                      env.isActive
-                        ? 'bg-green-500 text-white'
-                        : 'bg-red-500 text-white',
-                    ]" @click.stop="handleToggle(env.environment.id)">
-                      {{ env.isActive ? 'Enabled' : 'Disabled' }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <Collapse :when="expandedEnvironment === env.environment.name" class="v-collapse">
-              <div class="ml-6 mt-3">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center justify-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                      stroke="currentColor" class="w-4 h-4 mr-1">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                    </svg>
-                    <p>{{ env.environment.description }}</p>
-                  </div>
-                  <div v-if="!editEnvironmentMode">
-                    <button @click="editEnvironmentMode = true"
-                      class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-0.5 px-3 rounded">
-                      Edit
-                    </button>
-                  </div>
-                  <div v-else class="flex items-center mx-1">
-                    <button @click="cancelEdit"
-                      class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-0.5 px-3 rounded mr-1">
-                      Cancel
-                    </button>
-                    <button @click="handleUpdateEnvironment(env.environment.id)"
-                      class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-0.5 px-3 rounded">
-                      Save
-                    </button>
-                  </div>
-                </div>
-                <h4 class="font-semibold">Evaluation Strategy:</h4>
-                <div class="flex items-center">
-                  <div v-html="evaluationStrategyIcon(env.evaluationStrategy)" class="w-4 h-4 mr-2"></div>
-                  <template v-if="!editEnvironmentMode">
-                    <span>{{ env.evaluationStrategy }}</span>
-                  </template>
-                  <template v-else>
-                    <select v-model="env.evaluationStrategy"
-                      class="border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      @change="getUsersIfNeeded">
-                      <option value="BOOLEAN">Boolean</option>
-                      <option value="USER">User</option>
-                      <option value="PERCENTAGE">Percentage</option>
-                      <option value="PROBABALISTIC">Probabilistic</option>
-                    </select>
-                  </template>
-                </div>
-                <div v-if="editEnvironmentMode && env.evaluationStrategy === 'USER'">
-                  <label for="userSearch" class="block text-sm mb-2">Search Users: ({{ filteredUsers.length }})</label>
-                  <input type="text" id="userSearch" v-model="userSearch"
-                    class="w-full px-3 py-2 mb-4 border border-gray-300 rounded" placeholder="Search for users..." />
-                  <div class="relative mb-4 h-64 overflow-y-auto">
-                    <ul v-show="!isLoading">
-                      <li v-for="user in filteredUsers" :key="user.id"
-                        class="p-2 border bg-white shadow-md rounded-md flex items-center justify-between whitespace-nowrap hover:bg-gray-200 transition-colors duration-200 ease-in">
-                        <span class="flex-grow text whitespace-nowrap truncate">{{ user.name }}</span>
-                        <div v-if="env.allowedUsers?.map(user => user.id).includes(user.id)" class="ml-4 text-green-500">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                            class="w-5 h-5 mr-2">
-                            <path fill-rule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clip-rule="evenodd" />
-                          </svg>
+          <v-card class="mx-auto">
+            <v-toolbar color="orange" density="comfortable">
+              <v-icon icon="mdi-cloud-outline" class="ml-2"></v-icon>
+              <v-toolbar-title>Environments</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-btn variant="text" icon="mdi-block-helper" @click="confirmDisableAll = true"></v-btn>
+              <v-btn variant="text" icon="mdi-check-all" @click="confirmEnableAll = true"></v-btn>
+            </v-toolbar>
+            <v-text-field clearable label="Search environments" v-model="search" dense hide-details
+              single-line></v-text-field>
+            <v-expansion-panels>
+              <v-expansion-panel v-for="env in filteredEnvironments" :key="env.id" :value="env.id"
+                :expand-icon="getEvaluationStrategyIcon(env.evaluationStrategy)"
+                :collapse-icon="getEvaluationStrategyIcon(env.evaluationStrategy)">
+                <v-expansion-panel-title class="py-0 items-center">
+                  <v-row no-gutters class="items-center">
+                    <v-col cols="10" class="d-flex justify-start">
+                      <span>{{ env.environment.name }}</span>
+                    </v-col>
+                    <v-col cols="2" class="d-flex justify-end">
+                      <v-switch v-model="env.isActive" color="blue" hide-details density="compact"
+                        @click.stop="handleToggle(env.environment.id)" :loading="isLoadingToggleFlag"></v-switch>
+                    </v-col>
+                  </v-row>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-list density="compact">
+                    <v-list-item>
+                      <v-list-item-title class="flex">
+                        <v-icon class="mr-1" size="small" icon="mdi-information-outline"></v-icon>
+                        <p class="text-sm whitespace-pre-wrap">{{ env.environment.description }}</p>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item class="items-center">
+                      <v-list-item-title>
+                        <div class="flex items-center">
+                          <span class="mr-2">Strategy:</span>
+                          <div>
+                            <v-chip color="blue">
+                              <v-icon class="mr-1" :icon="getEvaluationStrategyIcon(env.evaluationStrategy)"></v-icon>
+                              {{ env.evaluationStrategy }}
+                            </v-chip>
+                          </div>
                         </div>
-                        <div v-if="env.disallowedUsers?.map(user => user.id).includes(user.id)" class="ml-4 text-red-500">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                            class="w-5 h-5 mr-2">
-                            <path fill-rule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clip-rule="evenodd" />
-                          </svg>
-                        </div>
-                        <div>
-                          <button @click.prevent="addToAllowedUsers(env.id, user)"
-                            class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded mr-2">
-                            Allow
-                          </button>
-                          <button @click.prevent="addToDisallowedUsers(env.id, user)"
-                            class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
-                            Disallow
-                          </button>
-                        </div>
-                      </li>
-                    </ul>
-                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center">
-                      <LoadingSpinner />
-                    </div>
-                  </div>
-                  <div class="flex flex-row justify-between">
-                    <div class="w-1/2 mr-2">
-                      <h3 class="text-lg font-semibold mb-2">Allowed Users</h3>
-                      <ul class="px-2">
-                        <li v-for="user in env.allowedUsers" :key="user.id" class="mb-2 truncate">
-                          <span class="text whitespace-nowrap truncate">
-                            {{ user.name }}
-                          </span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div class="w-1/2 ml-2">
-                      <h3 class="text-lg font-semibold mb-2">Disallowed Users</h3>
-                      <ul>
-                        <li v-for="user in env.disallowedUsers" :key="user.id" class="mb-2">
-                          {{ user.name }}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div v-if="!editEnvironmentMode && env.evaluationStrategy === 'USER'">
-                  <div v-if="env.allowedUsers && env.allowedUsers.length > 0">
-                    <h4 class="font-semibold">Allowed Users:</h4>
-                    <ul>
-                      <li v-for="user in env.allowedUsers" :key="user.id">{{ user.name }}</li>
-                    </ul>
-                  </div>
-                  <div v-if="env.disallowedUsers && env.disallowedUsers.length > 0">
-                    <h4 class="font-semibold">Disallowed Users:</h4>
-                    <ul>
-                      <li v-for="user in env.disallowedUsers" :key="user.id">{{ user.name }}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </Collapse>
-          </div>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <!-- Allowed Users -->
+                    <v-list-item v-if="env.evaluationStrategy==='USER' && env.allowedUsers!.length>0">
+                      <v-list-item-title class="flex">
+                        <v-icon class="mr-1" size="small" color="green" icon="mdi-account-multiple-check-outline"></v-icon>
+                        <p class="text-sm whitespace-pre-wrap">Allowed Users ({{ env.allowedUsers!.length }}):</p>
+                      </v-list-item-title>
+                      <v-virtual-scroll :items="env.allowedUsers" :item-height="32">
+                        <template #default="{ item }">
+                          <v-list-item-title class="flex">
+                            <v-icon class="mr-1" size="small" icon="mdi-account"></v-icon>
+                            <p class="text-sm whitespace-pre-wrap">{{ item.name }}</p>
+                          </v-list-item-title>
+                        </template>
+                      </v-virtual-scroll>
+                    </v-list-item>
+                    <!-- Disallowed Users -->
+                    <v-list-item v-if="env.evaluationStrategy==='USER' && env.disallowedUsers!.length>0">
+                      <v-list-item-title class="flex">
+                        <v-icon class="mr-1" size="small" color="red" icon="mdi-account-multiple-remove-outline"></v-icon>
+                        <p class="text-sm whitespace-pre-wrap">Disallowed Users ({{ env.disallowedUsers!.length }}):</p>
+                      </v-list-item-title>
+                      <v-virtual-scroll :items="env.allowedUsers" :item-height="32">
+                        <template #default="{ item }">
+                          <v-list-item-title class="flex">
+                            <v-icon class="mr-1" size="small" icon="mdi-account"></v-icon>
+                            <p class="text-sm whitespace-pre-wrap">{{ item.name }}</p>
+                          </v-list-item-title>
+                        </template>
+                      </v-virtual-scroll>
+                    </v-list-item>
+                  </v-list>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </v-card>
         </div>
       </div>
     </div>
@@ -279,7 +214,7 @@
 import { defineComponent, onMounted, ref, computed, watch } from 'vue';
 import { useAuth0 } from '@auth0/auth0-vue';
 import useApi from '../composables/useApi';
-import { evaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
+import { evaluationStrategyIcon, getEvaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
 import { FeatureFlag, App, User } from 'src/types';
 import router from '../router';
 import LoadingSpinner from './LoadingSpinner.vue';
@@ -295,7 +230,7 @@ export default defineComponent({
     LoadingSpinner,
   },
   setup(props) {
-    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoading } = useApi();
+    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoading, isLoadingToggleFlag } = useApi();
     const { user } = useAuth0();
     const flagDetails = ref({} as FeatureFlag)
     const originalFlagDetails = ref({} as FeatureFlag)
@@ -307,6 +242,8 @@ export default defineComponent({
     const breadcrumbs = ref([{}]);
     const panel = ref(['description'])
     const confirmDelete = ref(false);
+    const confirmEnableAll = ref(false);
+    const confirmDisableAll = ref(false);
     const editMetadata = ref(false);
     const snackbar = ref(false);
     const snackbarText = ref('');
@@ -368,8 +305,13 @@ export default defineComponent({
       try {
         const newFlag = await disableFlag(flagDetails.value.id, user.value.name ?? 'unknown');
         flagDetails.value = newFlag;
+        confirmDisableAll.value = false;
+        snackbar.value = true;
+        snackbarText.value = `Disabled ${flagDetails.value.name} for all environments`;
       } catch (err) {
         console.error('Error toggling feature flag:', err);
+        snackbar.value = true;
+        snackbarText.value = `🚨 Error disabling ${flagDetails.value.name} for all environments`;
       }
     }
 
@@ -377,8 +319,13 @@ export default defineComponent({
       try {
         const newFlag = await enableFlag(flagDetails.value.id, user.value.name ?? 'unknown');
         flagDetails.value = newFlag;
+        confirmEnableAll.value = false;
+        snackbar.value = true;
+        snackbarText.value = `Enabled ${flagDetails.value.name} for all environments`;
       } catch (err) {
         console.error('Error toggling feature flag:', err);
+        snackbar.value = true;
+        snackbarText.value = `🚨 Error enabling ${flagDetails.value.name} for all environments`;
       }
     }
 
@@ -462,7 +409,7 @@ export default defineComponent({
         if (JSON.stringify(flagDetails.value) === JSON.stringify(originalFlagDetails.value)) {
           // nothing has changed
           snackbar.value = true;
-          snackbarText.value = 'No changes were made'; 
+          snackbarText.value = 'No changes were made';
           return;
         }
 
@@ -612,6 +559,7 @@ export default defineComponent({
       expandedEnvironment,
       toggleRotation,
       evaluationStrategyIcon,
+      getEvaluationStrategyIcon,
       filteredEnvironments,
       search,
       getUsersIfNeeded,
@@ -620,11 +568,14 @@ export default defineComponent({
       addToAllowedUsers,
       addToDisallowedUsers,
       isLoading,
+      isLoadingToggleFlag,
       disableAllEnvironments,
       enableAllEnvironments,
       breadcrumbs,
       panel,
       confirmDelete,
+      confirmEnableAll,
+      confirmDisableAll,
       editMetadata,
       handleCancelUpdate,
       snackbar,

@@ -16,6 +16,7 @@ export default function useApi() {
     return config;
   });
   const isLoading = ref(false);
+  const isLoadingToggleFlag = ref(false);
   const error = ref(null);
 
   async function getApps() {
@@ -138,7 +139,7 @@ export default function useApi() {
     environmentId: string,
     updatedBy: string
   ) => {
-    isLoading.value = true;
+    isLoadingToggleFlag.value = true;
     error.value = null;
 
     try {
@@ -153,7 +154,7 @@ export default function useApi() {
       console.error("Failed to toggle flag:", error);
       throw error;
     } finally {
-      isLoading.value = false;
+      isLoadingToggleFlag.value = false;
     }
   };
 
@@ -312,6 +313,7 @@ export default function useApi() {
 
   return {
     isLoading,
+    isLoadingToggleFlag,
     error,
     getApps,
     getAppById,
