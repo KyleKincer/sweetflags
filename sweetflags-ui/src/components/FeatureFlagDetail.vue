@@ -43,6 +43,14 @@
                 </template>
               </v-list-item>
               <v-divider></v-divider>
+              <!-- ID -->
+              <v-list-item title="ID:">
+                <template v-slot:append>
+                  <p class="font-mono text-sm">{{ flagDetails.id }}</p>
+                  <v-btn icon="mdi-content-copy" variant="text" size="x-small" @click="copyToClipboard">
+                  </v-btn>
+                </template>
+              </v-list-item>
               <!-- Description -->
               <v-list-item>
                 <v-expansion-panels v-model="panel">

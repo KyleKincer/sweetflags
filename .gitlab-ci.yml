@@ -3,7 +3,7 @@ include:
     file: 
       - 'gitlab-deployment.yaml'
       - 'stages/scan/mono_repo_scan.yaml'
-    ref: mono-repo-scan
+    ref: gl-deploy-v1
   - local: sweetflags-api/.gitlab-ci.yml
   - local: sweetflags-ui/.gitlab-ci.yml
     # ref: gl-deploy-v1
