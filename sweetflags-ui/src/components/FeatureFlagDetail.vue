@@ -182,7 +182,7 @@
                         <v-icon class="mr-1" size="small" color="red" icon="mdi-account-multiple-remove-outline"></v-icon>
                         <p class="text-sm whitespace-pre-wrap">Disallowed Users ({{ env.disallowedUsers!.length }}):</p>
                       </v-list-item-title>
-                      <v-virtual-scroll :items="env.allowedUsers" :item-height="32">
+                      <v-virtual-scroll :items="env.disallowedUsers" :item-height="32">
                         <template #default="{ item }">
                           <v-list-item-title class="flex">
                             <v-icon class="mr-1" size="small" icon="mdi-account"></v-icon>
