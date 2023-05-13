@@ -1,4 +1,4 @@
-<template>
+``<template>
   <v-dialog v-model="confirmDelete" width="auto">
     <v-card>
       <v-card-text>Are you sure you want to delete this feature flag?</v-card-text>
@@ -198,6 +198,17 @@
           </v-card>
         </div>
       </div>
+      <v-card class="mx-auto mt-2">
+        <v-card-title class="items-center">Recent Activity
+          <v-icon icon="mdi-clock-time-eight-outline" size=""></v-icon>
+        </v-card-title>
+        <v-list lines="two" density="comfortable">
+          <v-list-item v-for="log in logs" :key="log.id" :title="log.message"
+            :subtitle="timeSince(new Date(log.createdAt))">
+          </v-list-item>
+        </v-list>
+        <v-pagination v-model="logsPage" :length="logsTotalPages" rounded="circle"></v-pagination>
+      </v-card>
     </div>
   </div>
   <div v-else class="fixed inset-0 flex items-center justify-center">
@@ -215,8 +226,9 @@
 import { defineComponent, onMounted, ref, computed, watch } from 'vue';
 import { useAuth0 } from '@auth0/auth0-vue';
 import useApi from '../composables/useApi';
+import timeSince from '../utils/timeSince';
 import { evaluationStrategyIcon, getEvaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
-import { FeatureFlag, App, User } from 'src/types';
+import { FeatureFlag, App, User, Log } from 'src/types';
 import router from '../router';
 import LoadingSpinner from './LoadingSpinner.vue';
 
@@ -231,7 +243,7 @@ export default defineComponent({
     LoadingSpinner,
   },
   setup(props) {
-    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoading, isLoadingToggleFlag } = useApi();
+    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, getLogsByTarget, isLoading, isLoadingToggleFlag } = useApi();
     const { user } = useAuth0();
     const flagDetails = ref({} as FeatureFlag)
     const originalFlagDetails = ref({} as FeatureFlag)
@@ -240,6 +252,9 @@ export default defineComponent({
     const userSearch = ref('');
     const editEnvironmentMode = ref(false);
     const search = ref('');
+    const logs = ref<Log[]>([]);
+    const logsPage = ref(1);
+    const logsTotalPages = ref(1);
     const breadcrumbs = ref([{}]);
     const panel = ref(['description'])
     const confirmDelete = ref(false);
@@ -254,6 +269,7 @@ export default defineComponent({
     onMounted(async () => {
       await fetchFeatureFlagDetails(props.flagId);
       apps.value = await getApps();
+      logs.value = await getLogs(logsPage.value);
       setBreadcrumb();
 
     });
@@ -264,6 +280,16 @@ export default defineComponent({
         await getUsersIfNeeded();
       }
     });
+
+    watch(logsPage, async () => {
+      logs.value = await getLogs(logsPage.value);
+    });
+
+    async function getLogs(page: number = 1): Promise<Log[]> {
+      const data = await getLogsByTarget(props.flagId, page);
+      logsTotalPages.value = data.totalPages;
+      return data.logs;
+    }
 
     async function getUsersIfNeeded() {
       if (users.value.length === 0) {
@@ -309,6 +335,7 @@ export default defineComponent({
         confirmDisableAll.value = false;
         snackbar.value = true;
         snackbarText.value = `Disabled ${flagDetails.value.name} for all environments`;
+        logs.value = await getLogs(logsPage.value);
       } catch (err) {
         console.error('Error toggling feature flag:', err);
         snackbar.value = true;
@@ -323,6 +350,7 @@ export default defineComponent({
         confirmEnableAll.value = false;
         snackbar.value = true;
         snackbarText.value = `Enabled ${flagDetails.value.name} for all environments`;
+        logs.value = await getLogs(logsPage.value);
       } catch (err) {
         console.error('Error toggling feature flag:', err);
         snackbar.value = true;
@@ -392,6 +420,7 @@ export default defineComponent({
       try {
         const newFlag = await toggleFlag(flagDetails.value.id, envId, user.value.name ?? 'unknown');
         flagDetails.value = newFlag;
+        logs.value = await getLogs(logsPage.value);
       } catch (err) {
         console.error('Error toggling feature flag:', err);
       }
@@ -442,6 +471,7 @@ export default defineComponent({
         setBreadcrumb();
         snackbar.value = true;
         snackbarText.value = 'Feature flag updated successfully';
+        logs.value = await getLogs(logsPage.value);
       } catch (err) {
         console.error('Error updating feature flag:', err);
         snackbar.value = true;
@@ -493,6 +523,7 @@ export default defineComponent({
         flagDetails.value = newFlag;
         originalFlagDetails.value = JSON.parse(JSON.stringify(newFlag));
         editEnvironmentMode.value = false;
+        logs.value = await getLogs(logsPage.value);
       } catch (err) {
         console.error('Error updating feature flag:', err);
       }
@@ -581,6 +612,10 @@ export default defineComponent({
       handleCancelUpdate,
       snackbar,
       snackbarText,
+      logs,
+      timeSince,
+      logsPage,
+      logsTotalPages,
     };
   },
 });

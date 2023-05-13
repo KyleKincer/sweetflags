@@ -1,7 +1,7 @@
 // src/composables/useApi.ts
 import { ref } from 'vue';
 import axios from 'axios';
-import { FeatureFlag, FeatureFlagCreatePayload, Environment, App, EnvironmentCreatePayload } from '../types';
+import { FeatureFlag, FeatureFlagCreatePayload, Environment, App, EnvironmentCreatePayload, Log } from '../types';
 import { useAuth0 } from '@auth0/auth0-vue';
 
 export default function useApi() {
@@ -17,6 +17,7 @@ export default function useApi() {
   });
   const isLoading = ref(false);
   const isLoadingToggleFlag = ref(false);
+  const isLoadingGetLogs = ref(false);
   const error = ref(null);
 
   async function getApps() {
@@ -311,9 +312,50 @@ export default function useApi() {
     }
   };
 
+  async function getLogs(page: number = 1, limit: number = 10): Promise<{ logs: Log[], totalPages: number, currentPage: number }> {
+    isLoadingGetLogs.value = true;
+    error.value = null;
+
+    try {
+      const response = await api.get(`/logs`, {
+        params: {
+          page,
+          limit
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      throw error;
+    } finally {
+      isLoadingGetLogs.value = false;
+    }
+  }
+
+  async function getLogsByTarget(target: string, page: number = 1, limit: number = 10): Promise<{ logs: Log[], totalPages: number, currentPage: number }> {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const response = await api.get(`/logs/${target}`, {
+        params: {
+          page,
+          limit
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      throw error;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   return {
     isLoading,
     isLoadingToggleFlag,
+    isLoadingGetLogs,
     error,
     getApps,
     getAppById,
@@ -332,5 +374,7 @@ export default function useApi() {
     updateFlag,
     deleteFlag,
     getUsers,
+    getLogs,
+    getLogsByTarget,
   };
 }

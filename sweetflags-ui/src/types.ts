@@ -74,3 +74,14 @@ export interface App {
     isActive: boolean;
     createdBy: string;
   }
+
+  export interface Log {
+    id: string;
+    user: string;
+    action: string;
+    targetType: string;
+    targetId: string;
+    message: string;
+    createdAt: string;
+    updatedAt: string;
+  }
