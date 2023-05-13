@@ -1,4 +1,4 @@
-``<template>
+<template>
   <v-dialog v-model="confirmDelete" width="auto">
     <v-card>
       <v-card-text>Are you sure you want to delete this feature flag?</v-card-text>
@@ -115,7 +115,7 @@
           <v-card class="mx-auto">
             <v-toolbar color="orange" density="comfortable">
               <v-icon icon="mdi-cloud-outline" class="ml-2"></v-icon>
-              <v-toolbar-title>Environments</v-toolbar-title>
+              <v-toolbar-title class="whitespace-normal overflow-visible">Environments</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-btn variant="text" icon="mdi-block-helper" @click="confirmDisableAll = true"></v-btn>
               <v-btn variant="text" icon="mdi-check-all" @click="confirmEnableAll = true"></v-btn>
@@ -198,13 +198,27 @@
           </v-card>
         </div>
       </div>
-      <v-card class="mx-auto mt-2">
-        <v-card-title class="items-center">Recent Activity
-          <v-icon icon="mdi-clock-time-eight-outline" size=""></v-icon>
-        </v-card-title>
+      <v-card class="mx-auto mt-2" elevation="48">
+        <v-toolbar color="gray" density="comfortable">
+          <v-icon icon="mdi-clock-time-eight-outline" class="ml-2"></v-icon>
+          <v-toolbar-title>Recent Activity</v-toolbar-title>
+          <v-spacer></v-spacer>
+        </v-toolbar>
         <v-list lines="two" density="comfortable">
-          <v-list-item v-for="log in logs" :key="log.id" :title="log.message"
-            :subtitle="timeSince(new Date(log.createdAt))">
+          <v-list-item v-for="log in logs" :key="log.id" class="hover:bg-gray-300 transition duration-300">
+            <v-list-item-title>
+              <div class="whitespace-normal max-h-6lines">
+                {{ log.message }}
+              </div>
+            </v-list-item-title>
+            <v-list-item-subtitle v-if="showTimeSince" @click.stop="showTimeSince = !showTimeSince"
+              class="cursor-pointer select-none">
+              {{ timeSince(new Date(log.createdAt)) }}
+            </v-list-item-subtitle>
+            <v-list-item-subtitle v-if="!showTimeSince" @click.stop="showTimeSince = !showTimeSince"
+              class="cursor-pointer select-none">
+              {{ formatDateTime(log.createdAt) }}
+            </v-list-item-subtitle>
           </v-list-item>
         </v-list>
         <v-pagination v-model="logsPage" :length="logsTotalPages" rounded="circle"></v-pagination>
@@ -227,6 +241,7 @@ import { defineComponent, onMounted, ref, computed, watch } from 'vue';
 import { useAuth0 } from '@auth0/auth0-vue';
 import useApi from '../composables/useApi';
 import timeSince from '../utils/timeSince';
+import formatDateTime from '../utils/formatDateTime';
 import { evaluationStrategyIcon, getEvaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
 import { FeatureFlag, App, User, Log } from 'src/types';
 import router from '../router';
@@ -255,6 +270,7 @@ export default defineComponent({
     const logs = ref<Log[]>([]);
     const logsPage = ref(1);
     const logsTotalPages = ref(1);
+    const showTimeSince = ref(true);
     const breadcrumbs = ref([{}]);
     const panel = ref(['description'])
     const confirmDelete = ref(false);
@@ -554,20 +570,6 @@ export default defineComponent({
       });
     }
 
-    function formatDateTime(date: string) {
-      if (date) {
-        return new Intl.DateTimeFormat(undefined, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          second: 'numeric',
-        }).format(new Date(date));
-      }
-      return '';
-    }
-
     function toggleRotation(envName: string) {
       if (expandedEnvironment.value === envName) {
         expandedEnvironment.value = '';
@@ -616,6 +618,7 @@ export default defineComponent({
       timeSince,
       logsPage,
       logsTotalPages,
+      showTimeSince,
     };
   },
 });
