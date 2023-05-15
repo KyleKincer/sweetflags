@@ -242,7 +242,7 @@ router.get('/app/name/:appName', checkJwt, flagsController.getFlagsByAppName)
 /**
  * @swagger
  * /api/flags/state/id:
- *   get:
+ *   post:
  *     summary: Returns the feature flag state
  *     tags: [Flags]
  *     security:
@@ -304,12 +304,12 @@ router.get('/app/name/:appName', checkJwt, flagsController.getFlagsByAppName)
  *               required:
  *                 - message
  */
-router.get('/state/id', checkJwt, flagsController.getFlagState)
+router.post('/state/id', checkJwt, flagsController.getFlagState)
 
 /**
 * @swagger
 * /api/flags/state/user:
-*   get:
+*   post:
 *     summary: Returns the state of all feature flags for a given user ID, app, and environment
 *     tags: [Flags]
  *     security:
@@ -385,7 +385,7 @@ router.get('/state/id', checkJwt, flagsController.getFlagState)
 *                   description: A message explaining the error
 *                   example: Internal server error
 */
-router.get('/state/user', checkJwt, flagsController.getFlagStatesForUserId)
+router.post('/state/user', checkJwt, flagsController.getFlagStatesForUserId)
 
 /**
  * @swagger
