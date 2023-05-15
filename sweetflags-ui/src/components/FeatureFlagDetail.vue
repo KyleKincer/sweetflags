@@ -198,31 +198,8 @@
           </v-card>
         </div>
       </div>
-      <v-card class="mx-auto mt-2" elevation="48">
-        <v-toolbar color="gray" density="comfortable">
-          <v-icon icon="mdi-clock-time-eight-outline" class="ml-2"></v-icon>
-          <v-toolbar-title>Recent Activity</v-toolbar-title>
-          <v-spacer></v-spacer>
-        </v-toolbar>
-        <v-list lines="two" density="comfortable">
-          <v-list-item v-for="log in logs" :key="log.id" class="hover:bg-gray-300 transition duration-300">
-            <v-list-item-title>
-              <div class="whitespace-normal max-h-6lines">
-                {{ log.message }}
-              </div>
-            </v-list-item-title>
-            <v-list-item-subtitle v-if="showTimeSince" @click.stop="showTimeSince = !showTimeSince"
-              class="cursor-pointer select-none">
-              {{ timeSince(new Date(log.createdAt)) }}
-            </v-list-item-subtitle>
-            <v-list-item-subtitle v-if="!showTimeSince" @click.stop="showTimeSince = !showTimeSince"
-              class="cursor-pointer select-none">
-              {{ formatDateTime(log.createdAt) }}
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
-        <v-pagination v-model="logsPage" :length="logsTotalPages" rounded="circle"></v-pagination>
-      </v-card>
+      <!-- Recent Activity -->
+      <RecentActivity :targetId="flagDetails.id" :linkToTarget="false" :key="logRefresher" />
     </div>
   </div>
   <div v-else class="fixed inset-0 flex items-center justify-center">
@@ -243,9 +220,10 @@ import useApi from '../composables/useApi';
 import timeSince from '../utils/timeSince';
 import formatDateTime from '../utils/formatDateTime';
 import { evaluationStrategyIcon, getEvaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
-import { FeatureFlag, App, User, Log } from 'src/types';
+import { FeatureFlag, App, User } from 'src/types';
 import router from '../router';
 import LoadingSpinner from './LoadingSpinner.vue';
+import RecentActivity from './RecentActivity.vue';
 
 export default defineComponent({
   props: {
@@ -256,9 +234,10 @@ export default defineComponent({
   },
   components: {
     LoadingSpinner,
+    RecentActivity,
   },
   setup(props) {
-    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, getLogsByTarget, isLoading, isLoadingToggleFlag } = useApi();
+    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoading, isLoadingToggleFlag } = useApi();
     const { user } = useAuth0();
     const flagDetails = ref({} as FeatureFlag)
     const originalFlagDetails = ref({} as FeatureFlag)
@@ -267,10 +246,6 @@ export default defineComponent({
     const userSearch = ref('');
     const editEnvironmentMode = ref(false);
     const search = ref('');
-    const logs = ref<Log[]>([]);
-    const logsPage = ref(1);
-    const logsTotalPages = ref(1);
-    const showTimeSince = ref(true);
     const breadcrumbs = ref([{}]);
     const panel = ref(['description'])
     const confirmDelete = ref(false);
@@ -279,13 +254,13 @@ export default defineComponent({
     const editMetadata = ref(false);
     const snackbar = ref(false);
     const snackbarText = ref('');
+    const logRefresher = ref(0);
 
     var expandedEnvironment = ref('')
 
     onMounted(async () => {
       await fetchFeatureFlagDetails(props.flagId);
       apps.value = await getApps();
-      logs.value = await getLogs(logsPage.value);
       setBreadcrumb();
 
     });
@@ -296,16 +271,6 @@ export default defineComponent({
         await getUsersIfNeeded();
       }
     });
-
-    watch(logsPage, async () => {
-      logs.value = await getLogs(logsPage.value);
-    });
-
-    async function getLogs(page: number = 1): Promise<Log[]> {
-      const data = await getLogsByTarget(props.flagId, page);
-      logsTotalPages.value = data.totalPages;
-      return data.logs;
-    }
 
     async function getUsersIfNeeded() {
       if (users.value.length === 0) {
@@ -351,7 +316,7 @@ export default defineComponent({
         confirmDisableAll.value = false;
         snackbar.value = true;
         snackbarText.value = `Disabled ${flagDetails.value.name} for all environments`;
-        logs.value = await getLogs(logsPage.value);
+        logRefresher.value += 1;
       } catch (err) {
         console.error('Error toggling feature flag:', err);
         snackbar.value = true;
@@ -366,7 +331,7 @@ export default defineComponent({
         confirmEnableAll.value = false;
         snackbar.value = true;
         snackbarText.value = `Enabled ${flagDetails.value.name} for all environments`;
-        logs.value = await getLogs(logsPage.value);
+        logRefresher.value += 1;
       } catch (err) {
         console.error('Error toggling feature flag:', err);
         snackbar.value = true;
@@ -436,7 +401,7 @@ export default defineComponent({
       try {
         const newFlag = await toggleFlag(flagDetails.value.id, envId, user.value.name ?? 'unknown');
         flagDetails.value = newFlag;
-        logs.value = await getLogs(logsPage.value);
+        logRefresher.value += 1;
       } catch (err) {
         console.error('Error toggling feature flag:', err);
       }
@@ -487,7 +452,7 @@ export default defineComponent({
         setBreadcrumb();
         snackbar.value = true;
         snackbarText.value = 'Feature flag updated successfully';
-        logs.value = await getLogs(logsPage.value);
+        logRefresher.value += 1;
       } catch (err) {
         console.error('Error updating feature flag:', err);
         snackbar.value = true;
@@ -539,7 +504,7 @@ export default defineComponent({
         flagDetails.value = newFlag;
         originalFlagDetails.value = JSON.parse(JSON.stringify(newFlag));
         editEnvironmentMode.value = false;
-        logs.value = await getLogs(logsPage.value);
+        logRefresher.value += 1; 
       } catch (err) {
         console.error('Error updating feature flag:', err);
       }
@@ -614,11 +579,8 @@ export default defineComponent({
       handleCancelUpdate,
       snackbar,
       snackbarText,
-      logs,
+      logRefresher,
       timeSince,
-      logsPage,
-      logsTotalPages,
-      showTimeSince,
     };
   },
 });
