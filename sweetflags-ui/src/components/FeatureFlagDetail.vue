@@ -41,6 +41,67 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <v-dialog v-model="editEnvironment" persistent width="700">
+    <v-card>
+      <v-card-title>Edit Environment</v-card-title>
+      <v-card-text>
+        <v-container>
+          <v-row>
+            <v-col>
+              <v-slide-group show-arrows center-active mandatory v-model="environmentToEdit">
+                <v-slide-group-item v-for="environment in flagDetails.environments" :key="environment.id"
+                  v-slot="{ isSelected, toggle }" :value="environment.environment.id">
+                  <v-btn class="ma-2 mb-8" rounded :color="isSelected ? 'primary' : 'undefined'" @click="toggle">
+                    {{ environment.environment.name }}
+                  </v-btn>
+                </v-slide-group-item>
+              </v-slide-group>
+              <div class="flex items-center">
+                <p class="mr-2">Evaluation Strategy:</p>
+                <v-btn-toggle mandatory v-if="flagDetails.environments"
+                  v-model="flagDetails.environments[environmentToEditIndex].evaluationStrategy">
+                  <v-btn value="BOOLEAN" :icon="getEvaluationStrategyIcon('BOOLEAN')"></v-btn>
+                  <v-btn value="USER" :icon="getEvaluationStrategyIcon('USER')"></v-btn>
+                  <v-btn value="PERCENTAGE" :icon="getEvaluationStrategyIcon('PERCENTAGE')"></v-btn>
+                  <v-btn value="PROBABALISTIC" :icon="getEvaluationStrategyIcon('PROBABALISTIC')"></v-btn>
+                </v-btn-toggle>
+              </div>
+              <div v-if="flagDetails.environments[environmentToEditIndex].evaluationStrategy === 'USER'">
+                <v-card class="mt-4">
+                  <v-card-title>Users</v-card-title>
+                  <v-text-field label="Search users" append-inner-icon="mdi-magnify" v-model="userSearch" dense
+                    hide-details single-line></v-text-field>
+                  <v-virtual-scroll :items="filteredUsers" :item-height="25" height="300px">
+                    <template v-slot="{ item }">
+                      <v-list-item v-if="item" :key="item.id">
+                        <v-list-item-title>{{ item.name }}</v-list-item-title>
+                        <template v-slot:append>
+                          <v-btn @click="addToDisallowedUsers(environmentToEdit, item)" size="x-small" class="mr-1"
+                            :color="flagDetails.environments[environmentToEditIndex].disallowedUsers!.some(user => user.id === item.id) ? 'red' : undefined"
+                            icon>
+                            <v-icon icon="mdi-block-helper"></v-icon>
+                          </v-btn>
+                          <v-btn @click="addToAllowedUsers(environmentToEdit, item)" size="x-small"
+                            :color="flagDetails.environments[environmentToEditIndex].allowedUsers!.some(user => user.id === item.id) ? 'green' : undefined"
+                            icon>
+                            <v-icon icon="mdi-plus"></v-icon>
+                          </v-btn>
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-virtual-scroll>
+                </v-card>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn @click="handleCancelUpdate">Cancel</v-btn>
+        <v-btn @click="handleUpdateEnvironment(environmentToEdit)" color="blue" class="items-end">Save</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <v-snackbar v-model="snackbar" timeout="2000">
     {{ snackbarText }}
     <template v-slot:actions>
@@ -51,9 +112,9 @@
   <div v-if="flagDetails && flagDetails.app">
     <v-breadcrumbs class="text-sm whitespace-nowrap truncate overflow-ellipsis"
       :items="(breadcrumbs as any)"></v-breadcrumbs>
-    <div class="bg-white">
-      <div class="flex flex-col md:flex-row md:space-x-4">
-        <div class="md:w-1/2">
+    <v-container>
+      <v-row>
+        <v-col>
           <!-- Details Card -->
           <v-card class="mx-auto">
             <v-toolbar color="blue" density="comfortable">
@@ -109,9 +170,9 @@
               </v-list-item>
             </v-list>
           </v-card>
-        </div>
-        <!-- Environments -->
-        <div class="md:w-1/2">
+        </v-col>
+        <v-col>
+          <!-- Environments -->
           <v-card class="mx-auto">
             <v-toolbar color="orange" density="comfortable">
               <v-icon icon="mdi-cloud-outline" class="ml-2"></v-icon>
@@ -128,8 +189,13 @@
                 :collapse-icon="getEvaluationStrategyIcon(env.evaluationStrategy)">
                 <v-expansion-panel-title class="py-0 items-center">
                   <v-row no-gutters class="items-center">
-                    <v-col cols="10" class="d-flex justify-start">
+                    <v-col cols="8" class="d-flex justify-start">
                       <span>{{ env.environment.name }}</span>
+                    </v-col>
+                    <v-col cols="2" class="d-flex justify-center">
+                      <v-btn icon size="x-small" @click.stop="handleEnableEdit(env.environment.id)">
+                        <v-icon>mdi-pencil-outline</v-icon>
+                      </v-btn>
                     </v-col>
                     <v-col cols="2" class="d-flex justify-end">
                       <v-switch v-model="env.isActive" color="blue" hide-details density="compact"
@@ -196,11 +262,13 @@
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card>
-        </div>
-      </div>
-      <!-- Recent Activity -->
-      <RecentActivity :targetId="flagDetails.id" :linkToTarget="false" :key="logRefresher" />
-    </div>
+        </v-col>
+      </v-row>
+      <v-row>
+        <!-- Recent Activity -->
+        <RecentActivity :targetId="flagDetails.id" :linkToTarget="false" :key="logRefresher" />
+      </v-row>
+    </v-container>
   </div>
   <div v-else class="fixed inset-0 flex items-center justify-center">
     <div class="loading-spinner">
@@ -245,6 +313,8 @@ export default defineComponent({
     const users = ref([] as User[]);
     const userSearch = ref('');
     const editEnvironmentMode = ref(false);
+    const environmentToEdit = ref('');
+    const environmentToEditIndex = ref(0);
     const search = ref('');
     const breadcrumbs = ref([{}]);
     const panel = ref(['description'])
@@ -269,6 +339,13 @@ export default defineComponent({
     watch(flagDetails, async (newVal, oldVal) => {
       if (newVal.environments && newVal.environments.length > 0 && newVal.environments.some(env => env.evaluationStrategy === 'USER')) {
         await getUsersIfNeeded();
+      }
+    });
+
+    // watch for changes to environmentToEdit and set the index
+    watch(environmentToEdit, (newVal, oldVal) => {
+      if (newVal) {
+        environmentToEditIndex.value = flagDetails.value.environments.findIndex(env => env.environment.id === newVal);
       }
     });
 
@@ -356,8 +433,8 @@ export default defineComponent({
     });
 
     function addToAllowedUsers(envId: string, user: User) {
-      let allowedUsers = flagDetails.value.environments.find(env => env.id === envId)?.allowedUsers;
-      let disallowedUsers = flagDetails.value.environments.find(env => env.id === envId)?.disallowedUsers;
+      let allowedUsers = flagDetails.value.environments.find(env => env.environment.id === envId)?.allowedUsers;
+      let disallowedUsers = flagDetails.value.environments.find(env => env.environment.id === envId)?.disallowedUsers;
       if (!allowedUsers) {
         allowedUsers = [];
       }
@@ -372,13 +449,13 @@ export default defineComponent({
       } else {
         allowedUsers = allowedUsers.filter(allowedUser => allowedUser.id !== user.id);
       }
-      flagDetails.value.environments.find(env => env.id === envId)!.allowedUsers = allowedUsers;
-      flagDetails.value.environments.find(env => env.id === envId)!.disallowedUsers = disallowedUsers;
+      flagDetails.value.environments.find(env => env.environment.id === envId)!.allowedUsers = allowedUsers;
+      flagDetails.value.environments.find(env => env.environment.id === envId)!.disallowedUsers = disallowedUsers;
     }
 
     function addToDisallowedUsers(envId: string, user: User) {
-      let allowedUsers = flagDetails.value.environments.find(env => env.id === envId)?.allowedUsers;
-      let disallowedUsers = flagDetails.value.environments.find(env => env.id === envId)?.disallowedUsers;
+      let allowedUsers = flagDetails.value.environments.find(env => env.environment.id === envId)?.allowedUsers;
+      let disallowedUsers = flagDetails.value.environments.find(env => env.environment.id === envId)?.disallowedUsers;
       if (!allowedUsers) {
         allowedUsers = [];
       }
@@ -393,8 +470,8 @@ export default defineComponent({
       } else {
         disallowedUsers = disallowedUsers.filter(disallowedUser => disallowedUser.id !== user.id);
       }
-      flagDetails.value.environments.find(env => env.id === envId)!.allowedUsers = allowedUsers;
-      flagDetails.value.environments.find(env => env.id === envId)!.disallowedUsers = disallowedUsers;
+      flagDetails.value.environments.find(env => env.environment.id === envId)!.allowedUsers = allowedUsers;
+      flagDetails.value.environments.find(env => env.environment.id === envId)!.disallowedUsers = disallowedUsers;
     }
 
     async function handleToggle(envId: string) {
@@ -412,6 +489,7 @@ export default defineComponent({
       flagDetails.value = JSON.parse(JSON.stringify(originalFlagDetails.value));
       // exit edit mode
       editMetadata.value = false;
+      editEnvironmentMode.value = false;
     }
 
     async function handleUpdate() {
@@ -504,11 +582,23 @@ export default defineComponent({
         flagDetails.value = newFlag;
         originalFlagDetails.value = JSON.parse(JSON.stringify(newFlag));
         editEnvironmentMode.value = false;
-        logRefresher.value += 1; 
+        logRefresher.value += 1;
+        snackbar.value = true;
+        snackbarText.value = 'Feature flag updated successfully';
       } catch (err) {
         console.error('Error updating feature flag:', err);
       }
     };
+
+    function handleEnableEdit(envId: string) {
+      // set the original flag details to the current flag details
+      originalFlagDetails.value = JSON.parse(JSON.stringify(flagDetails.value));
+      // set the environment to edit
+      environmentToEdit.value = envId;
+      environmentToEditIndex.value = flagDetails.value.environments.findIndex(env => env.environment.id === envId);
+      // enter edit mode
+      editEnvironmentMode.value = true;
+    }
 
     async function handleDelete() {
       try {
@@ -554,7 +644,7 @@ export default defineComponent({
       handleUpdateEnvironment,
       handleDelete,
       cancelEdit,
-      editEnvironmentMode,
+      editEnvironment: editEnvironmentMode,
       expandedEnvironment,
       toggleRotation,
       evaluationStrategyIcon,
@@ -562,6 +652,7 @@ export default defineComponent({
       filteredEnvironments,
       search,
       getUsersIfNeeded,
+      users,
       userSearch,
       filteredUsers,
       addToAllowedUsers,
@@ -581,6 +672,9 @@ export default defineComponent({
       snackbarText,
       logRefresher,
       timeSince,
+      handleEnableEdit,
+      environmentToEdit,
+      environmentToEditIndex,
     };
   },
 });

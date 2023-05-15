@@ -1,5 +1,5 @@
 <template>
-    <v-card class="mx-auto" elevation="48">
+    <v-card class="mx-auto">
         <v-toolbar color="gray" density="comfortable">
             <v-icon icon="mdi-clock-time-eight-outline" class="ml-2"></v-icon>
             <v-toolbar-title>Recent Activity</v-toolbar-title>
@@ -44,20 +44,25 @@ const logs = ref<Log[]>([]);
 const logsPage = ref(1);
 const logsTotalPages = ref(1);
 const showTimeSince = ref(true);
-const targetId = ref<string | null>(null);
-const linkToTarget = ref(true);
+
+const props = defineProps({
+  targetId: String,
+  linkToTarget: Boolean
+});
 
 onMounted(async () => {
-    getNewLogs();
+    await getNewLogs();
 });
 
 watch(logsPage, async () => {
-    getNewLogs();
+    await getNewLogs();
 });
 
 async function getNewLogs() {
-    const logsResponse = targetId.value != null
-        ? await getLogsByTarget(targetId.value, logsPage.value)
+    console.log(props.targetId);
+    
+    const logsResponse = props.targetId != null
+        ? await getLogsByTarget(props.targetId, logsPage.value)
         : await getLogs(logsPage.value);
     logs.value = logsResponse.logs;
     logsTotalPages.value = logsResponse.totalPages;
@@ -73,6 +78,4 @@ function getLink(log: Log) {
             return '';
     }
 }
-
 </script>
-    

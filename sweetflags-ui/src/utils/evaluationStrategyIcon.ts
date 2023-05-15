@@ -28,7 +28,7 @@ export function getEvaluationStrategyIcon(evaluationStrategy: string): string {
         case 'USER':
             return 'mdi-account-multiple-outline';
         case 'PERCENTAGE':
-            return 'mdipercent-outline';
+            return 'mdi-percent-outline';
         case 'PROBABALISTIC':
             return 'mdi-dice-multiple-outline';
         default:
