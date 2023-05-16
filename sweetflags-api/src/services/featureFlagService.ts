@@ -644,7 +644,7 @@ class FeatureFlagService {
 
 
     async isEnabled(featureFlag: IFeatureFlag, user: string, environmentId: string): Promise<boolean> {
-        const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentId);
+        const flagData = featureFlag.environments.find((env) => (env.environment as IEnvironment).id === environmentId);
         if (!flagData) {
             return false;
         }

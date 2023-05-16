@@ -6,13 +6,20 @@ import { IApp } from './interfaces/IApp';
 dotenv.config();
 class RedisCache {
     private client: Redis;
-
+    
     constructor() {
-        this.client = new Redis({
-            host: process.env.REDIS_HOST,
-            port: Number(process.env.REDIS_PORT),
-            password: process.env.MEMORYSTORE_REDIS_PASSWORD,
-        });
+        if (process.env.IS_LOCAL === 'true') {
+            this.client = new Redis({
+                host: process.env.REDIS_HOST,
+                port: Number(process.env.REDIS_PORT),
+            });
+        } else {
+            this.client = new Redis({
+                host: process.env.REDIS_HOST,
+                port: Number(process.env.REDIS_PORT),
+                password: process.env.MEMORYSTORE_REDIS_PASSWORD,
+            });
+        }
     }
 
     // Public methods
