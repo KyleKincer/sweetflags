@@ -1,6 +1,13 @@
 global:
   mongoService: "mongodb-sweetflags"
 
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  cpuTargetAverageUtilization: 50
+  memoryTargetAverageUtilization: 50
+
 env:
   config:
     PORT: "8080"
