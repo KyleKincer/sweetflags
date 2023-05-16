@@ -203,9 +203,15 @@ class FeatureFlagService {
                 throw new Error(`Invalid id ${flagId}`);
             }
 
-            featureFlagDoc = await FeatureFlag.findById(flagId).exec();
+            featureFlagDoc = await FeatureFlag
+            .findById(flagId)
+            .select('name, environments, _id')
+            .exec();
         } else if (flagName) {
-            featureFlagDoc = await FeatureFlag.findOne({ app: appId, name: flagName }).exec();
+            featureFlagDoc = await FeatureFlag
+            .findOne({ app: appId, name: flagName })
+            .select('name, environments, _id')
+            .exec();
         } else {
             throw new FlagNotFoundError(`Either the id or name property is required`);
         }
@@ -226,6 +232,7 @@ class FeatureFlagService {
 
         const featureFlagsDocs = await FeatureFlag
             .find({ app: appId })
+            .select('name environments _id')
             .exec();
         if (!featureFlagsDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
