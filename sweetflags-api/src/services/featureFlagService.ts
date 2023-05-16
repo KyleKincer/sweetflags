@@ -242,15 +242,7 @@ class FeatureFlagService {
         performance.mark('getFlagStatesForUserId-db-end');
         performance.measure('getFlagStatesForUserId-db', 'getFlagStatesForUserId-db-start', 'getFlagStatesForUserId-db-end');
 
-        performance.mark('getFlagStatesForUserId-toObject-start');
-        const featureFlags = featureFlagsDocs.map((flag) => {
-            flag = flag.toObject();
-            return flag;
-        });
-        performance.mark('getFlagStatesForUserId-toObject-end');
-        performance.measure('getFlagStatesForUserId-toObject', 'getFlagStatesForUserId-toObject-start', 'getFlagStatesForUserId-toObject-end');
-
-        RedisCache.setCacheForFeatureFlagsByUserId(featureFlags, appId, userId);
+        RedisCache.setCacheForFeatureFlagsByUserId(featureFlagsDocs, appId, userId);
 
         performance.mark('getFlagStatesForUserId-end');
         performance.measure('getFlagStatesForUserId', 'getFlagStatesForUserId-start', 'getFlagStatesForUserId-end');
