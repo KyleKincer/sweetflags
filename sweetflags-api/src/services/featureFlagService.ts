@@ -224,7 +224,13 @@ class FeatureFlagService {
             return this.areEnabled(cachedData, userId, environmentId)
         }
 
-        const featureFlagsDocs = await FeatureFlag.find({ app: appId }).exec();
+        const featureFlagsDocs = await FeatureFlag
+            .find({ app: appId })
+            .populate('environments.environment')
+            .populate('environments.allowedUsers')
+            .populate('environments.disallowedUsers')
+            .populate('app')
+            .exec();
         if (!featureFlagsDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
         }
@@ -287,14 +293,14 @@ class FeatureFlagService {
             }
         }
         logAction(
-            updatedBy, 
-            'TOGGLE_FLAG', 
-            'FeatureFlag', 
-            featureFlag.id, 
+            updatedBy,
+            'TOGGLE_FLAG',
+            'FeatureFlag',
+            featureFlag.id,
             message,)
 
-        
-        
+
+
         // invalidate cache
         RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
@@ -346,7 +352,7 @@ class FeatureFlagService {
             featureFlag.id,
             message,
         );
-        
+
         // invalidate cache
         RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
@@ -480,7 +486,7 @@ class FeatureFlagService {
             featureFlag.id,
             message,
         );
-        
+
         // invalidate cache
         RedisCache.deleteCacheForFeatureFlag(featureFlag);
         return featureFlag;
@@ -621,7 +627,7 @@ class FeatureFlagService {
         if (!isIFeatureFlag(featureFlag)) {
             throw new Error('Invalid flag');
         }
-        
+
         // log event
         const message = `Flag '${featureFlag.name}' was deleted`;
         logAction(
@@ -631,7 +637,7 @@ class FeatureFlagService {
             featureFlag.id,
             message,
         );
-        
+
         await RedisCache.deleteCacheForFeatureFlag(featureFlag)
         return featureFlag;
     }

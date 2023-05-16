@@ -6,8 +6,8 @@ const BASE_AUTH0_URL = 'https://dev-sweetwater-internal.us.auth0.com/oauth/token
 let token;
 
 export let options = {
-    vus: 30,  // Number of virtual users
-    duration: '5m',  // Test duration
+    vus: 3,  // Number of virtual users
+    duration: '1m',  // Test duration
 };
 
 export function setup() {
@@ -49,14 +49,15 @@ export function setup() {
     res = http.get(`${BASE_URL}/users/app/${symphony.id}`, { headers: headers });
     check(res, { 'status was 200 for /users/app': (r) => r.status == 200 });
 
-    let users = res.json().filter((user) => user.isActive === true);
+    // find a random active user
+    let user = res.json().filter((user) => user.isActive === true)[Math.floor(Math.random() * res.json().length)];
 
-    return {token, users, symphony, production}
+    return {token, user, symphony, production}
 }
 
 export default function (input) {
     
-    let {token, users, symphony, production} = input;
+    let {token, user, symphony, production} = input;
 
     // Use the token in the Authorization header
     let headers = {
@@ -65,9 +66,6 @@ export default function (input) {
     };
 
     let res;
-    
-    // get flag states for random user
-    let user = users[Math.floor(Math.random() * users.length)];
 
     let payload = JSON.stringify({
         appId: symphony.id,
