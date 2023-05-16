@@ -116,7 +116,6 @@ class RedisCache {
         this.setAsync(`featureFlagsByUserId:${appId}:${userId}`, serializedFeatureFlags).catch((error) => 
             console.error(`Error setting cache for key 'featureFlagsByUserId:${appId}:${userId}': ${error}`)
         );
-        this.setCacheForFeatureFlags(featureFlags);
     }
     
     public deleteCacheForFeatureFlag = async (featureFlag: IFeatureFlag) => {

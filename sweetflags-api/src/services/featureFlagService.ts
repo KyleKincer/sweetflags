@@ -226,10 +226,6 @@ class FeatureFlagService {
 
         const featureFlagsDocs = await FeatureFlag
             .find({ app: appId })
-            .populate('environments.environment')
-            .populate('environments.allowedUsers')
-            .populate('environments.disallowedUsers')
-            .populate('app')
             .exec();
         if (!featureFlagsDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
@@ -644,7 +640,7 @@ class FeatureFlagService {
 
 
     async isEnabled(featureFlag: IFeatureFlag, user: string, environmentId: string): Promise<boolean> {
-        const flagData = featureFlag.environments.find((env) => (env.environment as IEnvironment).id === environmentId);
+        const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentId);
         if (!flagData) {
             return false;
         }
