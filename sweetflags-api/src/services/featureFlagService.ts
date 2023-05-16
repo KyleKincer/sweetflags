@@ -234,7 +234,6 @@ class FeatureFlagService {
             .find({ app: appId })
             .select({ name: 1, environments: 1, _id: 1 })
             .exec();
-        console.log(featureFlagsDocs[0])
         if (!featureFlagsDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
         }
