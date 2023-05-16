@@ -224,14 +224,13 @@ class FeatureFlagService {
     }
 
     async getFlagStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
-        performance.mark('getFlagStatesForUserId-start');
         const cachedData = await RedisCache.getFeatureFlagsByUserId(appId, userId)
         if (cachedData) {
             console.log('Cache hit');
             return this.areEnabled(cachedData, userId, environmentId)
         }
 
-        performance.mark('getFlagStatesForUserId-db-start');
+        // performance.mark('getFlagStatesForUserId-db-start');
         const featureFlagsDocs = await FeatureFlag
             .find({ app: appId })
             .select({ name: 1, environments: 1, _id: 1 })
@@ -239,18 +238,10 @@ class FeatureFlagService {
         if (!featureFlagsDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
         }
-        performance.mark('getFlagStatesForUserId-db-end');
-        performance.measure('getFlagStatesForUserId-db', 'getFlagStatesForUserId-db-start', 'getFlagStatesForUserId-db-end');
+        // performance.mark('getFlagStatesForUserId-db-end');
+        // performance.measure('getFlagStatesForUserId-db', 'getFlagStatesForUserId-db-start', 'getFlagStatesForUserId-db-end');
 
         RedisCache.setCacheForFeatureFlagsByUserId(featureFlagsDocs, appId, userId);
-
-        performance.mark('getFlagStatesForUserId-end');
-        performance.measure('getFlagStatesForUserId', 'getFlagStatesForUserId-start', 'getFlagStatesForUserId-end');
-
-        const entries = performance.getEntries();
-        entries.forEach((entry) => {
-            console.log(entry.name, entry.duration);
-        });
         return this.areEnabled(featureFlagsDocs, userId, environmentId);
     }
 
@@ -700,7 +691,6 @@ class FeatureFlagService {
 
 
     async areEnabled(featureFlags: Array<IFeatureFlag>, user: string, environment: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
-        performance.mark('start');
         const promises = featureFlags.map(async (flag) => {
             return {
                 id: flag.id,
@@ -709,10 +699,6 @@ class FeatureFlagService {
             };
         });
         const flags = await Promise.all(promises);
-        performance.mark('end');
-        performance.measure('areEnabled', 'start', 'end');
-        const measurements = performance.getEntriesByName('areEnabled');
-        console.log(measurements);
         return {
             flags: flags
         }

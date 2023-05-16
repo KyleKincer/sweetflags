@@ -6,7 +6,7 @@ const BASE_AUTH0_URL = 'https://dev-sweetwater-internal.us.auth0.com/oauth/token
 let token;
 
 export let options = {
-    vus: 30,  // Number of virtual users
+    vus: 10,  // Number of virtual users
     duration: '5m',  // Test duration
 };
 
