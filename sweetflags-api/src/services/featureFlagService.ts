@@ -205,12 +205,12 @@ class FeatureFlagService {
 
             featureFlagDoc = await FeatureFlag
             .findById(flagId)
-            .select('name, environments, _id')
+            .projection({ name: 1, environments: 1, _id: 1 })
             .exec();
         } else if (flagName) {
             featureFlagDoc = await FeatureFlag
             .findOne({ app: appId, name: flagName })
-            .select('name, environments, _id')
+            .projection({ name: 1, environments: 1, _id: 1 })
             .exec();
         } else {
             throw new FlagNotFoundError(`Either the id or name property is required`);
@@ -232,7 +232,7 @@ class FeatureFlagService {
 
         const featureFlagsDocs = await FeatureFlag
             .find({ app: appId })
-            .select('name environments _id')
+            .projection({ name: 1, environments: 1, _id: 1 })
             .exec();
         if (!featureFlagsDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
