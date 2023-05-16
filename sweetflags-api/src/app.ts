@@ -29,6 +29,9 @@ async function connectToDb() {
     throw err;
   }
 
+  // Add index on flags collection
+  await mongoose.connection.db.collection('flags').createIndex({ app: 1, name: 1 });
+
   const app = express();
 
   const port = process.env.PORT || 3000;
