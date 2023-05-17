@@ -158,6 +158,10 @@ class RedisCache {
         this.deleteKeysByPrefix(`featureFlagsByUserId:${(featureFlag.app as IApp).id}:`).catch((error) =>
             console.error(`Error deleting cache for key 'featureFlagsByUserId:${(featureFlag.app as IApp).id}:': ${error}`)
         );
+        // Delete the cache for featureFlagsByAppIdForStates
+        this.delAsync(`featureFlagsByAppIdForStates:${(featureFlag.app as IApp).id}`).catch((error) =>
+            console.error(`Error deleting cache for key 'featureFlagsByAppIdForStates:${(featureFlag.app as IApp).id}': ${error}`)
+        );
     }
 
     // Apps
