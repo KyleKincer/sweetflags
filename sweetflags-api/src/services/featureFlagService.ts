@@ -224,16 +224,28 @@ class FeatureFlagService {
     }
 
     async getFlagStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
+        // Try to get the entire result from the cache
         const cachedData = await RedisCache.getFeatureFlagsByUserId(appId, userId)
         if (cachedData) {
             console.log('Cache hit');
             return this.areEnabled(cachedData, userId, environmentId)
         }
 
+        // Try to get the flags from the cache
+        const cachedFlags = await RedisCache.getFeatureFlagsByAppId(appId);
+        if (cachedFlags) {
+            console.log('Cache hit for flags');
+            return this.areEnabled(cachedFlags, userId, environmentId);
+        }
+
+        // Get them from the database if not in cache
         // performance.mark('getFlagStatesForUserId-db-start');
         const featureFlagsDocs = await FeatureFlag
             .find({ app: appId })
-            .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
+            .select({ 
+                name: 1, 
+                environments: { $elemMatch: { environment: environmentId } }, 
+                _id: 1 })
             .exec();
         if (!featureFlagsDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
