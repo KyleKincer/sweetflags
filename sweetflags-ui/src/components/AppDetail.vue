@@ -38,14 +38,14 @@
                         </v-toolbar>
                         <v-list>
                             <v-list-item>
-                                <div class="sm:flex">
+                                <div>
                                     <v-container>
                                         <v-row>
-                                            <v-col cols="9">
+                                            <v-col cols="12" sm="9">
                                                 <v-text-field v-model="search" prepend-inner-icon="mdi-magnify" label="Search flags"
                                                     single-line hide-details></v-text-field>
                                             </v-col>
-                                            <v-col cols="3">
+                                            <v-col cols="12" sm="3">
                                                 <v-select v-model="selectedEnvironmentId" :items="environments" item-title="name"
                                                     item-value="id" label="Environment" outlined></v-select>
                                             </v-col>
