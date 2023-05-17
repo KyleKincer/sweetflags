@@ -693,7 +693,7 @@ class FeatureFlagService {
     async areEnabled(featureFlags: Array<IFeatureFlag>, user: string, environment: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
         const promises = featureFlags.map(async (flag) => {
             return {
-                id: flag.id,
+                id: flag._id,
                 name: flag.name,
                 isEnabled: await this.isEnabled(flag, user, environment)
             };
