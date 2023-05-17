@@ -232,7 +232,7 @@ class FeatureFlagService {
         }
 
         // Try to get the flags from the cache
-        const cachedFlags = await RedisCache.getFeatureFlagsByAppId(appId);
+        const cachedFlags = await RedisCache.getFeatureFlagsByAppIdForStates(appId);
         if (cachedFlags) {
             console.log('Cache hit for flags');
             return this.areEnabled(cachedFlags, userId, environmentId);
@@ -253,6 +253,7 @@ class FeatureFlagService {
         // performance.mark('getFlagStatesForUserId-db-end');
         // performance.measure('getFlagStatesForUserId-db', 'getFlagStatesForUserId-db-start', 'getFlagStatesForUserId-db-end');
 
+        RedisCache.setCacheForFeatureFlagsByAppIdForStates(featureFlagsDocs, appId);
         RedisCache.setCacheForFeatureFlagsByUserId(featureFlagsDocs, appId, userId);
         return this.areEnabled(featureFlagsDocs, userId, environmentId);
     }

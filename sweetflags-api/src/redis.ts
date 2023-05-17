@@ -50,6 +50,14 @@ class RedisCache {
         else
             return null;
     };
+    
+    public getFeatureFlagsByAppIdForStates = async (appId: string) => {
+        const cachedData = await this.getAsync(`featureFlagsByAppIdForStates:${appId}`);
+        if (cachedData)
+            return JSON.parse(cachedData);
+        else
+            return null;
+    };
 
     public getFeatureFlagsByUserId = async (appId: string, userId: string) => {
         const cachedData = await this.getAsync(`featureFlagsByUserId:${appId}:${userId}`);
@@ -109,6 +117,13 @@ class RedisCache {
             console.error(`Error setting cache for key 'featureFlagsByAppId:${appId}': ${error}`)
         );
         this.setCacheForFeatureFlags(featureFlags);
+    };
+
+    public setCacheForFeatureFlagsByAppIdForStates = async (featureFlags: Array<IFeatureFlag>, appId: string) => {
+        const serializedFeatureFlags = JSON.stringify(featureFlags);
+        this.setAsync(`featureFlagsByAppIdForStates:${appId}`, serializedFeatureFlags).catch((error) =>
+            console.error(`Error setting cache for key 'featureFlagsByAppIdForStates:${appId}': ${error}`)
+        );
     };
 
     public setCacheForFeatureFlagsByUserId = async (featureFlags: Array<IFeatureFlag>, appId: string, userId: string) => {
