@@ -11,7 +11,7 @@ build_api:
         - helm/api/*
         - sweetflags-api/**/*
 
-scan_ui:
+scan_api:
   extends: .container_scanning
   variables:
     IMAGE_NAME: 'api'
