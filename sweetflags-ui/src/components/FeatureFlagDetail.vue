@@ -102,16 +102,9 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-snackbar v-model="snackbar" timeout="2000">
-    {{ snackbarText }}
-    <template v-slot:actions>
-      <v-btn color="blue" variant="text" @click="snackbar = false">
-        Close
-      </v-btn>
-    </template></v-snackbar>
   <div v-if="flagDetails && flagDetails.app">
-    <v-breadcrumbs class="text-sm whitespace-nowrap truncate overflow-ellipsis"
-      :items="(breadcrumbs as any)"></v-breadcrumbs>
+    <v-breadcrumbs class="text-sm whitespace-nowrap truncate overflow-ellipsis" :items="(breadcrumbs as any)">
+    </v-breadcrumbs>
     <v-container>
       <v-row>
         <v-col>
@@ -292,6 +285,7 @@ import { FeatureFlag, App, User } from 'src/types';
 import router from '../router';
 import LoadingSpinner from './LoadingSpinner.vue';
 import RecentActivity from './RecentActivity.vue';
+import { snackbarState } from '../utils/snackbarState';
 
 export default defineComponent({
   props: {
@@ -322,8 +316,6 @@ export default defineComponent({
     const confirmEnableAll = ref(false);
     const confirmDisableAll = ref(false);
     const editMetadata = ref(false);
-    const snackbar = ref(false);
-    const snackbarText = ref('');
     const logRefresher = ref(0);
 
     var expandedEnvironment = ref('')
@@ -391,13 +383,11 @@ export default defineComponent({
         const newFlag = await disableFlag(flagDetails.value.id, user.value.name ?? 'unknown');
         flagDetails.value = newFlag;
         confirmDisableAll.value = false;
-        snackbar.value = true;
-        snackbarText.value = `Disabled ${flagDetails.value.name} for all environments`;
+        snackbarState.showSnackbar(`Disabled ${flagDetails.value.name} for all environments`);
         logRefresher.value += 1;
       } catch (err) {
         console.error('Error toggling feature flag:', err);
-        snackbar.value = true;
-        snackbarText.value = `🚨 Error disabling ${flagDetails.value.name} for all environments`;
+        snackbarState.showSnackbar(`🚨 Error disabling ${flagDetails.value.name} for all environments`);
       }
     }
 
@@ -406,13 +396,11 @@ export default defineComponent({
         const newFlag = await enableFlag(flagDetails.value.id, user.value.name ?? 'unknown');
         flagDetails.value = newFlag;
         confirmEnableAll.value = false;
-        snackbar.value = true;
-        snackbarText.value = `Enabled ${flagDetails.value.name} for all environments`;
+        snackbarState.showSnackbar(`Enabled ${flagDetails.value.name} for all environments`);
         logRefresher.value += 1;
       } catch (err) {
         console.error('Error toggling feature flag:', err);
-        snackbar.value = true;
-        snackbarText.value = `🚨 Error enabling ${flagDetails.value.name} for all environments`;
+        snackbarState.showSnackbar(`🚨 Error enabling ${flagDetails.value.name} for all environments`);
       }
     }
 
@@ -497,8 +485,7 @@ export default defineComponent({
         // compare the original flag details with the new ones to see if anything has changed
         if (JSON.stringify(flagDetails.value) === JSON.stringify(originalFlagDetails.value)) {
           // nothing has changed
-          snackbar.value = true;
-          snackbarText.value = 'No changes were made';
+          snackbarState.showSnackbar('No changes were made');
           return;
         }
 
@@ -528,13 +515,11 @@ export default defineComponent({
         originalFlagDetails.value = JSON.parse(JSON.stringify(newFlag));
         editMetadata.value = false;
         setBreadcrumb();
-        snackbar.value = true;
-        snackbarText.value = 'Feature flag updated successfully';
+        snackbarState.showSnackbar('Feature flag updated successfully');
         logRefresher.value += 1;
       } catch (err) {
         console.error('Error updating feature flag:', err);
-        snackbar.value = true;
-        snackbarText.value = 'Error updating feature flag';
+        snackbarState.showSnackbar('Error updating feature flag');
       }
     };
 
@@ -583,8 +568,7 @@ export default defineComponent({
         originalFlagDetails.value = JSON.parse(JSON.stringify(newFlag));
         editEnvironmentMode.value = false;
         logRefresher.value += 1;
-        snackbar.value = true;
-        snackbarText.value = 'Feature flag updated successfully';
+        snackbarState.showSnackbar('Feature flag updated successfully');
       } catch (err) {
         console.error('Error updating feature flag:', err);
       }
@@ -618,8 +602,7 @@ export default defineComponent({
 
     function copyToClipboard() {
       navigator.clipboard.writeText(flagDetails.value.id).then(() => {
-        snackbar.value = true;
-        snackbarText.value = 'ID copied to clipboard';
+        snackbarState.showSnackbar('ID copied to clipboard');
       }).catch((err) => {
         console.error('Failed to copy ID to clipboard:', err);
       });
@@ -668,8 +651,6 @@ export default defineComponent({
       confirmDisableAll,
       editMetadata,
       handleCancelUpdate,
-      snackbar,
-      snackbarText,
       logRefresher,
       timeSince,
       handleEnableEdit,
