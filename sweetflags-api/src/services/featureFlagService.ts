@@ -55,7 +55,6 @@ class FeatureFlagService {
         // Try to get the flag from the cache
         const cachedData = await RedisCache.getFeatureFlag({ id: id });
         if (cachedData) {
-            console.log('Cache hit');
             return cachedData;
         }
 
@@ -117,7 +116,6 @@ class FeatureFlagService {
         // Try to get the flags from the cache
         const cachedData = await RedisCache.getFeatureFlagsByAppId(appId);
         if (cachedData) {
-            console.log('Cache hit');
             return cachedData;
         }
         const app = await App.findById(appId);
@@ -153,7 +151,6 @@ class FeatureFlagService {
         // Try to get the flags from the cache
         const cachedData = await RedisCache.getFeatureFlagsByAppName(appName);
         if (cachedData) {
-            console.log('Cache hit');
             return cachedData;
         }
         const app = await App.findOne({ name: appName });
@@ -191,7 +188,6 @@ class FeatureFlagService {
         // Try to get the flag from the cache
         const cachedData = await RedisCache.getFeatureFlag({ name: flagName, id: flagId });
         if (cachedData) {
-            console.log('Cache hit');
             return await this.isEnabled(cachedData, userId, environmentId);
         }
 
@@ -227,14 +223,12 @@ class FeatureFlagService {
         // Try to get the entire result from the cache
         const cachedData = await RedisCache.getFeatureFlagsByUserId(appId, userId)
         if (cachedData) {
-            console.log('Cache hit');
             return this.areEnabled(cachedData, userId, environmentId)
         }
 
         // Try to get the flags from the cache
         const cachedFlags = await RedisCache.getFeatureFlagsByAppIdForStates(appId);
         if (cachedFlags) {
-            console.log('Cache hit for flags');
             return this.areEnabled(cachedFlags, userId, environmentId);
         }
 
