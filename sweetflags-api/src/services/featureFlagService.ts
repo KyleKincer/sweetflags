@@ -205,12 +205,12 @@ class FeatureFlagService {
 
             featureFlagDoc = await FeatureFlag
             .findById(flagId)
-            .select({ name: 1, environments: 1, _id: 1 })
+            .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
             .exec();
         } else if (flagName) {
             featureFlagDoc = await FeatureFlag
             .findOne({ app: appId, name: flagName })
-            .select({ name: 1, environments: 1, _id: 1 })
+            .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
             .exec();
         } else {
             throw new FlagNotFoundError(`Either the id or name property is required`);
@@ -233,7 +233,7 @@ class FeatureFlagService {
         // performance.mark('getFlagStatesForUserId-db-start');
         const featureFlagsDocs = await FeatureFlag
             .find({ app: appId })
-            .select({ name: 1, environments: 1, _id: 1 })
+            .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
             .exec();
         if (!featureFlagsDocs) {
             throw new FlagNotFoundError(`No flags found for app '${appId}'`);
