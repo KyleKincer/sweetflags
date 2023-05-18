@@ -51,7 +51,7 @@
               <v-slide-group show-arrows center-active mandatory v-model="environmentToEdit">
                 <v-slide-group-item v-for="environment in flagDetails.environments" :key="environment.id"
                   v-slot="{ isSelected, toggle }" :value="environment.environment.id">
-                  <v-btn class="ma-2 mb-8" rounded :color="isSelected ? 'primary' : 'undefined'" @click="toggle">
+                  <v-btn class="ma-2 mb-8" rounded :color="isSelected ? 'orange' : 'undefined'" @click="toggle">
                     {{ environment.environment.name }}
                   </v-btn>
                 </v-slide-group-item>
@@ -88,6 +88,7 @@
                             <v-icon icon="mdi-plus"></v-icon>
                           </v-btn>
                         </template>
+                        <v-divider></v-divider>
                       </v-list-item>
                     </template>
                   </v-virtual-scroll>
