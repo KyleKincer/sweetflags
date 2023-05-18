@@ -264,13 +264,23 @@
       </v-row>
     </v-container>
   </div>
-  <div v-else class="fixed inset-0 flex items-center justify-center">
-    <div class="loading-spinner">
-      <div class="loading-dot"></div>
-      <div class="loading-dot"></div>
-      <div class="loading-dot"></div>
-      <div class="loading-dot"></div>
-    </div>
+  <div v-else-if="!isLoadingGetFeatureFlagById">
+    <!-- show message that no flag was found -->
+    <v-container>
+      <v-row>
+        <v-col cols="12">
+          <v-card class="pa-4">
+            <v-card-title class="text-h5">No feature flag found</v-card-title>
+            <v-card-text>
+              <p class="text-body-1">No feature flag with the id <strong>{{ flagId }}</strong> was found.</p>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
+  <div class="fixed inset-0 flex items-center justify-center">
+    <v-progress-circular v-if="isLoadingGetFeatureFlagById" indeterminate color="blue"></v-progress-circular>
   </div>
 </template>
   
@@ -284,7 +294,6 @@ import formatDateTime from '../utils/formatDateTime';
 import { evaluationStrategyIcon, getEvaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
 import { FeatureFlag, App, User } from 'src/types';
 import router from '../router';
-import LoadingSpinner from './LoadingSpinner.vue';
 import RecentActivity from './RecentActivity.vue';
 import { snackbarState } from '../utils/snackbarState';
 
@@ -296,11 +305,10 @@ export default defineComponent({
     },
   },
   components: {
-    LoadingSpinner,
     RecentActivity,
   },
   setup(props) {
-    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoading, isLoadingGetUsers, isLoadingToggleFlag } = useApi();
+    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoadingGetFeatureFlagById, isLoadingGetUsers, isLoadingToggleFlag } = useApi();
     const { user } = useAuth0();
     const flagDetails = ref({} as FeatureFlag)
     const originalFlagDetails = ref({} as FeatureFlag)
@@ -663,7 +671,7 @@ export default defineComponent({
       filteredUsers,
       addToAllowedUsers,
       addToDisallowedUsers,
-      isLoading,
+      isLoadingGetFeatureFlagById,
       isLoadingToggleFlag,
       isLoadingGetUsers,
       disableAllEnvironments,

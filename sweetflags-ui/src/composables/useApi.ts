@@ -19,6 +19,7 @@ export default function useApi() {
   const isLoadingToggleFlag = ref(false);
   const isLoadingGetLogs = ref(false);
   const isLoadingGetFeatureFlagsByAppId = ref(false);
+  const isLoadingGetFeatureFlagById = ref(false);
   const isLoadingGetUsers = ref(false);
   const error = ref(null);
 
@@ -123,7 +124,7 @@ export default function useApi() {
   }
 
   async function getFeatureFlagById(flagId: string) {
-    isLoading.value = true;
+    isLoadingGetFeatureFlagById.value = true;
     error.value = null;
 
     try {
@@ -133,7 +134,7 @@ export default function useApi() {
       // error.value = err;
       throw err;
     } finally {
-      isLoading.value = false;
+      isLoadingGetFeatureFlagById.value = false;
     }
   }
 
@@ -357,6 +358,7 @@ export default function useApi() {
   return {
     isLoading,
     isLoadingGetFeatureFlagsByAppId,
+    isLoadingGetFeatureFlagById,
     isLoadingToggleFlag,
     isLoadingGetLogs,
     isLoadingGetUsers,
