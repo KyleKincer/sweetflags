@@ -7,15 +7,19 @@
                 <v-col>
                     <v-card class="mx-auto">
                         <v-toolbar color="blue">
-                            <v-btn icon><v-icon icon="mdi-filter-variant"></v-icon>
+                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon><v-icon
+                                    icon="mdi-filter-variant"></v-icon>
                                 <v-menu activator="parent" width="300">
                                     <v-list>
+                                        <v-list-subheader>Filters</v-list-subheader>
                                         <v-list-item @click.stop>
-                                            <v-select v-model="selectedCreatedBy" :items="uniqueCreatedBy"
-                                                label="Created By" dense outlined clearable>Any</v-select>
+                                            <div class="items-center">
+                                                <v-select v-model="selectedCreatedBy" :items="uniqueCreatedBy"
+                                                    label="Created By" dense outlined clearable>Any</v-select>
+                                            </div>
                                         </v-list-item>
                                         <v-list-item @click.stop>
-                                            <v-btn-toggle outlined v-model="selectedEvaluationStrategyFilter">
+                                            <v-btn-toggle color="grey" v-model="selectedEvaluationStrategyFilter">
                                                 <v-btn value="BOOLEAN" :icon="getEvaluationStrategyIcon('BOOLEAN')"></v-btn>
                                                 <v-btn value="USER" :icon="getEvaluationStrategyIcon('USER')"></v-btn>
                                                 <v-btn value="PERCENTAGE"
@@ -30,14 +34,15 @@
                             <v-toolbar-title>
                                 <div class="flex items-center">
                                     {{ app.name }}
-                                    <p class="text-sm ml-2 text-gray-200">({{ featureFlagCount }})</p>
+                                    <p v-if="!isLoadingGetFeatureFlagsByAppId" class="text-sm ml-2 text-gray-200">({{
+                                        featureFlagCount }})</p>
                                 </div>
                             </v-toolbar-title>
                             <v-progress-linear :active="isLoadingGetFeatureFlagsByAppId"
                                 :indeterminate="isLoadingGetFeatureFlagsByAppId" absolute bottom
                                 color="white"></v-progress-linear>
-                            <v-btn icon="mdi-plus"></v-btn>
-                            <v-btn icon="mdi-cog"></v-btn>
+                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-plus"></v-btn>
+                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-cog"></v-btn>
                         </v-toolbar>
                         <v-list v-if="!isLoadingGetFeatureFlagsByAppId">
                             <v-list-item>

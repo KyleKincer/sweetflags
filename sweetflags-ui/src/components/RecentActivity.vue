@@ -12,20 +12,25 @@
                         <div class="whitespace-normal max-h-6lines">
                             {{ log.message }}
                         </div>
-                        <div>
-                            <v-chip size="small" color="blue" class="mr-2 text-sm" :text="log.user" prepend-icon="mdi-account-outline">
-                            </v-chip>
-                        </div>
                     </div>
                 </v-list-item-title>
-                <v-list-item-subtitle v-if="showTimeSince">
-                    <div @click.stop="showTimeSince = !showTimeSince" class="cursor-pointer select-none">
-                        {{ timeSince(new Date(log.createdAt)) }}
-                    </div>
-                </v-list-item-subtitle>
-                <v-list-item-subtitle v-if="!showTimeSince">
-                    <div @click.stop="showTimeSince = !showTimeSince" class="cursor-pointer select-none">
-                        {{ formatDateTime(log.createdAt) }}
+                <v-list-item-subtitle>
+                    <div class="flex justify-between items-center">
+                        <div v-if="showTimeSince" @click.stop="showTimeSince = !showTimeSince"
+                            class="cursor-pointer select-none whitespace-nowrap overflow-hidden">
+                            {{ timeSince(new Date(log.createdAt)) }}
+                        </div>
+                        <div v-if="!showTimeSince" @click.stop="showTimeSince = !showTimeSince"
+                            class="cursor-pointer select-none whitespace-nowrap overflow-hidden">
+                            {{ formatDateTime(log.createdAt) }}
+                        </div>
+                        <div class="">
+                            <v-chip size="small" color="blue" class="mr-2 text-sm" :text="log.user">
+                                <template v-slot:prepend>
+                                    <v-icon icon="mdi-account-outline" class="mr-1"></v-icon>
+                                </template>
+                            </v-chip>
+                        </div>
                     </div>
                 </v-list-item-subtitle>
                 <template v-slot:append>
@@ -52,8 +57,8 @@ const logsTotalPages = ref(1);
 const showTimeSince = ref(true);
 
 const props = defineProps({
-  targetId: String,
-  linkToTarget: Boolean
+    targetId: String,
+    linkToTarget: Boolean
 });
 
 onMounted(async () => {
@@ -66,7 +71,7 @@ watch(logsPage, async () => {
 
 async function getNewLogs() {
     console.log(props.targetId);
-    
+
     const logsResponse = props.targetId != null
         ? await getLogsByTarget(props.targetId, logsPage.value)
         : await getLogs(logsPage.value);
