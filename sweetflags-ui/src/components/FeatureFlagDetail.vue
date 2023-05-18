@@ -347,7 +347,7 @@ export default defineComponent({
       if (newVal.environments && newVal.environments.length > 0 && newVal.environments.some(env => env.evaluationStrategy === 'USER')) {
         await getUsersIfNeeded();
       }
-    });
+    }, { deep: true });
 
     // watch for changes to environmentToEdit and set the index
     watch(environmentToEdit, (newVal, oldVal) => {
