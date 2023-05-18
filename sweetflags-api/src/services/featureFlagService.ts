@@ -12,6 +12,7 @@ import { IEnvironment } from '../interfaces/IEnvironment';
 import logAction from '../utilities/logger';
 import { IApp } from '../interfaces/IApp';
 import { performance } from 'perf_hooks';
+import { env } from 'process';
 
 class FeatureFlagService {
     async getAllFlags(): Promise<Array<IFeatureFlag>> {
@@ -652,32 +653,38 @@ class FeatureFlagService {
 
 
     async isEnabled(featureFlag: IFeatureFlag, user: string, environmentId: string): Promise<boolean> {
-        const flagData = featureFlag.environments.find((env) => env.environment.toString() === environmentId);
-        if (!flagData) {
-            return false;
+        // need to check if environments.environment is populated, or if it is just an ObjectId
+        let environmentIndex: number;
+        environmentIndex = featureFlag.environments.findIndex((env) => env.environment.toString() === environmentId);
+        if (environmentIndex === -1) {
+            environmentIndex = featureFlag.environments.findIndex((env) => (env.environment as IEnvironment).id === environmentId);
+        }
+        
+        if (environmentIndex === -1) {
+            throw new Error(`Environment '${environmentId}' not found`);
         }
 
-        switch (flagData.evaluationStrategy) {
+        switch (featureFlag.environments[environmentIndex].evaluationStrategy) {
             case 'BOOLEAN':
-                return flagData.isActive;
+                return featureFlag.environments[environmentIndex].isActive;
 
             case 'USER':
                 const userId = new ObjectId(user);
 
                 // If there is nothing in either of these arrays, then we can't evaluate the flag
-                if (!flagData.allowedUsers || !flagData.disallowedUsers) {
+                if (!featureFlag.environments[environmentIndex].allowedUsers || !featureFlag.environments[environmentIndex].disallowedUsers) {
                     return false;
                 }
                 // Allowed users take precedence over disallowed users
                 return (
-                    flagData.isActive &&
-                    (flagData.allowedUsers.some(allowedUser => new ObjectId(allowedUser).equals(userId)) ||
-                        !flagData.disallowedUsers.some(disallowedUser => new ObjectId(disallowedUser).equals(userId)))
+                    featureFlag.environments[environmentIndex].isActive &&
+                    (featureFlag.environments[environmentIndex].allowedUsers!.some(allowedUser => new ObjectId(allowedUser).equals(userId)) ||
+                        !featureFlag.environments[environmentIndex].disallowedUsers!.some(disallowedUser => new ObjectId(disallowedUser).equals(userId)))
                 );
 
             // Percentage is deterministic based on the user id
             case 'PERCENTAGE':
-                const percentage = flagData.evaluationPercentage || 0;
+                const percentage = featureFlag.environments[environmentIndex].evaluationPercentage || 0;
                 const hash = md5(user);
                 const hashInt = parseInt(hash.substr(0, 8), 16);
                 const normalized = hashInt / 0xffffffff;
@@ -688,7 +695,7 @@ class FeatureFlagService {
 
             // Probabalistic is random
             case 'PROBABALISTIC':
-                const probabalisticPercentage = flagData.evaluationPercentage || 0;
+                const probabalisticPercentage = featureFlag.environments[environmentIndex].evaluationPercentage || 0;
                 return Math.random() * 100 <= probabalisticPercentage;
 
             default:
