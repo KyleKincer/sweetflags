@@ -18,6 +18,8 @@ export default function useApi() {
   const isLoading = ref(false);
   const isLoadingToggleFlag = ref(false);
   const isLoadingGetLogs = ref(false);
+  const isLoadingGetFeatureFlagsByAppId = ref(false);
+  const isLoadingGetUsers = ref(false);
   const error = ref(null);
 
   async function getApps() {
@@ -106,7 +108,7 @@ export default function useApi() {
   }
 
   async function getFeatureFlagsByAppId(appId: string) {
-    isLoading.value = true;
+    isLoadingGetFeatureFlagsByAppId.value = true;
     error.value = null;
 
     try {
@@ -116,7 +118,7 @@ export default function useApi() {
       // error.value = err;
       throw err;
     } finally {
-      isLoading.value = false;
+      isLoadingGetFeatureFlagsByAppId.value = false;
     }
   }
 
@@ -298,7 +300,7 @@ export default function useApi() {
   };
 
   async function getUsers(appId: string) {
-    isLoading.value = true;
+    isLoadingGetUsers.value = true;
     error.value = null;
 
     try {
@@ -308,7 +310,7 @@ export default function useApi() {
       console.error("Failed to get users:", error);
       throw error;
     } finally {
-      isLoading.value = false;
+      isLoadingGetUsers.value = false;
     }
   };
 
@@ -354,8 +356,10 @@ export default function useApi() {
 
   return {
     isLoading,
+    isLoadingGetFeatureFlagsByAppId,
     isLoadingToggleFlag,
     isLoadingGetLogs,
+    isLoadingGetUsers,
     error,
     getApps,
     getAppById,

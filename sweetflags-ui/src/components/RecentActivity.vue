@@ -8,8 +8,14 @@
         <v-list lines="two" density="comfortable">
             <v-list-item v-for="log in logs" :key="log.id" class="hover:bg-gray-300 transition duration-300">
                 <v-list-item-title>
-                    <div class="whitespace-normal max-h-6lines">
-                        {{ log.message }}
+                    <div class="flex items-center justify-between">
+                        <div class="whitespace-normal max-h-6lines">
+                            {{ log.message }}
+                        </div>
+                        <div>
+                            <v-chip size="small" color="blue" class="mr-2 text-sm" :text="log.user" prepend-icon="mdi-account-outline">
+                            </v-chip>
+                        </div>
                     </div>
                 </v-list-item-title>
                 <v-list-item-subtitle v-if="showTimeSince">

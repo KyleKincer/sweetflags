@@ -71,7 +71,8 @@
                   <v-card-title>Users</v-card-title>
                   <v-text-field label="Search users" append-inner-icon="mdi-magnify" v-model="userSearch" dense
                     hide-details single-line></v-text-field>
-                  <v-virtual-scroll :items="filteredUsers" :item-height="25" height="300px">
+                    <v-progress-linear v-if="isLoadingGetUsers" :indeterminate="true"></v-progress-linear>
+                  <v-virtual-scroll v-if="!isLoadingGetUsers" :items="filteredUsers" :item-height="25" height="300px">
                     <template v-slot="{ item }">
                       <v-list-item v-if="item" :key="item.id">
                         <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -299,7 +300,7 @@ export default defineComponent({
     RecentActivity,
   },
   setup(props) {
-    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoading, isLoadingToggleFlag } = useApi();
+    const { getFeatureFlagById, toggleFlag, enableFlag, disableFlag, deleteFlag, updateFlagMetadata, updateFlag, getApps, getUsers, isLoading, isLoadingGetUsers, isLoadingToggleFlag } = useApi();
     const { user } = useAuth0();
     const flagDetails = ref({} as FeatureFlag)
     const originalFlagDetails = ref({} as FeatureFlag)
@@ -417,7 +418,29 @@ export default defineComponent({
         const externalIdMatches = !userSearch.value || user.externalId.toLowerCase().includes(userSearch.value.toLowerCase());
         const isActive = user.isActive;
         return (nameMatches || externalIdMatches) && isActive;
-      });
+      }).sort((a, b) => {
+        if (a.name.toLowerCase() < b.name.toLowerCase()) {
+          return -1;
+        }
+        return 1;
+      })// sort users who are in the allowedUsers or disallowedUsers arrays to the top
+        .sort((a, b) => {
+          const allowedUsers = flagDetails.value.environments.find(env => env.environment.id === environmentToEdit.value)?.allowedUsers;
+          const disallowedUsers = flagDetails.value.environments.find(env => env.environment.id === environmentToEdit.value)?.disallowedUsers;
+          if (allowedUsers?.map(user => user.id).includes(a.id) && !allowedUsers?.map(user => user.id).includes(b.id)) {
+            return -1;
+          }
+          if (!allowedUsers?.map(user => user.id).includes(a.id) && allowedUsers?.map(user => user.id).includes(b.id)) {
+            return 1;
+          }
+          if (disallowedUsers?.map(user => user.id).includes(a.id) && !disallowedUsers?.map(user => user.id).includes(b.id)) {
+            return -1;
+          }
+          if (!disallowedUsers?.map(user => user.id).includes(a.id) && disallowedUsers?.map(user => user.id).includes(b.id)) {
+            return 1;
+          }
+          return 0;
+        });
     });
 
     function addToAllowedUsers(envId: string, user: User) {
@@ -642,6 +665,7 @@ export default defineComponent({
       addToDisallowedUsers,
       isLoading,
       isLoadingToggleFlag,
+      isLoadingGetUsers,
       disableAllEnvironments,
       enableAllEnvironments,
       breadcrumbs,

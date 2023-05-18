@@ -33,21 +33,25 @@
                                     <p class="text-sm ml-2 text-gray-200">({{ featureFlagCount }})</p>
                                 </div>
                             </v-toolbar-title>
+                            <v-progress-linear :active="isLoadingGetFeatureFlagsByAppId"
+                                :indeterminate="isLoadingGetFeatureFlagsByAppId" absolute bottom
+                                color="white"></v-progress-linear>
                             <v-btn icon="mdi-plus"></v-btn>
                             <v-btn icon="mdi-cog"></v-btn>
                         </v-toolbar>
-                        <v-list>
+                        <v-list v-if="!isLoadingGetFeatureFlagsByAppId">
                             <v-list-item>
                                 <div>
                                     <v-container>
                                         <v-row>
                                             <v-col cols="12" sm="9">
-                                                <v-text-field v-model="search" prepend-inner-icon="mdi-magnify" label="Search flags"
-                                                    single-line hide-details></v-text-field>
+                                                <v-text-field v-model="search" prepend-inner-icon="mdi-magnify"
+                                                    label="Search flags" single-line hide-details></v-text-field>
                                             </v-col>
                                             <v-col cols="12" sm="3">
-                                                <v-select v-model="selectedEnvironmentId" :items="environments" item-title="name"
-                                                    item-value="id" label="Environment" outlined></v-select>
+                                                <v-select v-model="selectedEnvironmentId" :items="environments"
+                                                    item-title="name" item-value="id" label="Environment"
+                                                    outlined></v-select>
                                             </v-col>
                                         </v-row>
                                     </v-container>
@@ -92,7 +96,7 @@ export default defineComponent({
         },
     },
     setup(props) {
-        const { getAppById, getFeatureFlagsByAppId, getEnvironments, toggleFlag, isLoading, isLoadingToggleFlag, error } = useApi();
+        const { getAppById, getFeatureFlagsByAppId, getEnvironments, toggleFlag, isLoading, isLoadingGetFeatureFlagsByAppId, isLoadingToggleFlag, error } = useApi();
         const { user } = useAuth0();
         const app = ref<App>();
         const featureFlags = ref<FeatureFlag[]>([]);
@@ -233,6 +237,7 @@ export default defineComponent({
             featureFlags,
             isLoading,
             isLoadingToggleFlag,
+            isLoadingGetFeatureFlagsByAppId,
             error,
             search,
             filteredFlags,
