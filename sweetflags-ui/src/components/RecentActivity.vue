@@ -1,5 +1,5 @@
 <template>
-    <v-card class="mx-auto">
+    <v-card class="mx-auto" width="600">
         <v-toolbar color="gray" density="comfortable">
             <v-icon icon="mdi-clock-time-eight-outline" class="ml-2"></v-icon>
             <v-toolbar-title>Recent Activity</v-toolbar-title>

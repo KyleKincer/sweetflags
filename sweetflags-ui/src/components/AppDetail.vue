@@ -41,8 +41,10 @@
                             <v-progress-linear :active="isLoadingGetFeatureFlagsByAppId"
                                 :indeterminate="isLoadingGetFeatureFlagsByAppId" absolute bottom
                                 color="white"></v-progress-linear>
-                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-plus" :to="`/apps/${appId}/flags/create`"></v-btn>
-                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-cog" :to="`/apps/manage/${appId}`"></v-btn>
+                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-plus"
+                                :to="`/apps/${appId}/flags/create`"></v-btn>
+                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-cog"
+                                :to="`/apps/manage/${appId}`"></v-btn>
                         </v-toolbar>
                         <v-list v-if="!isLoadingGetFeatureFlagsByAppId">
                             <v-list-item>
@@ -69,7 +71,8 @@
                                 <template v-slot:append>
                                     <v-icon
                                         :icon="getEvaluationStrategyIcon(flag.environments[selectedEnvironmentIndex].evaluationStrategy)"
-                                        size="small" class="mr-2"></v-icon>
+                                        size="small" class="mr-2">
+                                    </v-icon>
                                     <v-switch v-model="flag.environments[selectedEnvironmentIndex].isActive" color="blue"
                                         hide-details density="compact" @click.prevent="handleToggle(flag)"
                                         :loading="isLoadingToggleFlag"></v-switch>
