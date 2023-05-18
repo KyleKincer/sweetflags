@@ -41,8 +41,8 @@
                             <v-progress-linear :active="isLoadingGetFeatureFlagsByAppId"
                                 :indeterminate="isLoadingGetFeatureFlagsByAppId" absolute bottom
                                 color="white"></v-progress-linear>
-                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-plus"></v-btn>
-                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-cog"></v-btn>
+                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-plus" :to="`/apps/${appId}/flags/create`"></v-btn>
+                            <v-btn :disabled="isLoadingGetFeatureFlagsByAppId" icon="mdi-cog" :to="`/apps/manage/${appId}`"></v-btn>
                         </v-toolbar>
                         <v-list v-if="!isLoadingGetFeatureFlagsByAppId">
                             <v-list-item>
