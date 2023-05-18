@@ -21,6 +21,7 @@ export default function useApi() {
   const isLoadingGetFeatureFlagsByAppId = ref(false);
   const isLoadingGetFeatureFlagById = ref(false);
   const isLoadingGetUsers = ref(false);
+  const isLoadingGetAppById = ref(false);
   const error = ref(null);
 
   async function getApps() {
@@ -38,7 +39,7 @@ export default function useApi() {
   }
 
   async function getAppById(appId: string) {
-    isLoading.value = true;
+    isLoadingGetAppById.value = true;
     error.value = null;
 
     try {
@@ -47,7 +48,7 @@ export default function useApi() {
     } catch (err) {
       throw err;
     } finally {
-      isLoading.value = false;
+      isLoadingGetAppById.value = false;
     }
   }
 
@@ -362,6 +363,7 @@ export default function useApi() {
     isLoadingToggleFlag,
     isLoadingGetLogs,
     isLoadingGetUsers,
+    isLoadingGetAppById,
     error,
     getApps,
     getAppById,

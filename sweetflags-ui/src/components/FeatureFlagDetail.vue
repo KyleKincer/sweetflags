@@ -71,7 +71,7 @@
                   <v-card-title>Users</v-card-title>
                   <v-text-field label="Search users" append-inner-icon="mdi-magnify" v-model="userSearch" dense
                     hide-details single-line></v-text-field>
-                    <v-progress-linear v-if="isLoadingGetUsers" :indeterminate="true"></v-progress-linear>
+                  <v-progress-linear v-if="isLoadingGetUsers" :indeterminate="true"></v-progress-linear>
                   <v-virtual-scroll v-if="!isLoadingGetUsers" :items="filteredUsers" :item-height="25" height="300px">
                     <template v-slot="{ item }">
                       <v-list-item v-if="item" :key="item.id">
@@ -265,22 +265,28 @@
     </v-container>
   </div>
   <div v-else-if="!isLoadingGetFeatureFlagById">
-    <!-- show message that no flag was found -->
     <v-container>
       <v-row>
-        <v-col cols="12">
-          <v-card class="pa-4">
-            <v-card-title class="text-h5">No feature flag found</v-card-title>
+        <v-spacer></v-spacer>
+        <v-col sm="8">
+          <v-card class="pa-4" color="red">
+            <v-card-title class="text-h5">
+              <div class="items-center text-center">
+                <v-icon icon="mdi-alert-circle-outline" class="mr-2"></v-icon>
+                <span>Feature flag not found</span>
+              </div>
+            </v-card-title>
             <v-card-text>
-              <p class="text-body-1">No feature flag with the id <strong>{{ flagId }}</strong> was found.</p>
+              <p class="text-body-1 text-center">No feature flag with the id <strong>{{ flagId }}</strong> was found.</p>
             </v-card-text>
           </v-card>
         </v-col>
+        <v-spacer></v-spacer>
       </v-row>
     </v-container>
   </div>
-  <div class="fixed inset-0 flex items-center justify-center">
-    <v-progress-circular v-if="isLoadingGetFeatureFlagById" indeterminate color="blue"></v-progress-circular>
+  <div v-if="isLoadingGetFeatureFlagById" class="fixed inset-0 flex items-center justify-center">
+    <v-progress-circular indeterminate color="blue"></v-progress-circular>
   </div>
 </template>
   

@@ -84,6 +84,31 @@
             </v-row>
         </v-container>
     </div>
+    <div v-else-if="!isLoadingGetAppById">
+        <!-- show message if no flag was found -->
+        <v-container>
+            <v-row>
+                <v-spacer></v-spacer>
+                <v-col sm="8">
+                    <v-card class="pa-4" color="red">
+                        <v-card-title class="text-h5 text-center">
+                            <div class="items-center">
+                                <v-icon icon="mdi-alert-circle-outline" class="mr-2"></v-icon>
+                                <span>App not found</span>
+                            </div>
+                        </v-card-title>
+                        <v-card-text>
+                            <p class="text-body-1 text-center">No app with the id <strong>{{ appId }}</strong> was found.</p>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+                <v-spacer></v-spacer>
+            </v-row>
+        </v-container>
+    </div>
+    <div v-if="isLoadingGetAppById" class="fixed inset-0 flex items-center justify-center">
+        <v-progress-circular indeterminate color="blue"></v-progress-circular>
+    </div>
 </template>
 
   
@@ -93,7 +118,6 @@ import { useAuth0 } from '@auth0/auth0-vue';
 import useApi from '../composables/useApi';
 import { evaluationStrategyIcon, getEvaluationStrategyIcon } from '../utils/evaluationStrategyIcon';
 import { FeatureFlag, Environment, App } from '../types';
-import LoadingSpinner from './LoadingSpinner.vue';
 import { snackbarState } from '../utils/snackbarState';
 
 export default defineComponent({
@@ -104,7 +128,7 @@ export default defineComponent({
         },
     },
     setup(props) {
-        const { getAppById, getFeatureFlagsByAppId, getEnvironments, toggleFlag, isLoading, isLoadingGetFeatureFlagsByAppId, isLoadingToggleFlag, error } = useApi();
+        const { getAppById, getFeatureFlagsByAppId, getEnvironments, toggleFlag, isLoading, isLoadingGetFeatureFlagsByAppId, isLoadingToggleFlag, isLoadingGetAppById, error } = useApi();
         const { user } = useAuth0();
         const app = ref<App>();
         const featureFlags = ref<FeatureFlag[]>([]);
@@ -246,6 +270,7 @@ export default defineComponent({
             isLoading,
             isLoadingToggleFlag,
             isLoadingGetFeatureFlagsByAppId,
+            isLoadingGetAppById,
             error,
             search,
             filteredFlags,
@@ -265,9 +290,6 @@ export default defineComponent({
             environments,
         };
     },
-    components: {
-        LoadingSpinner
-    }
 });
 </script>
   
