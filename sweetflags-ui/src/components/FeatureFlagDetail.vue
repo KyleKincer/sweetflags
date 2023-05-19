@@ -171,8 +171,11 @@
           <v-card class="mx-auto">
             <v-toolbar color="orange" density="comfortable">
               <v-icon icon="mdi-cloud-outline" class="ml-2"></v-icon>
-              <v-toolbar-title class="whitespace-normal overflow-visible">Environments</v-toolbar-title>
-              <v-spacer></v-spacer>
+              <v-toolbar-title>
+                <span class="overflow-visible whitespace-normal w-full">
+                  Environments
+                </span>
+              </v-toolbar-title>
               <v-btn variant="text" icon="mdi-block-helper" @click="confirmDisableAll = true"></v-btn>
               <v-btn variant="text" icon="mdi-check-all" @click="confirmEnableAll = true"></v-btn>
             </v-toolbar>
