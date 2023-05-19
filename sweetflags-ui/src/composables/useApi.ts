@@ -1,7 +1,7 @@
 // src/composables/useApi.ts
 import { ref } from 'vue';
 import axios from 'axios';
-import { FeatureFlag, FeatureFlagCreatePayload, Environment, App, EnvironmentCreatePayload, Log } from '../types';
+import { FeatureFlag, FeatureFlagCreatePayload, AppCreatePayload, Environment, EnvironmentCreatePayload, Log } from '../types';
 import { useAuth0 } from '@auth0/auth0-vue';
 
 export default function useApi() {
@@ -286,7 +286,7 @@ export default function useApi() {
     }
   }
 
-  async function createApp(app: App) {
+  async function createApp(app: AppCreatePayload) {
     isLoading.value = true;
     error.value = null;
 

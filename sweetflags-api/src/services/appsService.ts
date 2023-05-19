@@ -118,7 +118,7 @@ class AppsService {
         }
 
         // Log action
-        await logAction(createdBy, 'CREATE_APP', app.id, 'App', `Created app ${app.name}`);
+        await logAction(createdBy, 'CREATE_APP', 'App', app.id, `Created app ${app.name}`);
 
         RedisCache.deleteCacheForApp(app)
         RedisCache.setCacheForApp(app)

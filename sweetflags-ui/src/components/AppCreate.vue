@@ -27,23 +27,22 @@
 import { ref } from 'vue';
 import { useAuth0 } from '@auth0/auth0-vue';
 import useApi from '../composables/useApi';
-import { App } from '../types';
+import { AppCreatePayload } from '../types';
 import router from '../router';
 
 const { createApp } = useApi();
 const { user } = useAuth0();
-const app = ref<App>({
+const app = ref<AppCreatePayload>({
   name: '',
   description: '',
   isActive: true,
   createdBy: user.value.name ?? 'unknown',
-  id: '',
 });
 
 async function handleSubmit() {
   try {
+    console.log('Creating app:', app.value);
     const createdApp = await createApp(app.value);
-    console.log('App created successfully:', createdApp);
     router.push({ name: 'AppDetail', params: { appId: createdApp.id } })
   } catch (error) {
     console.error('Error creating app:', error);

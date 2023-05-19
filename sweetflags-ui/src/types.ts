@@ -6,6 +6,13 @@ export interface App {
     createdBy: string;
   }
 
+  export interface AppCreatePayload {
+    name: string;
+    description: string;
+    isActive: boolean;
+    createdBy: string;
+  }
+
   export interface Environment {
     id: string;
     name: string;
