@@ -1,6 +1,7 @@
 import App from '../models/AppModel';
 import { IApp } from '../interfaces/IApp';
 import Environment from '../models/EnvironmentModel';
+import FeatureFlag from '../models/FeatureFlagModel';
 import RedisCache from '../redis'
 import { AppNotFoundError } from '../errors';
 import { isIApp, isIAppArray } from '../type-guards/IApp';
@@ -132,14 +133,32 @@ class AppsService {
             throw new Error(`Invalid id ${id}`);
         }
 
+        // find feature flags and environments for app and delete them
+        const environments = await Environment.find({ app: id }).exec();
+        if (environments) {
+            environments.forEach(async (environment) => {
+                await environment.deleteOne();
+            });
+        }
+
+        const featureFlags = await FeatureFlag.find({ app: id }).exec();
+        if (featureFlags) {
+            featureFlags.forEach(async (featureFlag) => {
+                RedisCache.deleteCacheForFeatureFlag(featureFlag);
+                await featureFlag.deleteOne();
+            });
+        }
+
+        // delete app
         const appDoc = await App.findByIdAndDelete(id).exec();
         if (!appDoc) {
             throw new AppNotFoundError(`App with id ${id} not found`);
         }
 
         // Log action
-        logAction(updatedBy, 'DELETE_APP', id, 'App', `Deleted app ${id}`);
+        logAction(updatedBy, 'DELETE_APP', 'App', id, `Deleted app ${id}`);
 
+        // Bust cache
         RedisCache.deleteCacheForApp(appDoc)
     }
 }
