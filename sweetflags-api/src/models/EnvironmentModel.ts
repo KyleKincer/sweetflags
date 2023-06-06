@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { IEnvironment } from '../interfaces/IEnvironment';
-import FeatureFlag from './FeatureFlagModel';
+import FeatureFlag from './ConfigModel';
 import Environment from './EnvironmentModel';
 
 const environmentSchema: Schema = new mongoose.Schema({

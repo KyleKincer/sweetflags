@@ -1,20 +1,30 @@
 import { Schema, Model, model } from 'mongoose';
-import { IFeatureFlag } from '../interfaces/IFeatureFlag';
+import { IConfig } from '../interfaces/IConfig';
 
 const evaluationStrategyEnum = {
   values: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
   message: '{VALUE} is not a valid EvaluationStrategy value'
 };
 
-const featureFlagSchema: Schema = new Schema({
+const typeEnum = {
+  values: ['BOOLEAN', 'JSON', 'TEXT', 'ENUM'],
+  message: '{VALUE} is not a valid Type value'
+};
+
+const configSchema: Schema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   app: { type: Schema.Types.ObjectId, ref: 'App', required: true },
   environments: [
     {
       environment: { type: Schema.Types.ObjectId, ref: 'Environment', required: true },
+      type: { type: String, enum: typeEnum, required: true },
+      stringValue: { type: String },
+      jsonValue: { type: Schema.Types.Mixed },
+      enumValues: [{ type: String }],
+      enumValue: { type: String },
       isActive: { type: Boolean, default: false },
-      evaluationStrategy: { type: String, enum: evaluationStrategyEnum, required: true },
+      evaluationStrategy: { type: String, enum: evaluationStrategyEnum },
       evaluationPercentage: { type: Number },
       allowedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
       disallowedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
@@ -40,6 +50,6 @@ const featureFlagSchema: Schema = new Schema({
 }
 );
 
-const FeatureFlag: Model<IFeatureFlag> = model<IFeatureFlag>('FeatureFlag', featureFlagSchema);
+const Config: Model<IConfig> = model<IConfig>('Config', configSchema);
 
-export default FeatureFlag;
+export default Config;

@@ -1,9 +1,9 @@
-class FlagNotFoundError extends Error {
+class ConfigNotFoundError extends Error {
   statusCode: number;
 
   constructor(message: string) {
       super(message);
-      this.name = 'FlagNotFoundError';
+      this.name = 'ConfigNotFoundError';
       this.statusCode = 404;
   }
 }
@@ -28,4 +28,4 @@ class EnvironmentNotFoundError extends Error {
   }
 }
 
-export { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError };
+export { ConfigNotFoundError, AppNotFoundError, EnvironmentNotFoundError };

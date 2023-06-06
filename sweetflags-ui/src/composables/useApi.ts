@@ -222,7 +222,7 @@ export default function useApi() {
     }
   };
 
-  async function updateFlagMetadata(id: string, updatedBy: string, name?: string, description?: string | undefined, app?: string | undefined): Promise<FeatureFlag> {
+  async function updateConfigMetadata(id: string, updatedBy: string, name?: string, description?: string | undefined, app?: string | undefined): Promise<FeatureFlag> {
     isLoading.value = true;
     error.value = null;
 
@@ -245,7 +245,7 @@ export default function useApi() {
     }
   }
 
-  async function updateFlag(id: string, environmentId: string, updatedBy: string, isActive?: boolean, evaluationStrategy?: string, evaluationPercentage?: number, allowedUsers?: string[], disallowedUsers?: string[]): Promise<FeatureFlag> {
+  async function updateConfig(id: string, environmentId: string, updatedBy: string, isActive?: boolean, evaluationStrategy?: string, evaluationPercentage?: number, allowedUsers?: string[], disallowedUsers?: string[]): Promise<FeatureFlag> {
     isLoading.value = true;
     error.value = null;
 
@@ -271,7 +271,7 @@ export default function useApi() {
     }
   }
 
-  async function deleteFlag(id: string): Promise<FeatureFlag> {
+  async function deleteConfig(id: string): Promise<FeatureFlag> {
     isLoading.value = true;
     error.value = null;
 
@@ -378,9 +378,9 @@ export default function useApi() {
     disableFlag,
     createFeatureFlag,
     createApp,
-    updateFlagMetadata,
-    updateFlag,
-    deleteFlag,
+    updateConfigMetadata,
+    updateConfig,
+    deleteConfig,
     getUsers,
     getLogs,
     getLogsByTarget,

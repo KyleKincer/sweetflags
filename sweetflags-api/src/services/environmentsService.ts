@@ -1,6 +1,6 @@
 import App from '../models/AppModel';
 import Environment from '../models/EnvironmentModel';
-import FeatureFlag from '../models/FeatureFlagModel';
+import FeatureFlag from '../models/ConfigModel';
 import { IEnvironment } from '../interfaces/IEnvironment';
 import { AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 import { isIEnvironment, isIEnvironmentArray } from '../type-guards/IEnvironment';
@@ -143,7 +143,7 @@ class EnvironmentsService {
                 });
                 featureFlags[i].environments = environments;
                 await featureFlags[i].save();
-                RedisCache.deleteCacheForFeatureFlag(featureFlag);
+                RedisCache.deleteCacheForConfig(featureFlag);
             }
         }
 
@@ -177,7 +177,7 @@ class EnvironmentsService {
                 );
                 featureFlagDoc.environments = environments;
                 await featureFlagDoc.save();
-                RedisCache.deleteCacheForFeatureFlag(featureFlagDoc);
+                RedisCache.deleteCacheForConfig(featureFlagDoc);
             }
         }
 

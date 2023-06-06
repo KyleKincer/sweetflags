@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import dotenv from 'dotenv';
-import { IFeatureFlag } from './interfaces/IFeatureFlag';
+import { IConfig } from './interfaces/IConfig';
 import { IApp } from './interfaces/IApp';
 
 dotenv.config();
@@ -26,16 +26,16 @@ class RedisCache {
 
     // Feature Flags
     
-    public getFeatureFlag = async (options: {id?: string, name?: string}) => {
+    public getConfig = async (options: {id?: string, name?: string}) => {
         if (options.id)
-            return await this.getFeatureFlagById(options.id);
+            return await this.setCacheForAllConfigsById(options.id);
         else if (options.name)
-            return await this.getFeatureFlagByName(options.name);
+            return await this.setCacheForAllConfigsByName(options.name);
         else
             throw new Error('Must provide either an id or a name');
     };
 
-    public getFeatureFlagsByAppName = async (appName: string) => {
+    public getConfigsByAppName = async (appName: string) => {
         const cachedData = await this.getAsync(`featureFlagsByAppName:${appName}`);
         if (cachedData)
             return JSON.parse(cachedData);
@@ -43,7 +43,7 @@ class RedisCache {
             return null;
     };
 
-    public getFeatureFlagsByAppId = async (appId: string) => {
+    public getConfigsByAppId = async (appId: string) => {
         const cachedData = await this.getAsync(`featureFlagsByAppId:${appId}`);
         if (cachedData)
             return JSON.parse(cachedData);
@@ -51,7 +51,7 @@ class RedisCache {
             return null;
     };
     
-    public getFeatureFlagsByAppIdForStates = async (appId: string) => {
+    public getConfigsByAppIdForStates = async (appId: string) => {
         const cachedData = await this.getAsync(`featureFlagsByAppIdForStates:${appId}`);
         if (cachedData)
             return JSON.parse(cachedData);
@@ -59,7 +59,7 @@ class RedisCache {
             return null;
     };
 
-    public getFeatureFlagsByUserId = async (appId: string, userId: string) => {
+    public getConfigsByUserId = async (appId: string, userId: string) => {
         const cachedData = await this.getAsync(`featureFlagsByUserId:${appId}:${userId}`);
         if (cachedData) {
             return JSON.parse(cachedData);
@@ -68,7 +68,7 @@ class RedisCache {
         }
     }
 
-    public getAllFeatureFlags = async () => {
+    public getAllConfigs = async () => {
         const cachedData = await this.getAsync('allFeatureFlags');
         if (cachedData)
             return JSON.parse(cachedData);
@@ -76,7 +76,7 @@ class RedisCache {
             return null;
     };
 
-    public setCacheForFeatureFlag = async (featureFlag: IFeatureFlag) => {
+    public setCacheForConfig = async (featureFlag: IConfig) => {
         const { idKey, nameKey } = this.featureFlagKeys(featureFlag);
         const serializedFeatureFlag = JSON.stringify(featureFlag);
     
@@ -89,51 +89,51 @@ class RedisCache {
         );
     };
 
-    public setCacheForFeatureFlags = async (featureFlags: Array<IFeatureFlag>) => {
+    public setCacheForConfigs = async (featureFlags: Array<IConfig>) => {
         featureFlags.forEach((featureFlag) => {
-            this.setCacheForFeatureFlag(featureFlag);
+            this.setCacheForConfig(featureFlag);
         });
     };
 
-    public setCacheForAllFeatureFlags = async (featureFlags: Array<IFeatureFlag>) => { 
+    public setCacheForAllConfigs = async (featureFlags: Array<IConfig>) => { 
         const serializedFeatureFlags = JSON.stringify(featureFlags);
         this.setAsync('allFeatureFlags', serializedFeatureFlags).catch((error) =>
             console.error(`Error setting cache for key 'allFeatureFlags': ${error}`)
         );
-        this.setCacheForFeatureFlags(featureFlags);
+        this.setCacheForConfigs(featureFlags);
     };
 
-    public setCacheForFeatureFlagsByAppName = async (featureFlags: Array<IFeatureFlag>, appName: string) => {
+    public setCacheForConfigsByAppName = async (featureFlags: Array<IConfig>, appName: string) => {
         const serializedFeatureFlags = JSON.stringify(featureFlags);
         this.setAsync(`featureFlagsByAppName:${appName}`, serializedFeatureFlags).catch((error) =>
             console.error(`Error setting cache for key 'featureFlagsByAppName:${appName}': ${error}`)
         );
-        this.setCacheForFeatureFlags(featureFlags);
+        this.setCacheForConfigs(featureFlags);
     };
 
-    public setCacheForFeatureFlagsByAppId = async (featureFlags: Array<IFeatureFlag>, appId: string) => {
+    public setCacheForConfigsByAppId = async (featureFlags: Array<IConfig>, appId: string) => {
         const serializedFeatureFlags = JSON.stringify(featureFlags);
         this.setAsync(`featureFlagsByAppId:${appId}`, serializedFeatureFlags).catch((error) =>
             console.error(`Error setting cache for key 'featureFlagsByAppId:${appId}': ${error}`)
         );
-        this.setCacheForFeatureFlags(featureFlags);
+        this.setCacheForConfigs(featureFlags);
     };
 
-    public setCacheForFeatureFlagsByAppIdForStates = async (featureFlags: Array<IFeatureFlag>, appId: string) => {
+    public setCacheForConfigsByAppIdForStates = async (featureFlags: Array<IConfig>, appId: string) => {
         const serializedFeatureFlags = JSON.stringify(featureFlags);
         this.setAsync(`featureFlagsByAppIdForStates:${appId}`, serializedFeatureFlags).catch((error) =>
             console.error(`Error setting cache for key 'featureFlagsByAppIdForStates:${appId}': ${error}`)
         );
     };
 
-    public setCacheForFeatureFlagsByUserId = async (featureFlags: Array<IFeatureFlag>, appId: string, userId: string) => {
+    public setCacheForConfigsByUserId = async (featureFlags: Array<IConfig>, appId: string, userId: string) => {
         const serializedFeatureFlags = JSON.stringify(featureFlags);
         this.setAsync(`featureFlagsByUserId:${appId}:${userId}`, serializedFeatureFlags).catch((error) => 
             console.error(`Error setting cache for key 'featureFlagsByUserId:${appId}:${userId}': ${error}`)
         );
     }
     
-    public deleteCacheForFeatureFlag = async (featureFlag: IFeatureFlag) => {
+    public deleteCacheForConfig = async (featureFlag: IConfig) => {
         const { idKey, nameKey } = this.featureFlagKeys(featureFlag);
     
         // Delete the cache for both keys
@@ -268,7 +268,7 @@ class RedisCache {
     };
     
     
-    private getFeatureFlagById = async (id: string) => {
+    private setCacheForAllConfigsById = async (id: string) => {
         const cacheKey = this.featureFlagKeyForId(id);
         const cachedData = await this.getAsync(cacheKey);
     
@@ -279,7 +279,7 @@ class RedisCache {
         }
     };
     
-    private getFeatureFlagByName = async (name: string) => {
+    private setCacheForAllConfigsByName = async (name: string) => {
         const cacheKey = this.featureFlagKeyForName(name);
         const cachedData = await this.getAsync(cacheKey);
     
@@ -290,7 +290,7 @@ class RedisCache {
         }
     };
     
-    private featureFlagKeys = (featureFlag: IFeatureFlag): { idKey: string; nameKey: string } => {
+    private featureFlagKeys = (featureFlag: IConfig): { idKey: string; nameKey: string } => {
         return {
             idKey: this.featureFlagKeyForId(featureFlag.id),
             nameKey: this.featureFlagKeyForName(featureFlag.name),

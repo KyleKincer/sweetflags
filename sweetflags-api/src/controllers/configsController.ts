@@ -1,14 +1,14 @@
-import FeatureFlagService from '../services/featureFlagService';
+import ConfigService from '../services/configService';
 import { Request, Response } from 'express';
-import { FlagNotFoundError, AppNotFoundError, EnvironmentNotFoundError } from '../errors';
+import { ConfigNotFoundError, AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 
-async function getAllFlags(_req: Request, res: Response): Promise<void> {
+async function getAllConfigs(_req: Request, res: Response): Promise<void> {
     try {
-        const featureFlags = await FeatureFlagService.getAllFlags();
-        res.status(200).json(featureFlags);
+        const configs = await ConfigService.getAllConfigs();
+        res.status(200).json(configs);
     } catch (err: unknown) {
         console.error(err);
-        if (err instanceof FlagNotFoundError) {
+        if (err instanceof ConfigNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
         } else if (err instanceof Error) {
             res.status(500).json({ message: err.message });
@@ -18,13 +18,13 @@ async function getAllFlags(_req: Request, res: Response): Promise<void> {
     }
 }
 
-async function getFlagById(req: Request, res: Response): Promise<void> {
+async function getConfigById(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.getFlagById(req.params.id);
-        res.status(200).json(featureFlag);
+        const config = await ConfigService.getConfigById(req.params.id);
+        res.status(200).json(config);
     } catch (err: unknown) {
         console.error(err);
-        if (err instanceof FlagNotFoundError) {
+        if (err instanceof ConfigNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
         } else if (err instanceof Error) {
             res.status(500).json({ message: err.message });
@@ -34,13 +34,13 @@ async function getFlagById(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function getFlagByName(req: Request, res: Response): Promise<void> {
+async function getConfigByName(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.getFlagByName(req.params.name);
-        res.status(200).json(featureFlag);
+        const config = await ConfigService.getConfigByName(req.params.name);
+        res.status(200).json(config);
     } catch (err) {
         console.error(err);
-        if (err instanceof FlagNotFoundError) {
+        if (err instanceof ConfigNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
         } else if (err instanceof Error) {
             res.status(500).json({ message: err.message });
@@ -50,13 +50,13 @@ async function getFlagByName(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function getFlagsByAppId(req: Request, res: Response): Promise<void> {
+async function getConfigsByAppId(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlags = await FeatureFlagService.getFlagsByAppId(req.params.appId);
-        res.status(200).json(featureFlags);
+        const configs = await ConfigService.getConfigsByAppId(req.params.appId);
+        res.status(200).json(configs);
     } catch (err) {
         console.error(err);
-        if (err instanceof AppNotFoundError || err instanceof FlagNotFoundError) {
+        if (err instanceof AppNotFoundError || err instanceof ConfigNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
         } else if (err instanceof Error) {
             res.status(500).json({ message: err.message });
@@ -66,13 +66,13 @@ async function getFlagsByAppId(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function getFlagsByAppName(req: Request, res: Response): Promise<void> {
+async function getConfigsByAppName(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlags = await FeatureFlagService.getFlagsByAppName(req.params.appName);
-        res.status(200).json(featureFlags);
+        const configs = await ConfigService.getConfigsByAppName(req.params.appName);
+        res.status(200).json(configs);
     } catch (err) {
         console.error(err);
-        if (err instanceof AppNotFoundError || err instanceof FlagNotFoundError) {
+        if (err instanceof AppNotFoundError || err instanceof ConfigNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
         } else if (err instanceof Error) {
             res.status(500).json({ message: err.message });
@@ -84,12 +84,12 @@ async function getFlagsByAppName(req: Request, res: Response): Promise<void> {
 
 async function getFlagState(req: Request, res: Response): Promise<void> {
     try {
-        const state = await FeatureFlagService.getFlagState(req.body.flagName, req.body.flagId, req.body.appId, req.body.userId, req.body.environmentId);
+        const state = await ConfigService.getFlagState(req.body.flagName, req.body.flagId, req.body.appId, req.body.userId, req.body.environmentId);
         res.status(200).json(state);
 
     } catch (err) {
         console.error(err);
-        if (err instanceof FlagNotFoundError || err instanceof AppNotFoundError) {
+        if (err instanceof ConfigNotFoundError || err instanceof AppNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
         } else if (err instanceof Error) {
             res.status(500).json({ message: err.message });
@@ -101,11 +101,11 @@ async function getFlagState(req: Request, res: Response): Promise<void> {
 
 async function getFlagStatesForUserId(req: Request, res: Response): Promise<void> {
     try {
-        const states = await FeatureFlagService.getFlagStatesForUserId(req.body.appId, req.body.userId, req.body.environmentId);
+        const states = await ConfigService.getFlagStatesForUserId(req.body.appId, req.body.userId, req.body.environmentId);
         res.status(200).json(states);
     } catch (err) {
         console.error(err);
-        if (err instanceof FlagNotFoundError || err instanceof AppNotFoundError) {
+        if (err instanceof ConfigNotFoundError || err instanceof AppNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
         } else if (err instanceof Error) {
             res.status(500).json({ message: err.message });
@@ -117,11 +117,11 @@ async function getFlagStatesForUserId(req: Request, res: Response): Promise<void
 
 async function toggleFlag(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.toggleFlag(req.body);
+        const featureFlag = await ConfigService.toggleFlag(req.body);
         res.status(200).json(featureFlag);
     } catch (err) {
         console.error(err);
-        if (err instanceof FlagNotFoundError || 
+        if (err instanceof ConfigNotFoundError || 
             err instanceof AppNotFoundError || 
             err instanceof EnvironmentNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
@@ -135,11 +135,11 @@ async function toggleFlag(req: Request, res: Response): Promise<void> {
 
 async function enableFlag(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.enableForAllEnvironments(req.body)
+        const featureFlag = await ConfigService.enableForAllEnvironments(req.body)
         res.status(200).json(featureFlag)
     } catch (err) {
         console.error(err)
-        if (err instanceof FlagNotFoundError || 
+        if (err instanceof ConfigNotFoundError || 
             err instanceof AppNotFoundError || 
             err instanceof EnvironmentNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
@@ -153,11 +153,11 @@ async function enableFlag(req: Request, res: Response): Promise<void> {
 
 async function disableFlag(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.disableForAllEnvironments(req.body)
+        const featureFlag = await ConfigService.disableForAllEnvironments(req.body)
         res.status(200).json(featureFlag)
     } catch (err) {
         console.error(err)
-        if (err instanceof FlagNotFoundError ||
+        if (err instanceof ConfigNotFoundError ||
             err instanceof AppNotFoundError ||
             err instanceof EnvironmentNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
@@ -169,18 +169,18 @@ async function disableFlag(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function updateFlagMetadata(req: Request, res: Response): Promise<void> {
+async function updateConfigMetadata(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.updateFlagMetadata(
+        const config = await ConfigService.updateConfigMetadata(
             req.params.id,
             req.body.name,
             req.body.description,
             req.body.app,
             req.body.updatedBy);
-        res.status(200).json(featureFlag);
+        res.status(200).json(config);
     } catch (err) {
         console.error(err);
-        if (err instanceof FlagNotFoundError || 
+        if (err instanceof ConfigNotFoundError || 
             err instanceof AppNotFoundError || 
             err instanceof EnvironmentNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
@@ -192,13 +192,13 @@ async function updateFlagMetadata(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function updateFlag(req: Request, res: Response): Promise<void> {
+async function updateConfig(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.updateFlag(req.params.id, req.body);
-        res.status(200).json(featureFlag);
+        const config = await ConfigService.updateConfig(req.params.id, req.body);
+        res.status(200).json(config);
     } catch (err) {
         console.error(err);
-        if (err instanceof FlagNotFoundError || 
+        if (err instanceof ConfigNotFoundError || 
             err instanceof AppNotFoundError || 
             err instanceof EnvironmentNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
@@ -210,13 +210,13 @@ async function updateFlag(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function createFlag(req: Request, res: Response): Promise<void> {
+async function createConfig(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.createFlag(req.body);
-        res.status(201).json(featureFlag);
+        const config = await ConfigService.createConfig(req.body);
+        res.status(201).json(config);
     } catch (err) {
         console.error(err);
-        if (err instanceof FlagNotFoundError || 
+        if (err instanceof ConfigNotFoundError || 
             err instanceof AppNotFoundError || 
             err instanceof EnvironmentNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
@@ -228,13 +228,13 @@ async function createFlag(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function deleteFlag(req: Request, res: Response): Promise<void> {
+async function deleteConfig(req: Request, res: Response): Promise<void> {
     try {
-        const featureFlag = await FeatureFlagService.deleteFlag(req.params.id);
-        res.status(200).json(featureFlag);
+        const config = await ConfigService.deleteConfig(req.params.id);
+        res.status(200).json(config);
     } catch (err) {
         console.error(err);
-        if (err instanceof FlagNotFoundError ||
+        if (err instanceof ConfigNotFoundError ||
             err instanceof AppNotFoundError ||
             err instanceof EnvironmentNotFoundError) {
             res.status(err.statusCode).json({ message: err.message });
@@ -248,18 +248,18 @@ async function deleteFlag(req: Request, res: Response): Promise<void> {
 
 
 export {
-    getAllFlags,
-    getFlagById,
-    getFlagByName,
-    getFlagsByAppId,
-    getFlagsByAppName,
+    getAllConfigs,
+    getConfigById,
+    getConfigByName,
+    getConfigsByAppId,
+    getConfigsByAppName,
     getFlagState,
     getFlagStatesForUserId,
     toggleFlag,
     enableFlag,
     disableFlag,
-    updateFlagMetadata,
-    updateFlag,
-    createFlag,
-    deleteFlag,
+    updateConfigMetadata,
+    updateConfig as updateConfig,
+    createConfig,
+    deleteConfig,
 };

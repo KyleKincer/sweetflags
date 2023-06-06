@@ -1,18 +1,27 @@
-import { IFeatureFlag } from '../interfaces/IFeatureFlag';
+import { IConfig } from '../interfaces/IConfig';
 import { isIApp } from './IApp'; 
 import { isIEnvironment } from './IEnvironment'; 
 import { isIUserArray } from './IUser';
 import { ObjectId } from 'mongodb';
 
-function isIFeatureFlag(obj: any): obj is IFeatureFlag {
+function isIConfig(obj: any): obj is IConfig {
   const hasValidEnvironments = (environments: any[]): boolean => {
     return environments.every((env) => {
+      const isEnumArray = (enumValues: any[]): boolean => {
+        return Array.isArray(enumValues) && enumValues.every(val => typeof val === 'string');
+      };
+
       return (
         (typeof env.environment === 'string' || isIEnvironment(env.environment)) &&
         typeof env.isActive === 'boolean' &&
         typeof env.evaluationStrategy === 'string' &&
+        typeof env.type === 'string' &&
+        (typeof env.stringValue === 'undefined' || typeof env.stringValue === 'string') &&
+        (typeof env.jsonValue === 'undefined' || typeof env.jsonValue === 'object') &&
+        (typeof env.enumValues === 'undefined' || isEnumArray(env.enumValues)) &&
+        (typeof env.enumValue === 'undefined' || typeof env.enumValue === 'string') &&
         (typeof env.evaluationPercentage === 'undefined' || typeof env.evaluationPercentage === 'number') &&
-        (typeof env.allowedUsers === 'undefined' || env.allowedUsers.every(isObjectId)) || isIUserArray(env.allowedUsers) &&
+        (typeof env.allowedUsers === 'undefined' || env.allowedUsers.every(isObjectId) || isIUserArray(env.allowedUsers)) &&
         (typeof env.disallowedUsers === 'undefined' || env.disallowedUsers.every(isObjectId) || isIUserArray(env.disallowedUsers))
       );
     });
@@ -29,7 +38,7 @@ function isIFeatureFlag(obj: any): obj is IFeatureFlag {
   const isAppReference = (app: any): boolean => {
     return typeof app === 'string' || isIApp(app) || isObjectId(app);
   };
-  
+
   return (
     obj &&
     typeof obj.id === 'string' &&
@@ -45,8 +54,8 @@ function isIFeatureFlag(obj: any): obj is IFeatureFlag {
   );
 }
 
-function isIFeatureFlagArray(obj: any[]): obj is IFeatureFlag[] {
-  return obj.every(item => isIFeatureFlag(item));
+function isIConfigArray(obj: any[]): obj is IConfig[] {
+  return obj.every(item => isIConfig(item));
 }  
   
-export { isIFeatureFlag, isIFeatureFlagArray };
+export { isIConfig, isIConfigArray };

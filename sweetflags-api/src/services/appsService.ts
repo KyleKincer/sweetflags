@@ -1,7 +1,7 @@
 import App from '../models/AppModel';
 import { IApp } from '../interfaces/IApp';
 import Environment from '../models/EnvironmentModel';
-import FeatureFlag from '../models/FeatureFlagModel';
+import Config from '../models/ConfigModel';
 import RedisCache from '../redis'
 import { AppNotFoundError } from '../errors';
 import { isIApp, isIAppArray } from '../type-guards/IApp';
@@ -144,7 +144,7 @@ class AppsService {
         const featureFlags = await FeatureFlag.find({ app: id }).exec();
         if (featureFlags) {
             featureFlags.forEach(async (featureFlag) => {
-                RedisCache.deleteCacheForFeatureFlag(featureFlag);
+                RedisCache.deleteCacheForConfig(featureFlag);
                 await featureFlag.deleteOne();
             });
         }

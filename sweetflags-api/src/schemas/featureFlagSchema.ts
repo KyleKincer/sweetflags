@@ -68,7 +68,7 @@ const FeatureFlag = {
     },
   };
 
-  const IFeatureFlagInputDTO = {
+  const IConfigInputDTO = {
     type: 'object',
     properties: {
       name: {
@@ -121,5 +121,5 @@ const FeatureFlag = {
     required: ['name', 'appId', 'isActive', 'createdBy'],
   };
   
-export { FeatureFlag, IFeatureFlagInputDTO };
+export { FeatureFlag, IConfigInputDTO };
   

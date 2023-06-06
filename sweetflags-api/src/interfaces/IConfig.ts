@@ -4,15 +4,34 @@ import { IApp } from './IApp';
 import { IUser } from './IUser';
 import { ObjectId } from 'mongoose';
 
-export interface IFeatureFlag extends Document {
+export enum ConfigType {
+  BOOLEAN = 'BOOLEAN',
+  JSON = 'JSON',
+  TEXT = 'TEXT',
+  ENUM = 'ENUM',
+}
+
+export enum EvaluationStrategy {
+  BOOLEAN = 'BOOLEAN',
+  USER = 'USER',
+  PERCENTAGE = 'PERCENTAGE',
+  PROBABALISTIC = 'PROBABALISTIC',
+}
+
+export interface IConfig extends Document {
   id: string;
   name: string;
   description?: string;
   app: Schema.Types.ObjectId | IApp;
   environments: {
     environment: Schema.Types.ObjectId | IEnvironment;
-    isActive: boolean;
-    evaluationStrategy: string;
+    type: ConfigType;
+    stringValue?: string;
+    jsonValue?: Record<string, any>;
+    enumValues?: string[];
+    enumValue?: string;
+    isActive: boolean; // TODO: Rename to booleanValue
+    evaluationStrategy: EvaluationStrategy;
     evaluationPercentage?: number;
     allowedUsers?: Schema.Types.ObjectId[] | IUser[];
     disallowedUsers?: Schema.Types.ObjectId[] | IUser[];
@@ -24,29 +43,40 @@ export interface IFeatureFlag extends Document {
   updatedAt: Date;
 }
 
-export interface IFeatureFlagInputDTO {
+
+export interface IConfigInputDTO {
   name: string;
   appId: string;
-  isActive: boolean;
   createdBy: string;
   description?: string;
-  evaluationStrategy: string;
+  type: ConfigType;
+  stringValue?: string;
+  jsonValue?: Record<string, any>;
+  enumValues?: string[];
+  enumValue?: string;
+  isActive: boolean;
+  evaluationStrategy?: EvaluationStrategy;
   evaluationPercentage?: number;
   allowedUsers?: Array<ObjectId>;
   disallowedUsers?: Array<ObjectId>;
 }
 
-export interface IFeatureFlagUpdateDTO {
+export interface IConfigUpdateDTO {
   environmentId: string;
+  type?: ConfigType;
+  stringValue?: string;
+  jsonValue?: Record<string, any>;
+  enumValues?: string[];
+  enumValue?: string;
   isActive?: boolean;
-  evaluationStrategy?: string;
+  evaluationStrategy?: EvaluationStrategy;
   evaluationPercentage?: number;
   allowedUsers?: Array<ObjectId>;
   disallowedUsers?: Array<ObjectId>;
   updatedBy: string;
 }
 
-export interface IFeatureFlagToggleDTO {
+export interface IConfigToggleDTO {
   id: string;
   environmentId: string;
   updatedBy: string;

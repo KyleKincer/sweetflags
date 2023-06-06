@@ -4,7 +4,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import healthRouter from './routes/health';
-import flagRouter from './routes/flags';
+import configRouter from './routes/configs';
 import appRouter from './routes/apps';
 import environmentRouter from './routes/environments';
 import userRouter from './routes/users';
@@ -39,10 +39,12 @@ async function connectToDb() {
 
   // Set up Swagger UI
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
   app.use(cors());
   app.use(bodyParser.json());
+
   app.use('/api/healthz', healthRouter);
-  app.use('/api/flags', flagRouter);
+  app.use('/api/flags', configRouter);
   app.use('/api/apps', appRouter);
   app.use('/api/environments', environmentRouter);
   app.use('/api/users', userRouter);
