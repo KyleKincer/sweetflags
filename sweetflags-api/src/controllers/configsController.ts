@@ -82,9 +82,9 @@ async function getConfigsByAppName(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function getFlagState(req: Request, res: Response): Promise<void> {
+async function getConfigState(req: Request, res: Response): Promise<void> {
     try {
-        const state = await ConfigService.getFlagState(req.body.flagName, req.body.flagId, req.body.appId, req.body.userId, req.body.environmentId);
+        const state = await ConfigService.getConfigState(req.body.flagName, req.body.flagId, req.body.appId, req.body.userId, req.body.environmentId);
         res.status(200).json(state);
 
     } catch (err) {
@@ -99,9 +99,9 @@ async function getFlagState(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function getFlagStatesForUserId(req: Request, res: Response): Promise<void> {
+async function getConfigStatesForUserId(req: Request, res: Response): Promise<void> {
     try {
-        const states = await ConfigService.getFlagStatesForUserId(req.body.appId, req.body.userId, req.body.environmentId);
+        const states = await ConfigService.getConfigStatesForUserId(req.body.appId, req.body.userId, req.body.environmentId);
         res.status(200).json(states);
     } catch (err) {
         console.error(err);
@@ -253,8 +253,8 @@ export {
     getConfigByName,
     getConfigsByAppId,
     getConfigsByAppName,
-    getFlagState,
-    getFlagStatesForUserId,
+    getConfigState,
+    getConfigStatesForUserId,
     toggleFlag,
     enableFlag,
     disableFlag,

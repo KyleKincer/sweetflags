@@ -182,31 +182,31 @@ class ConfigService {
         return configs;
     }
 
-    async getFlagState(flagName: string | undefined, flagId: string | undefined, appId: string, userId: string, environmentId: string): Promise<boolean> {
-        if (!flagName && !flagId) {
+    async getConfigState(configName: string | undefined, configId: string | undefined, appId: string, userId: string, environmentId: string): Promise<boolean> {
+        if (!configName && !configId) {
             throw new Error('Either the id or name property is required');
         }
         // Try to get the flag from the cache
-        const cachedData = await RedisCache.getConfig({ name: flagName, id: flagId });
+        const cachedData = await RedisCache.getConfig({ name: configName, id: configId });
         if (cachedData) {
             return await this.isEnabled(cachedData, userId, environmentId);
         }
 
         let configDoc: (Document & IConfig) | null;
-        if (flagId) {
+        if (configId) {
             try {
-                new ObjectId(flagId);
+                new ObjectId(configId);
             } catch (err: unknown) {
-                throw new Error(`Invalid id ${flagId}`);
+                throw new Error(`Invalid id ${configId}`);
             }
 
             configDoc = await Config
-            .findById(flagId)
+            .findById(configId)
             .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
             .exec();
-        } else if (flagName) {
+        } else if (configName) {
             configDoc = await Config
-            .findOne({ app: appId, name: flagName })
+            .findOne({ app: appId, name: configName })
             .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
             .exec();
         } else {
@@ -214,13 +214,13 @@ class ConfigService {
         }
 
         if (!configDoc) {
-            throw new ConfigNotFoundError(`Flag '${flagName}' not found`);
+            throw new ConfigNotFoundError(`Flag '${configName}' not found`);
         }
         RedisCache.setCacheForConfig(configDoc.toObject());
         return await this.isEnabled(configDoc, userId, environmentId);
     }
 
-    async getFlagStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
+    async getConfigStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
         // Try to get the entire result from the cache
         const cachedData = await RedisCache.getConfigsByUserId(appId, userId)
         if (cachedData) {
@@ -234,7 +234,7 @@ class ConfigService {
         }
 
         // Get them from the database if not in cache
-        // performance.mark('getFlagStatesForUserId-db-start');
+        // performance.mark('getConfigStatesForUserId-db-start');
         const configsDocs = await Config
             .find({ app: appId })
             .select({ 
@@ -245,8 +245,8 @@ class ConfigService {
         if (!configsDocs) {
             throw new ConfigNotFoundError(`No flags found for app '${appId}'`);
         }
-        // performance.mark('getFlagStatesForUserId-db-end');
-        // performance.measure('getFlagStatesForUserId-db', 'getFlagStatesForUserId-db-start', 'getFlagStatesForUserId-db-end');
+        // performance.mark('getConfigStatesForUserId-db-end');
+        // performance.measure('getConfigStatesForUserId-db', 'getConfigStatesForUserId-db-start', 'getConfigStatesForUserId-db-end');
 
         RedisCache.setCacheForConfigsByAppIdForStates(configsDocs, appId);
         RedisCache.setCacheForConfigsByUserId(configsDocs, appId, userId);

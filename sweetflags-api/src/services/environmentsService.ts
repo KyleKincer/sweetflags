@@ -1,6 +1,6 @@
 import App from '../models/AppModel';
 import Environment from '../models/EnvironmentModel';
-import FeatureFlag from '../models/ConfigModel';
+import Config from '../models/ConfigModel';
 import { IEnvironment } from '../interfaces/IEnvironment';
 import { AppNotFoundError, EnvironmentNotFoundError } from '../errors';
 import { isIEnvironment, isIEnvironmentArray } from '../type-guards/IEnvironment';
@@ -120,30 +120,31 @@ class EnvironmentsService {
             throw new Error((err as Error).message);
         }
 
-        const featureFlags = await FeatureFlag.find({ app: appId }).exec();
-        for (let i = 0; i < featureFlags.length; i++) {
-            // for each feature flag, check if the new environment exists, and if not, create it and set its state to the same as the production environment
-            const featureFlag = featureFlags[i];
-            const environments = featureFlag.environments;
+        const configs = await Config.find({ app: appId }).exec();
+        for (let i = 0; i < configs.length; i++) {
+            // for each config, check if the new environment exists, and if not, create it and set its state to the same as the production environment
+            const config = configs[i];
+            const environments = config.environments;
             const environment = environments.find((env) => env.environment.toString() === environmentDoc.id.toString());
             if (!environment) {
                 const prod = await Environment.findOne({ name: 'Production', app: appId }).exec();
                 if (!prod) {
                     throw new Error('Production environment not found');
                 }
-                const prodFlag = environments.find((env) => env.environment.toString() === prod!._id.toString());
+                const prodConfig = environments.find((env) => env.environment.toString() === prod!._id.toString());
 
                 environments.push({
                     environment: environmentDoc,
-                    isActive: prodFlag!.isActive,
-                    evaluationStrategy: prodFlag!.evaluationStrategy,
-                    evaluationPercentage: prodFlag!.evaluationPercentage,
-                    allowedUsers: prodFlag!.allowedUsers,
-                    disallowedUsers: prodFlag!.disallowedUsers
+                    type: prodConfig!.type,
+                    isActive: prodConfig!.isActive,
+                    evaluationStrategy: prodConfig.evaluationStrategy,
+                    evaluationPercentage: prodConfig!.evaluationPercentage,
+                    allowedUsers: prodConfig!.allowedUsers,
+                    disallowedUsers: prodConfig!.disallowedUsers
                 });
-                featureFlags[i].environments = environments;
-                await featureFlags[i].save();
-                RedisCache.deleteCacheForConfig(featureFlag);
+                configs[i].environments = environments;
+                await configs[i].save();
+                RedisCache.deleteCacheForConfig(config);
             }
         }
 

@@ -13,23 +13,23 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/flags:
+ * /api/configs:
  *   get:
- *     summary: Returns all feature flag data
- *     tags: [Flags]
+ *     summary: Returns all config data
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: An array of feature flag objects
+ *         description: An array of config objects
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/FeatureFlag'
+ *                 $ref: '#/components/schemas/Config'
  *       404:
- *         description: No feature flags were found
+ *         description: No configs were found
  *         content:
  *           application/json:
  *             schema:
@@ -37,7 +37,7 @@ const router = express.Router();
  *               properties:
  *                 message:
  *                   type: string
- *                   example: 'No feature flags found'
+ *                   example: 'No configs found'
  *       500:
  *         description: Internal server error
  *         content:
@@ -53,10 +53,10 @@ router.get('/', checkJwt, configsController.getAllConfigs);
 
 /**
  * @swagger
- * /api/flags/{id}:
+ * /api/configs/{id}:
  *   get:
- *     summary: Returns feature flag data for a given id
- *     tags: [Flags]
+ *     summary: Returns config data for a given id
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -65,16 +65,16 @@ router.get('/', checkJwt, configsController.getAllConfigs);
  *         schema:
  *           type: string
  *         required: true
- *         description: The ID of the feature flag to retrieve
+ *         description: The ID of the config to retrieve
  *     responses:
  *       200:
- *         description: Feature flag data for the given ID
+ *         description: Config data for the given ID
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FeatureFlag'
+ *               $ref: '#/components/schemas/Config'
  *       404:
- *         description: The feature flag with the given id was not found
+ *         description: The config with the given id was not found
  *         content:
  *           application/json:
  *             schema:
@@ -82,7 +82,7 @@ router.get('/', checkJwt, configsController.getAllConfigs);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: 'Flag {id} not found'
+ *                   example: 'Config {id} not found'
  *       500:
  *         description: Internal server error
  *         content:
@@ -98,10 +98,10 @@ router.get('/:id', checkJwt, configsController.getConfigById);
 
 /**
  * @swagger
- * /api/flags/name/{name}:
+ * /api/configs/name/{name}:
  *   get:
- *     summary: Returns feature flag data for a given name
- *     tags: [Flags]
+ *     summary: Returns config data for a given name
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -110,16 +110,16 @@ router.get('/:id', checkJwt, configsController.getConfigById);
  *         schema:
  *           type: string
  *         required: true
- *         description: The name of the feature flag to retrieve
+ *         description: The name of the config to retrieve
  *     responses:
  *       200:
- *         description: The feature flag object with the given name
+ *         description: The config object with the given name
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FeatureFlag'
+ *               $ref: '#/components/schemas/Config'
  *       404:
- *         description: The feature flag with the given name was not found
+ *         description: The config with the given name was not found
  *         content:
  *           application/json:
  *             schema:
@@ -127,7 +127,7 @@ router.get('/:id', checkJwt, configsController.getConfigById);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: 'Flag {name} not found'
+ *                   example: 'Config {name} not found'
  *       500:
  *         description: Internal server error
  *         content:
@@ -143,30 +143,30 @@ router.get('/name/:name', checkJwt, configsController.getConfigByName)
 
 /**
  * @swagger
- * /api/flags/app/{appId}:
+ * /api/configs/app/{appId}:
  *   get:
- *     summary: Returns all feature flag data for a given app ID
- *     tags: [Flags]
+ *     summary: Returns all config data for a given app ID
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: appId
- *         description: The ID of the app to retrieve feature flags for
+ *         description: The ID of the app to retrieve configs for
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: An array of feature flag objects
+ *         description: An array of config objects
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/FeatureFlag'
+ *                 $ref: '#/components/schemas/Config'
  *       404:
- *         description: Invalid app ID provided or no flags found for the app
+ *         description: Invalid app ID provided or no configs found for the app
  *         content:
  *           application/json:
  *             schema:
@@ -192,28 +192,28 @@ router.get('/app/:appId', checkJwt, configsController.getConfigsByAppId)
 
 /**
  * @swagger
- * /api/flags/app/name/{appName}:
+ * /api/configs/app/name/{appName}:
  *   get:
- *     summary: Returns all feature flag data for a given app name
- *     tags: [Flags]
+ *     summary: Returns all config data for a given app name
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: appName
- *         description: The name of the app to retrieve feature flags for
+ *         description: The name of the app to retrieve configs for
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: An array of feature flag objects
+ *         description: An array of config objects
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/FeatureFlag'
+ *                 $ref: '#/components/schemas/Config'
  *       404:
  *         description: Invalid app name provided
  *         content:
@@ -241,10 +241,10 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
 
 /**
  * @swagger
- * /api/flags/state/id:
+ * /api/configs/state/id:
  *   post:
- *     summary: Returns the feature flag state
- *     tags: [Flags]
+ *     summary: Returns the config state
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -256,9 +256,9 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *             properties:
  *               appId:
  *                 type: string
- *               flagName:
+ *               configName:
  *                 type: string
- *               flagId:
+ *               configId:
  *                 type: string
  *               userId:
  *                 type: string
@@ -268,10 +268,10 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *               - appId
  *               - userId
  *               - environmentId
- *               - one of [flagName, flagId]
+ *               - one of [configName, configId]
  *     responses:
  *       200:
- *         description: Feature flag state for the given app, environment, user id, and flag name or flag id
+ *         description: Config state for the given app, environment, user id, and flag name or flag id
  *         content:
  *           application/json:
  *             schema:
@@ -304,14 +304,14 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *               required:
  *                 - message
  */
-router.post('/state/id', checkJwt, configsController.getFlagState)
+router.post('/state/id', checkJwt, configsController.getConfigState)
 
 /**
 * @swagger
-* /api/flags/state/user:
+* /api/configs/state/user:
 *   post:
-*     summary: Returns the state of all feature flags for a given user ID, app, and environment
-*     tags: [Flags]
+*     summary: Returns the state of all configs for a given user ID, app, and environment
+*     tags: [Configs]
  *     security:
  *       - bearerAuth: []
 *     requestBody:
@@ -339,7 +339,7 @@ router.post('/state/id', checkJwt, configsController.getFlagState)
 *               - environmentId
 *     responses:
 *       200:
-*         description: Returns an object containing an array of feature flag states for the given user
+*         description: Returns an object containing an array of config states for the given user
 *         content:
 *           application/json:
 *             schema:
@@ -352,15 +352,15 @@ router.post('/state/id', checkJwt, configsController.getFlagState)
 *                     properties:
 *                       id:
 *                         type: string
-*                         description: The ID of the feature flag
+*                         description: The ID of the config
 *                         example: 6442ea44ce25a8db1e791402
 *                       name:
 *                         type: string
-*                         description: The name of the feature flag
+*                         description: The name of the config
 *                         example: featureA
 *                       isEnabled:
 *                         type: boolean
-*                         description: The state of the feature flag for the given user
+*                         description: The state of the config for the given user
 *                         example: true
 *       404:
 *         description: The specified app was not found
@@ -385,15 +385,15 @@ router.post('/state/id', checkJwt, configsController.getFlagState)
 *                   description: A message explaining the error
 *                   example: Internal server error
 */
-router.post('/state/user', checkJwt, configsController.getFlagStatesForUserId)
+router.post('/state/user', checkJwt, configsController.getConfigStatesForUserId)
 
 /**
  * @swagger
  * paths:
- *   /api/flags/toggle:
+ *   /api/configs/toggle:
  *     put:
- *       summary: Toggle a feature flag state
- *       tags: [Flags]
+ *       summary: Toggle a config state
+ *       tags: [Configs]
  *       security:
  *         - bearerAuth: []
  *       requestBody:
@@ -405,22 +405,22 @@ router.post('/state/user', checkJwt, configsController.getFlagStatesForUserId)
  *               properties:
  *                 id:
  *                   type: string
- *                   description: The ID of the feature flag to toggle
+ *                   description: The ID of the config to toggle
  *                 environmentId:
  *                   type: string
- *                   description: The id of the environment the feature flag belongs to
+ *                   description: The id of the environment the config belongs to
  *                   required: true
  *                 updatedBy:
  *                   type: string
- *                   description: The name of the user who is updating the feature flag
+ *                   description: The name of the user who is updating the config
  *                   required: true
  *       responses:
  *         200:
- *           description: Feature flag data for the updated record. 
+ *           description: Config data for the updated record. 
  *           content:
  *             application/json:
  *               schema:
- *                 $ref: '#/components/schemas/FeatureFlag'
+ *                 $ref: '#/components/schemas/Config'
  *         404:
  *           description: The specified flag was not found
  *           content:
@@ -455,10 +455,10 @@ router.put('/disable', checkJwt, configsController.disableFlag);
 /**
  * @swagger
  * paths:
- *   /api/flags/{id}/metadata:
+ *   /api/configs/{id}/metadata:
  *     put:
- *       summary: Update a feature flag's metadata
- *       tags: [Flags]
+ *       summary: Update a config's metadata
+ *       tags: [Configs]
  *       security:
  *         - bearerAuth: []
  *       parameters:
@@ -467,7 +467,7 @@ router.put('/disable', checkJwt, configsController.disableFlag);
  *           schema:
  *             type: string
  *           required: true
- *           description: The ID of the feature flag to update
+ *           description: The ID of the config to update
  *       requestBody:
  *         required: true
  *         content:
@@ -477,23 +477,23 @@ router.put('/disable', checkJwt, configsController.disableFlag);
  *               properties:
  *                 name:
  *                   type: string
- *                   description: The new name of the feature flag
+ *                   description: The new name of the config
  *                 description:
  *                   type: string
- *                   description: The new description of the feature flag
+ *                   description: The new description of the config
  *                 app:
  *                   type: string
- *                   description: The id of the application the feature flag belongs to
+ *                   description: The id of the application the config belongs to
  *                 updatedBy:
  *                   type: string
  *                   description: The name of the user who updates the flag
  *       responses:
  *         200:
- *           description: Feature flag data for the updated record.
+ *           description: Config data for the updated record.
  *           content:
  *             application/json:
  *               schema:
- *                 $ref: '#/components/schemas/FeatureFlag'
+ *                 $ref: '#/components/schemas/Config'
  *         404:
  *           description: The specified flag, application, or environment was not found
  *           content:
@@ -521,10 +521,10 @@ router.put('/:id/metadata', checkJwt, configsController.updateConfigMetadata)
 
 /**
  * @swagger
- * /api/flags/{id}:
+ * /api/configs/{id}:
  *   put:
- *     summary: Update a feature flag's state, evaluation strategy, and users for a given environment
- *     tags: [Flags]
+ *     summary: Update a config's state, evaluation strategy, and users for a given environment
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -533,7 +533,7 @@ router.put('/:id/metadata', checkJwt, configsController.updateConfigMetadata)
  *         schema:
  *           type: string
  *         required: true
- *         description: The ID of the feature flag to update
+ *         description: The ID of the config to update
  *     requestBody:
  *       required: true
  *       content:
@@ -546,37 +546,37 @@ router.put('/:id/metadata', checkJwt, configsController.updateConfigMetadata)
  *                 description: The ID of the environment to update settings for
  *               isActive:
  *                 type: boolean
- *                 description: Indicates whether the feature flag is active or not
+ *                 description: Indicates whether the config is active or not
  *               updatedBy:
  *                 type: string
- *                 description: The name of the user who updated the feature flag
+ *                 description: The name of the user who updated the config
  *               evaluationStrategy:
  *                 type: string
  *                 enum: [BOOLEAN, PERCENTAGE, USER, PROBABILISTIC]
- *                 description: The evaluation strategy used for the feature flag
+ *                 description: The evaluation strategy used for the config
  *               evaluationPercentage:
  *                 type: integer
- *                 description: The percentage of users that the feature flag is enabled for. Required if evaluationStrategy is PERCENTAGE
+ *                 description: The percentage of users that the config is enabled for. Required if evaluationStrategy is PERCENTAGE
  *               allowedUsers:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: The list of users who are allowed to see the feature flag. Required if evaluationStrategy is USER
+ *                 description: The list of users who are allowed to see the config. Required if evaluationStrategy is USER
  *               disallowedUsers:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: The list of users who are not allowed to see the feature flag. Required if evaluationStrategy is USER
+ *                 description: The list of users who are not allowed to see the config. Required if evaluationStrategy is USER
  *             required:
  *               - environmentId
  *               - updatedBy
  *     responses:
  *       200:
- *         description: The feature flag was updated successfully.
+ *         description: The config was updated successfully.
  *         content:
  *             application/json:
  *               schema:
- *                 $ref: '#/components/schemas/FeatureFlag'
+ *                 $ref: '#/components/schemas/Config'
  *       404:
  *         description: Resource not found.
  *         content:
@@ -589,16 +589,16 @@ router.put('/:id/metadata', checkJwt, configsController.updateConfigMetadata)
  *                     description: A message explaining the error
  *                     example: Flag {id} not found
  *       500:
- *         description: An error occurred while updating the feature flag.
+ *         description: An error occurred while updating the config.
  */
 router.put('/:id', checkJwt, configsController.updateConfig)
 
 /**
  * @swagger
- * /api/flags:
+ * /api/configs:
  *   post:
- *     summary: Create a new feature flag
- *     tags: [Flags]
+ *     summary: Create a new config
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -610,36 +610,36 @@ router.put('/:id', checkJwt, configsController.updateConfig)
  *             properties:
  *               flagName:
  *                 type: string
- *                 description: The name of the feature flag.
+ *                 description: The name of the config.
  *               description:
  *                 type: string
- *                 description: The description of the feature flag.
+ *                 description: The description of the config.
  *               appName:
  *                 type: string
- *                 description: The name of the application associated with the feature flag.
+ *                 description: The name of the application associated with the config.
  *               isActive:
  *                 type: boolean
- *                 description: Indicates whether the feature flag is active or not.
+ *                 description: Indicates whether the config is active or not.
  *               evaluationStrategy:
  *                 type: string
  *                 enum: [BOOLEAN, PERCENTAGE, USER, PROBABILISTIC]
- *                 description: The evaluation strategy used for the feature flag.
+ *                 description: The evaluation strategy used for the config.
  *               evaluationPercentage:
  *                 type: integer
- *                 description: The percentage of users that the feature flag is enabled for. Required if evaluationStrategy is PERCENTAGE.
+ *                 description: The percentage of users that the config is enabled for. Required if evaluationStrategy is PERCENTAGE.
  *               allowedUsers:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: The list of users who are allowed to see the feature flag. Required if evaluationStrategy is USER.
+ *                 description: The list of users who are allowed to see the config. Required if evaluationStrategy is USER.
  *               disallowedUsers:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: The list of users who are not allowed to see the feature flag. Required if evaluationStrategy is USER.
+ *                 description: The list of users who are not allowed to see the config. Required if evaluationStrategy is USER.
  *               createdBy:
  *                 type: string
- *                 description: The name of the user who created the feature flag.
+ *                 description: The name of the user who created the config.
  *             required:
  *               - name
  *               - app
@@ -648,11 +648,11 @@ router.put('/:id', checkJwt, configsController.updateConfig)
  *               - createdBy
  *     responses:
  *       201:
- *         description: The feature flag was created successfully.
+ *         description: The config was created successfully.
  *         content:
  *             application/json:
  *               schema:
- *                 $ref: '#/components/schemas/FeatureFlag'
+ *                 $ref: '#/components/schemas/Config'
  *       404:
  *         description: Resource not found. 
  *         content:
@@ -665,16 +665,16 @@ router.put('/:id', checkJwt, configsController.updateConfig)
  *                     description: A message explaining the error
  *                     example: App {appName} not found
  *       500:
- *         description: An error occurred while creating the feature flag.
+ *         description: An error occurred while creating the config.
  */
 router.post('/', checkJwt, configsController.createConfig);
 
 /**
  * @swagger
- * /api/flags/{id}:
+ * /api/configs/{id}:
  *   delete:
- *     summary: Delete a feature flag by ID
- *     tags: [Flags]
+ *     summary: Delete a config by ID
+ *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -683,14 +683,14 @@ router.post('/', checkJwt, configsController.createConfig);
  *         schema:
  *           type: string
  *         required: true
- *         description: The ID of the feature flag to delete.
+ *         description: The ID of the config to delete.
  *     responses:
  *       200:
- *         description: The feature flag was deleted successfully.
+ *         description: The config was deleted successfully.
  *         content:
  *             application/json:
  *               schema:
- *                 $ref: '#/components/schemas/FeatureFlag'
+ *                 $ref: '#/components/schemas/Config'
  *       404:
  *         description: Resource not found.
  *         content:
@@ -703,7 +703,7 @@ router.post('/', checkJwt, configsController.createConfig);
  *                     description: A message explaining the error
  *                     example: Flag '{id}' not found
  *       500:
- *         description: An error occurred while deleting the feature flag.
+ *         description: An error occurred while deleting the config.
  *         content:
  *             application/json:
  *               schema:
