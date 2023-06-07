@@ -681,11 +681,13 @@ class ConfigService {
                     return false;
                 }
                 // Allowed users take precedence over disallowed users
-                return (
-                    config.environments[environmentIndex].isActive &&
-                    (config.environments[environmentIndex].allowedUsers!.some(allowedUser => new ObjectId(allowedUser).equals(userId)) ||
-                        !config.environments[environmentIndex].disallowedUsers!.some(disallowedUser => new ObjectId(disallowedUser).equals(userId)))
-                );
+                if (config.environments[environmentIndex].isActive) {
+                    return (
+                        config.environments[environmentIndex].isActive! &&
+                        (config.environments[environmentIndex].allowedUsers!.some(allowedUser => new ObjectId(allowedUser).equals(userId)) ||
+                            !config.environments[environmentIndex].disallowedUsers!.some(disallowedUser => new ObjectId(disallowedUser).equals(userId)))
+                    );
+                }
 
             // Percentage is deterministic based on the user id
             case 'PERCENTAGE':
