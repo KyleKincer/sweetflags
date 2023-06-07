@@ -44,7 +44,7 @@ async function connectToDb() {
   app.use(bodyParser.json());
 
   app.use('/api/healthz', healthRouter);
-  app.use('/api/flags', configRouter);
+  app.use('/api/configs', configRouter);
   app.use('/api/apps', appRouter);
   app.use('/api/environments', environmentRouter);
   app.use('/api/users', userRouter);
