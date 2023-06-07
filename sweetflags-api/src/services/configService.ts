@@ -574,6 +574,38 @@ class ConfigService {
             throw new AppNotFoundError(`App with ID '${appId}' not found`);
         }
 
+        // Validate input parameters
+        switch (type) {
+            case ConfigType.BOOLEAN:
+                if (typeof value !== 'boolean') {
+                    throw new Error(`Invalid value for type ${type}-- expected boolean, got ${typeof value}`);
+                }
+                break;
+            case ConfigType.JSON:
+                if (typeof value !== 'object') {
+                    throw new Error(`Invalid value for type ${type}-- expected object, got ${typeof value}`);
+                }
+                break;
+            case ConfigType.TEXT:
+                if (typeof value !== 'string') {
+                    throw new Error(`Invalid value for type ${type}-- expected string, got ${typeof value}`);
+                }
+                break;
+            case ConfigType.ENUM:
+                if (typeof value !== 'string') {
+                    throw new Error(`Invalid value for type ${type}-- expected string, got ${typeof value}`);
+                }
+                if (!data.enumValues) {
+                    throw new Error(`Invalid value for type ${type}-- expected enumValues to be defined`);
+                }
+                if (!data.enumValues.includes(value)) {
+                    throw new Error(`Invalid value for type ${type}-- expected value to be one of ${data.enumValues.join(', ')}`);
+                }
+                break;
+            default:
+                throw new Error(`Invalid type ${type}`);
+        }
+
         const environments = await Environment.find({ app: app._id }).exec();
         if (!environments) {
             throw new EnvironmentNotFoundError(`No environments found for app with ID '${appId}'`);
