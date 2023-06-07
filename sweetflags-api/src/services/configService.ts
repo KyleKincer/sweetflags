@@ -562,18 +562,18 @@ class ConfigService {
     }
 
     async createConfig(data: IConfigInputDTO): Promise<IConfig> {
-        const { 
-            name, 
-            appId, 
-            createdBy, 
-            description, 
-            type, 
-            value, 
-            enumValues, 
-            evaluationStrategy, 
-            evaluationPercentage, 
-            allowedUsers, 
-            disallowedUsers 
+        const {
+            name,
+            appId,
+            createdBy,
+            description,
+            type,
+            value,
+            enumValues,
+            evaluationStrategy,
+            evaluationPercentage,
+            allowedUsers,
+            disallowedUsers
         } = data;
 
         try {
@@ -593,7 +593,46 @@ class ConfigService {
                 if (typeof value !== 'boolean') {
                     throw new Error(`Invalid value for type ${type}-- expected boolean, got ${typeof value}`);
                 }
-                break;
+                if (typeof evaluationStrategy === 'undefined') {
+                    throw new Error(`Invalid value for type ${type}-- expected evaluationStrategy to be defined`);
+                }
+                switch (evaluationStrategy) {
+                    case EvaluationStrategy.BOOLEAN:
+                        if (typeof evaluationPercentage !== 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected evaluationPercentage to be undefined`);
+                        }
+                        if (typeof allowedUsers !== 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected allowedUsers to be undefined`);
+                        }
+                        if (typeof disallowedUsers !== 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected disallowedUsers to be undefined`);
+                        }
+                        break;
+                    case EvaluationStrategy.USER:
+                        if (typeof evaluationPercentage !== 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected evaluationPercentage to be undefined`);
+                        }
+                        if (typeof allowedUsers === 'undefined' && typeof disallowedUsers === 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected allowedUsers or disallowedUsers to be defined`);
+                        }
+                        if (typeof allowedUsers !== 'undefined' && typeof disallowedUsers !== 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected only one of allowedUsers or disallowedUsers to be defined`);
+                        }
+                        break;
+                    case EvaluationStrategy.PERCENTAGE:
+                        if (typeof evaluationPercentage === 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected evaluationPercentage to be defined`);
+                        }
+                        if (typeof allowedUsers !== 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected allowedUsers to be undefined`);
+                        }
+                        if (typeof disallowedUsers !== 'undefined') {
+                            throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected disallowedUsers to be undefined`);
+                        }
+                        break;
+                    default:
+                        throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected one of ${Object.values(EvaluationStrategy).join(', ')}`);
+                }
             case ConfigType.JSON:
                 if (typeof value !== 'object') {
                     throw new Error(`Invalid value for type ${type}-- expected object, got ${typeof value}`);
@@ -616,7 +655,7 @@ class ConfigService {
                 }
                 break;
             default:
-                throw new Error(`Invalid type ${type}`);
+                throw new Error(`Invalid type ${type}-- expected one of ${Object.values(ConfigType).join(', ')}`);
         }
 
         const environments = await Environment.find({ app: app._id }).exec();
@@ -631,20 +670,25 @@ class ConfigService {
                 value: value
             };
 
-            if (enumValues !== undefined) {
+            if (type === ConfigType.ENUM && enumValues !== undefined) {
                 environmentObj.enumValues = enumValues;
             }
-            if (evaluationStrategy !== undefined) {
-                environmentObj.evaluationStrategy = evaluationStrategy;
-            }
-            if (evaluationPercentage !== undefined) {
-                environmentObj.evaluationPercentage = evaluationPercentage;
-            }
-            if (allowedUsers !== undefined) {
-                environmentObj.allowedUsers = allowedUsers;
-            }
-            if (disallowedUsers !== undefined) {
-                environmentObj.disallowedUsers = disallowedUsers;
+            if (type === ConfigType.BOOLEAN) {
+                if (evaluationStrategy !== undefined) {
+                    environmentObj.evaluationStrategy = evaluationStrategy;
+                }
+                if ((
+                    evaluationStrategy === EvaluationStrategy.PERCENTAGE ||
+                    evaluationStrategy === EvaluationStrategy.PROBABALISTIC)
+                    && evaluationPercentage !== undefined) {
+                    environmentObj.evaluationPercentage = evaluationPercentage;
+                }
+                if (evaluationStrategy === EvaluationStrategy.USER && allowedUsers !== undefined) {
+                    environmentObj.allowedUsers = allowedUsers;
+                }
+                if (evaluationStrategy === EvaluationStrategy.USER && disallowedUsers !== undefined) {
+                    environmentObj.disallowedUsers = disallowedUsers;
+                }
             }
 
             return environmentObj;
@@ -669,10 +713,10 @@ class ConfigService {
         }
 
         // log event
-        const message = `Flag '${config.name}' was created for app '${(config.app as IApp).name}'`;
+        const message = `Config '${config.name}' was created for app '${(config.app as IApp).name}'`;
         logAction(
             createdBy,
-            'CREATE_FLAG',
+            'CREATE_CONFIG',
             'Config',
             config.id,
             message,
