@@ -19,11 +19,7 @@ const configSchema: Schema = new Schema({
     {
       environment: { type: Schema.Types.ObjectId, ref: 'Environment', required: true },
       type: { type: String, enum: typeEnum, required: true },
-      stringValue: { type: String },
-      jsonValue: { type: Schema.Types.Mixed },
-      enumValues: [{ type: String }],
-      enumValue: { type: String },
-      isActive: { type: Boolean, default: false },
+      value: { type: Schema.Types.Mixed },
       evaluationStrategy: { type: String, enum: evaluationStrategyEnum },
       evaluationPercentage: { type: Number },
       allowedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],

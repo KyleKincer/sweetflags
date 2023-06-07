@@ -256,7 +256,7 @@ class ConfigService {
     async toggleFlag(data: IConfigToggleDTO): Promise<IConfig> {
         const { id, environmentId, updatedBy } = data;
         if (!id) {
-            throw new Error('Flag id is required');
+            throw new Error('Config id is required');
         }
 
         try {
@@ -268,16 +268,20 @@ class ConfigService {
         const configDoc = await Config.findById(id).populate('environments.environment', 'app').exec();
 
         if (!configDoc) {
-            throw new ConfigNotFoundError(`Flag '${id}' not found`);
+            throw new ConfigNotFoundError(`Config '${id}' not found`);
         }
 
         const environments = configDoc.environments;
         const environmentIndex = environments.findIndex(e => (e.environment as IEnvironment).id === environmentId);
         if (environmentIndex === -1) {
-            throw new ConfigNotFoundError(`Flag ${id} does not exist for environment ${environmentId}`);
+            throw new ConfigNotFoundError(`Config ${id} does not exist for environment ${environmentId}`);
         }
 
-        environments[environmentIndex].isActive = !environments[environmentIndex].isActive;
+        if (!(typeof environments[environmentIndex].value === 'boolean')) {
+            throw new Error(`Config ${id} is not a boolean config`);
+        }
+
+        (environments[environmentIndex].value as boolean) = (!environments[environmentIndex].value as boolean);
         configDoc.environments = environments;
         configDoc.updatedBy = updatedBy;
         await configDoc.save();
@@ -293,9 +297,9 @@ class ConfigService {
         // log event
         let message = '';
         if (config.environments[environmentIndex].evaluationStrategy === 'BOOLEAN') {
-            message = `Flag '${config.name}' was ${config.environments[environmentIndex].isActive ? 'enabled' : 'disabled'} for environment '${(config.environments[environmentIndex].environment as IEnvironment).name}'`;
+            message = `Config '${config.name}' was ${config.environments[environmentIndex].value as boolean ? 'enabled' : 'disabled'} for environment '${(config.environments[environmentIndex].environment as IEnvironment).name}'`;
         } else if (config.environments[environmentIndex].evaluationStrategy === 'USER') {
-            if (config.environments[environmentIndex].isActive) {
+            if (config.environments[environmentIndex].value as boolean) {
                 message = `Flag '${config.name}' was enabled for environment '${(config.environments[environmentIndex].environment as IEnvironment).name}' for allowed users '${config.environments[environmentIndex].allowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}' and disallowed users '${config.environments[environmentIndex].disallowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}'.`;
             } else {
                 message = `Flag '${config.name}' was disabled for environment '${(config.environments[environmentIndex].environment as IEnvironment).name}'.`;
@@ -318,7 +322,7 @@ class ConfigService {
     async enableForAllEnvironments(data: IConfigToggleDTO): Promise<IConfig> {
         const { id, updatedBy } = data;
         if (!id) {
-            throw new Error('Flag id is required');
+            throw new Error('Config id is required');
         }
 
         try {
@@ -330,11 +334,11 @@ class ConfigService {
         const configDoc = await Config.findById(id).populate('environments.environment', 'app').exec();
 
         if (!configDoc) {
-            throw new ConfigNotFoundError(`Flag '${id}' not found`);
+            throw new ConfigNotFoundError(`Config '${id}' not found`);
         }
 
         const environments = configDoc.environments;
-        environments.forEach(e => e.isActive = true);
+        environments.forEach(e => e.value = true);
         configDoc.environments = environments;
         configDoc.updatedBy = updatedBy;
         await configDoc.save();
@@ -344,15 +348,15 @@ class ConfigService {
         await configDoc.populate('environments.disallowedUsers');
         const config = configDoc.toObject();
         if (!isIConfig(config)) {
-            throw new Error('Invalid flag');
+            throw new Error('Invalid config');
         }
 
         // log event
         let message = '';
         if (config.environments[0].evaluationStrategy === 'BOOLEAN') {
-            message = `Flag '${config.name}' was enabled for all environments`;
+            message = `Config '${config.name}' was enabled for all environments`;
         } else if (config.environments[0].evaluationStrategy === 'USER') {
-            message = `Flag '${config.name}' was enabled for all environments for allowed users '${config.environments[0].allowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}' and disallowed users '${config.environments[0].disallowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}'.`;
+            message = `Config '${config.name}' was enabled for all environments for allowed users '${config.environments[0].allowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}' and disallowed users '${config.environments[0].disallowedUsers?.map(u => u.name ? u.name : u.externalId).join(', ')}'.`;
         }
         logAction(
             updatedBy,
@@ -370,7 +374,7 @@ class ConfigService {
     async disableForAllEnvironments(data: IConfigToggleDTO): Promise<IConfig> {
         const { id, updatedBy } = data;
         if (!id) {
-            throw new Error('Flag id is required');
+            throw new Error('Config id is required');
         }
 
         try {
@@ -382,11 +386,11 @@ class ConfigService {
         const configDoc = await Config.findById(id).populate('environments.environment', 'app').exec();
 
         if (!configDoc) {
-            throw new ConfigNotFoundError(`Flag '${id}' not found`);
+            throw new ConfigNotFoundError(`Config '${id}' not found`);
         }
 
         const environments = configDoc.environments;
-        environments.forEach(e => e.isActive = false);
+        environments.forEach(e => e.value = false);
         configDoc.environments = environments;
         configDoc.updatedBy = updatedBy;
         await configDoc.save();
@@ -396,11 +400,11 @@ class ConfigService {
         await configDoc.populate('environments.disallowedUsers');
         const config = configDoc.toObject();
         if (!isIConfig(config)) {
-            throw new Error('Invalid flag');
+            throw new Error('Invalid config');
         }
 
         // log event
-        const message = `Flag '${config.name}' was disabled for all environments`;
+        const message = `Config '${config.name}' was disabled for all environments`;
         logAction(
             updatedBy,
             'DISABLE_FLAG',
@@ -509,10 +513,10 @@ class ConfigService {
             throw new Error(`Invalid id ${id}`);
         }
 
-        const { environmentId, isActive, updatedBy, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+        const { environmentId, value, updatedBy, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
         const configDoc = await Config.findById(id).exec();
         if (!configDoc) {
-            throw new ConfigNotFoundError(`Flag '${id}' not found`);
+            throw new ConfigNotFoundError(`Config '${id}' not found`);
         }
 
         const environments = configDoc.environments;
@@ -521,7 +525,7 @@ class ConfigService {
             throw new EnvironmentNotFoundError(`Environment ${environmentId} not found`);
         }
 
-        environments[environmentIndex].isActive = typeof isActive === 'undefined' ? environments[environmentIndex].isActive : isActive;
+        environments[environmentIndex].value = typeof value === 'undefined' ? environments[environmentIndex].value : value;
         environments[environmentIndex].evaluationStrategy = typeof evaluationStrategy === 'undefined' ? environments[environmentIndex].evaluationStrategy : evaluationStrategy;
         environments[environmentIndex].evaluationPercentage = typeof evaluationPercentage === 'undefined' ? environments[environmentIndex].evaluationPercentage : evaluationPercentage;
         environments[environmentIndex].allowedUsers = typeof allowedUsers === 'undefined' ? environments[environmentIndex].allowedUsers : allowedUsers;
@@ -536,7 +540,7 @@ class ConfigService {
         await configDoc.populate('environments.disallowedUsers');
         const config = configDoc.toObject();
         if (!isIConfig(config)) {
-            throw new Error('Invalid flag');
+            throw new Error('Invalid config');
         }
 
         // log event
@@ -557,7 +561,7 @@ class ConfigService {
     }
 
     async createConfig(data: IConfigInputDTO): Promise<IConfig> {
-        const { name, appId, isActive, createdBy, description, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+        const { name, appId, value, createdBy, description, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
 
         try {
             new ObjectId(appId);
@@ -577,7 +581,7 @@ class ConfigService {
 
         const environmentsArray = environments.map((env) => ({
             environment: env._id,
-            isActive: isActive,
+            value: value,
             evaluationStrategy: evaluationStrategy || 'BOOLEAN',
             evaluationPercentage: evaluationPercentage || 0,
             allowedUsers: allowedUsers || [],
@@ -665,25 +669,26 @@ class ConfigService {
             throw new Error(`Environment '${environmentId}' not found`);
         }
 
+        const configValue = config.environments[environmentIndex].value;
         switch (config.environments[environmentIndex].evaluationStrategy) {
             case 'BOOLEAN':
-                if (typeof config.environments[environmentIndex].isActive === 'undefined') {
+                if (typeof configValue !== 'boolean') {
                     throw new Error(`Config '${config.name}' has no boolean value for environment '${(config.environments[environmentIndex].environment as IEnvironment).name}'`);
-                } else if (typeof config.environments[environmentIndex].isActive === 'boolean') {
-                    return config.environments[environmentIndex].isActive!;
+                } else {
+                    return configValue as boolean;
                 }
 
             case 'USER':
                 const userId = new ObjectId(user);
 
-                // If there is nothing in either of these arrays, then we can't evaluate the flag
+                // If there is nothing in either of these arrays, evaluate as a boolean flag
                 if (!config.environments[environmentIndex].allowedUsers || !config.environments[environmentIndex].disallowedUsers) {
                     return false;
                 }
                 // Allowed users take precedence over disallowed users
-                if (config.environments[environmentIndex].isActive) {
+                if (configValue) {
                     return (
-                        config.environments[environmentIndex].isActive! &&
+                        configValue as boolean &&
                         (config.environments[environmentIndex].allowedUsers!.some(allowedUser => new ObjectId(allowedUser).equals(userId)) ||
                             !config.environments[environmentIndex].disallowedUsers!.some(disallowedUser => new ObjectId(disallowedUser).equals(userId)))
                     );

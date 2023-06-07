@@ -26,12 +26,9 @@ export interface IConfig extends Document {
   environments: {
     environment: Schema.Types.ObjectId | IEnvironment;
     type: ConfigType;
-    stringValue?: string;
-    jsonValue?: Record<string, any>;
+    value?: boolean | string | Record<string, any>;
     enumValues?: string[];
-    enumValue?: string;
-    isActive?: boolean; // TODO: Rename to booleanValue
-    evaluationStrategy: EvaluationStrategy;
+    evaluationStrategy?: EvaluationStrategy;
     evaluationPercentage?: number;
     allowedUsers?: Schema.Types.ObjectId[] | IUser[];
     disallowedUsers?: Schema.Types.ObjectId[] | IUser[];
@@ -50,11 +47,8 @@ export interface IConfigInputDTO {
   createdBy: string;
   description?: string;
   type: ConfigType;
-  stringValue?: string;
-  jsonValue?: Record<string, any>;
+  value?: boolean | string | Record<string, any>;
   enumValues?: string[];
-  enumValue?: string;
-  isActive: boolean;
   evaluationStrategy?: EvaluationStrategy;
   evaluationPercentage?: number;
   allowedUsers?: Array<ObjectId>;
@@ -64,11 +58,8 @@ export interface IConfigInputDTO {
 export interface IConfigUpdateDTO {
   environmentId: string;
   type?: ConfigType;
-  stringValue?: string;
-  jsonValue?: Record<string, any>;
+  value?: boolean | string | Record<string, any>;
   enumValues?: string[];
-  enumValue?: string;
-  isActive?: boolean;
   evaluationStrategy?: EvaluationStrategy;
   evaluationPercentage?: number;
   allowedUsers?: Array<ObjectId>;
