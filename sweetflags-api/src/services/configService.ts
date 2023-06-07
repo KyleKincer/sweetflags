@@ -186,7 +186,7 @@ class ConfigService {
         if (!configName && !configId) {
             throw new Error('Either the id or name property is required');
         }
-        // Try to get the flag from the cache
+        // Try to get the config from the cache
         const cachedData = await RedisCache.getConfig({ name: configName, id: configId });
         if (cachedData) {
             return await this.isEnabled(cachedData, userId, environmentId);

@@ -12,7 +12,7 @@ const typeEnum = {
 };
 
 const configSchema: Schema = new Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, unique: true },
   description: { type: String },
   app: { type: Schema.Types.ObjectId, ref: 'App', required: true },
   environments: [
