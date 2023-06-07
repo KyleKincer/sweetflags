@@ -132,10 +132,13 @@ class EnvironmentsService {
                     throw new Error('Production environment not found');
                 }
                 const prodConfig = environments.find((env) => env.environment.toString() === prod!._id.toString());
+                if (!prodConfig) {
+                    throw new Error('Production environment not found');
+                }
 
                 environments.push({
                     environment: environmentDoc,
-                    type: prodConfig!.type,
+                    type: prodConfig.type,
                     isActive: prodConfig!.isActive,
                     evaluationStrategy: prodConfig.evaluationStrategy,
                     evaluationPercentage: prodConfig!.evaluationPercentage,
