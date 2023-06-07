@@ -165,17 +165,17 @@ class EnvironmentsService {
             throw new EnvironmentNotFoundError(`Environment '${id}' not found`);
         }
 
-        // Remove environment from feature flags
-        const featureFlagDocs = await FeatureFlag.find({ app: environmentDoc.app }).exec();
-        if (featureFlagDocs) {
-            for (const featureFlagDoc of featureFlagDocs) {
-                const environments = featureFlagDoc.environments.filter((environment) => {
+        // Remove environment from configs
+        const configDocs = await Config.find({ app: environmentDoc.app }).exec();
+        if (configDocs) {
+            for (const configDoc of configDocs) {
+                const environments = configDoc.environments.filter((environment) => {
                     return environment.environment.toString() !== environmentDoc._id.toString();
                 }
                 );
-                featureFlagDoc.environments = environments;
-                await featureFlagDoc.save();
-                RedisCache.deleteCacheForConfig(featureFlagDoc);
+                configDoc.environments = environments;
+                await configDoc.save();
+                RedisCache.deleteCacheForConfig(configDoc);
             }
         }
 
