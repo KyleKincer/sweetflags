@@ -133,7 +133,7 @@ class AppsService {
             throw new Error(`Invalid id ${id}`);
         }
 
-        // find feature flags and environments for app and delete them
+        // find configs and environments for app and delete them
         const environments = await Environment.find({ app: id }).exec();
         if (environments) {
             environments.forEach(async (environment) => {
