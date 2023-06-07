@@ -201,14 +201,14 @@ class ConfigService {
             }
 
             configDoc = await Config
-            .findById(configId)
-            .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
-            .exec();
+                .findById(configId)
+                .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
+                .exec();
         } else if (configName) {
             configDoc = await Config
-            .findOne({ app: appId, name: configName })
-            .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
-            .exec();
+                .findOne({ app: appId, name: configName })
+                .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
+                .exec();
         } else {
             throw new ConfigNotFoundError(`Either the id or name property is required`);
         }
@@ -237,10 +237,11 @@ class ConfigService {
         // performance.mark('getConfigStatesForUserId-db-start');
         const configsDocs = await Config
             .find({ app: appId })
-            .select({ 
-                name: 1, 
-                environments: { $elemMatch: { environment: environmentId } }, 
-                _id: 1 })
+            .select({
+                name: 1,
+                environments: { $elemMatch: { environment: environmentId } },
+                _id: 1
+            })
             .exec();
         if (!configsDocs) {
             throw new ConfigNotFoundError(`No flags found for app '${appId}'`);
@@ -561,7 +562,19 @@ class ConfigService {
     }
 
     async createConfig(data: IConfigInputDTO): Promise<IConfig> {
-        const { name, appId, type, value, createdBy, description, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+        const { 
+            name, 
+            appId, 
+            createdBy, 
+            description, 
+            type, 
+            value, 
+            enumValues, 
+            evaluationStrategy, 
+            evaluationPercentage, 
+            allowedUsers, 
+            disallowedUsers 
+        } = data;
 
         try {
             new ObjectId(appId);
@@ -613,34 +626,37 @@ class ConfigService {
 
         const environmentsArray = environments.map((env) => {
             const environmentObj: Record<string, any> = {
-              environment: env._id,
-              type: type,
-              value: value
+                environment: env._id,
+                type: type,
+                value: value
             };
-          
+
+            if (enumValues !== undefined) {
+                environmentObj.enumValues = enumValues;
+            }
             if (evaluationStrategy !== undefined) {
-              environmentObj.evaluationStrategy = evaluationStrategy;
+                environmentObj.evaluationStrategy = evaluationStrategy;
             }
             if (evaluationPercentage !== undefined) {
-              environmentObj.evaluationPercentage = evaluationPercentage;
+                environmentObj.evaluationPercentage = evaluationPercentage;
             }
             if (allowedUsers !== undefined) {
-              environmentObj.allowedUsers = allowedUsers;
+                environmentObj.allowedUsers = allowedUsers;
             }
             if (disallowedUsers !== undefined) {
-              environmentObj.disallowedUsers = disallowedUsers;
+                environmentObj.disallowedUsers = disallowedUsers;
             }
-          
+
             return environmentObj;
-          });
-          
-          const configDoc = new Config({
-              name: name,
-              description: description || '',
-              app: app._id,
-              environments: environmentsArray,
-              createdBy: createdBy
-          });          
+        });
+
+        const configDoc = new Config({
+            name: name,
+            description: description || '',
+            app: app._id,
+            environments: environmentsArray,
+            createdBy: createdBy
+        });
 
         await configDoc.save();
         await configDoc.populate('app');
@@ -710,7 +726,7 @@ class ConfigService {
         if (environmentIndex === -1) {
             environmentIndex = config.environments.findIndex((env) => (env.environment as IEnvironment).id === environmentId);
         }
-        
+
         if (environmentIndex === -1) {
             throw new Error(`Environment '${environmentId}' not found`);
         }
