@@ -82,9 +82,9 @@ async function getConfigsByAppName(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function getConfigState(req: Request, res: Response): Promise<void> {
+async function getConfigValue(req: Request, res: Response): Promise<void> {
     try {
-        const state = await ConfigService.getConfigState(req.body.flagName, req.body.flagId, req.body.appId, req.body.userId, req.body.environmentId);
+        const state = await ConfigService.getConfigValue(req.body.flagName, req.body.flagId, req.body.appId, req.body.userId, req.body.environmentId);
         res.status(200).json(state);
 
     } catch (err) {
@@ -253,7 +253,7 @@ export {
     getConfigByName,
     getConfigsByAppId,
     getConfigsByAppName,
-    getConfigState,
+    getConfigValue,
     getConfigStatesForUserId,
     toggleFlag,
     enableFlag,

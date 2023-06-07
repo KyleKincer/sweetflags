@@ -304,7 +304,7 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *               required:
  *                 - message
  */
-router.post('/state/id', checkJwt, configsController.getConfigState)
+router.post('/value/id', checkJwt, configsController.getConfigValue)
 
 /**
 * @swagger

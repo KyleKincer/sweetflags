@@ -182,7 +182,7 @@ class ConfigService {
         return configs;
     }
 
-    async getConfigState(configName: string | undefined, configId: string | undefined, appId: string, userId: string, environmentId: string): Promise<boolean> {
+    async getConfigValue(configName: string | undefined, configId: string | undefined, appId: string, userId: string, environmentId: string): Promise<boolean> {
         if (!configName && !configId) {
             throw new Error('Either the id or name property is required');
         }
