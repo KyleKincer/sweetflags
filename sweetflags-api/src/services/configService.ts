@@ -561,7 +561,7 @@ class ConfigService {
     }
 
     async createConfig(data: IConfigInputDTO): Promise<IConfig> {
-        const { name, appId, value, createdBy, description, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+        const { name, appId, type, value, createdBy, description, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
 
         try {
             new ObjectId(appId);
@@ -579,22 +579,36 @@ class ConfigService {
             throw new EnvironmentNotFoundError(`No environments found for app with ID '${appId}'`);
         }
 
-        const environmentsArray = environments.map((env) => ({
-            environment: env._id,
-            value: value,
-            evaluationStrategy: evaluationStrategy || 'BOOLEAN',
-            evaluationPercentage: evaluationPercentage || 0,
-            allowedUsers: allowedUsers || [],
-            disallowedUsers: disallowedUsers || []
-        }));
-
-        const configDoc = new Config({
-            name: name,
-            description: description || '',
-            app: app._id,
-            environments: environmentsArray,
-            createdBy: createdBy
-        });
+        const environmentsArray = environments.map((env) => {
+            const environmentObj: Record<string, any> = {
+              environment: env._id,
+              type: type,
+              value: value
+            };
+          
+            if (evaluationStrategy !== undefined) {
+              environmentObj.evaluationStrategy = evaluationStrategy;
+            }
+            if (evaluationPercentage !== undefined) {
+              environmentObj.evaluationPercentage = evaluationPercentage;
+            }
+            if (allowedUsers !== undefined) {
+              environmentObj.allowedUsers = allowedUsers;
+            }
+            if (disallowedUsers !== undefined) {
+              environmentObj.disallowedUsers = disallowedUsers;
+            }
+          
+            return environmentObj;
+          });
+          
+          const configDoc = new Config({
+              name: name,
+              description: description || '',
+              app: app._id,
+              environments: environmentsArray,
+              createdBy: createdBy
+          });          
 
         await configDoc.save();
         await configDoc.populate('app');

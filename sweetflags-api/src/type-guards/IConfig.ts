@@ -11,18 +11,22 @@ function isIConfig(obj: any): obj is IConfig {
         return Array.isArray(enumValues) && enumValues.every(val => typeof val === 'string');
       };
 
+      const isValueValid = (value: any): boolean => {
+        return typeof value === 'boolean' ||
+          typeof value === 'string' ||
+          (typeof value === 'object' && !Array.isArray(value));
+      };
+
       return (
         (typeof env.environment === 'string' || isIEnvironment(env.environment)) &&
-        typeof env.isActive === 'boolean' &&
-        typeof env.evaluationStrategy === 'string' &&
         typeof env.type === 'string' &&
-        (typeof env.stringValue === 'undefined' || typeof env.stringValue === 'string') &&
-        (typeof env.jsonValue === 'undefined' || typeof env.jsonValue === 'object') &&
+        (typeof env.value === 'undefined' || isValueValid(env.value)) &&
         (typeof env.enumValues === 'undefined' || isEnumArray(env.enumValues)) &&
-        (typeof env.enumValue === 'undefined' || typeof env.enumValue === 'string') &&
+        (typeof env.evaluationStrategy === 'undefined' || typeof env.evaluationStrategy === 'string') &&
         (typeof env.evaluationPercentage === 'undefined' || typeof env.evaluationPercentage === 'number') &&
         (typeof env.allowedUsers === 'undefined' || env.allowedUsers.every(isObjectId) || isIUserArray(env.allowedUsers)) &&
-        (typeof env.disallowedUsers === 'undefined' || env.disallowedUsers.every(isObjectId) || isIUserArray(env.disallowedUsers))
+        (typeof env.disallowedUsers === 'undefined' || env.disallowedUsers.every(isObjectId) || isIUserArray(env.disallowedUsers)) &&
+        (typeof env.updatedBy === 'undefined' || typeof env.updatedBy === 'string')
       );
     });
   };
@@ -53,6 +57,7 @@ function isIConfig(obj: any): obj is IConfig {
     obj.updatedAt instanceof Date
   );
 }
+
 
 function isIConfigArray(obj: any[]): obj is IConfig[] {
   return obj.every(item => isIConfig(item));
