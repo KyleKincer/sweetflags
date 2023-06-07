@@ -141,11 +141,11 @@ class AppsService {
             });
         }
 
-        const featureFlags = await FeatureFlag.find({ app: id }).exec();
-        if (featureFlags) {
-            featureFlags.forEach(async (featureFlag) => {
-                RedisCache.deleteCacheForConfig(featureFlag);
-                await featureFlag.deleteOne();
+        const configs = await Config.find({ app: id }).exec();
+        if (configs) {
+            configs.forEach(async (config) => {
+                RedisCache.deleteCacheForConfig(config);
+                await config.deleteOne();
             });
         }
 
