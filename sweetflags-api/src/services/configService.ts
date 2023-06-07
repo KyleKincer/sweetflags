@@ -667,7 +667,11 @@ class ConfigService {
 
         switch (config.environments[environmentIndex].evaluationStrategy) {
             case 'BOOLEAN':
-                return config.environments[environmentIndex].isActive;
+                if (typeof config.environments[environmentIndex].isActive === 'undefined') {
+                    throw new Error(`Config '${config.name}' has no boolean value for environment '${(config.environments[environmentIndex].environment as IEnvironment).name}'`);
+                } else if (typeof config.environments[environmentIndex].isActive === 'boolean') {
+                    return config.environments[environmentIndex].isActive!;
+                }
 
             case 'USER':
                 const userId = new ObjectId(user);
