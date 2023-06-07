@@ -30,7 +30,7 @@ export interface IConfig extends Document {
     jsonValue?: Record<string, any>;
     enumValues?: string[];
     enumValue?: string;
-    isActive: boolean; // TODO: Rename to booleanValue
+    isActive?: boolean; // TODO: Rename to booleanValue
     evaluationStrategy: EvaluationStrategy;
     evaluationPercentage?: number;
     allowedUsers?: Schema.Types.ObjectId[] | IUser[];

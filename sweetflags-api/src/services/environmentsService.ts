@@ -137,13 +137,7 @@ class EnvironmentsService {
                 }
 
                 environments.push({
-                    environment: environmentDoc,
-                    type: prodConfig.type,
-                    isActive: prodConfig!.isActive,
-                    evaluationStrategy: prodConfig.evaluationStrategy,
-                    evaluationPercentage: prodConfig!.evaluationPercentage,
-                    allowedUsers: prodConfig!.allowedUsers,
-                    disallowedUsers: prodConfig!.disallowedUsers
+                    ...prodConfig,
                 });
                 configs[i].environments = environments;
                 await configs[i].save();
