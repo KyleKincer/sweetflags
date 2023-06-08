@@ -254,8 +254,6 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *           schema:
  *             type: object
  *             properties:
- *               appId:
- *                 type: string
  *               configName:
  *                 type: string
  *               configId:
@@ -265,13 +263,12 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *               environmentId:
  *                 type: string
  *             required:
- *               - appId
  *               - userId
  *               - environmentId
  *               - one of [configName, configId]
  *     responses:
  *       200:
- *         description: Config state for the given app, environment, user id, and flag name or flag id
+ *         description: Config state for the given environment, user id, and flag name or flag id
  *         content:
  *           application/json:
  *             schema:
@@ -282,7 +279,7 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *               required:
  *                 - isEnabled
  *       404:
- *         description: App or flag not found
+ *         description: Config not found
  *         content:
  *           application/json:
  *             schema:
