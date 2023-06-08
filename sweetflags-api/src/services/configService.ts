@@ -182,7 +182,7 @@ class ConfigService {
         return configs;
     }
 
-    async getConfigValue(configName: string | undefined, configId: string | undefined, appId: string, userId: string, environmentId: string): Promise<boolean> {
+    async getConfigValue(configName: string | undefined, configId: string | undefined, userId: string, environmentId: string): Promise<boolean> {
         if (!configName && !configId) {
             throw new Error('Either the id or name property is required');
         }
@@ -206,7 +206,7 @@ class ConfigService {
                 .exec();
         } else if (configName) {
             configDoc = await Config
-                .findOne({ app: appId, name: configName })
+                .findOne({ name: configName })
                 .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
                 .exec();
         } else {
