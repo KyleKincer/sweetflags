@@ -241,9 +241,9 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
 
 /**
  * @swagger
- * /api/configs/state/id:
+ * /api/configs/value/id:
  *   post:
- *     summary: Returns the config state
+ *     summary: Returns the config value
  *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
@@ -268,7 +268,7 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *               - one of [configName, configId]
  *     responses:
  *       200:
- *         description: Config state for the given environment, user id, and flag name or flag id
+ *         description: Config value for the given environment, user id, and flag name or flag id
  *         content:
  *           application/json:
  *             schema:
