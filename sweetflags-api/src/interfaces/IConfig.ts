@@ -40,6 +40,17 @@ export interface IConfig extends Document {
   updatedAt: Date;
 }
 
+export interface IConfigEnvironment {
+    environment: Schema.Types.ObjectId | IEnvironment;
+    type: ConfigType;
+    value?: boolean | string | Record<string, any>;
+    enumValues?: string[];
+    evaluationStrategy?: EvaluationStrategy;
+    evaluationPercentage?: number;
+    allowedUsers?: Schema.Types.ObjectId[] | IUser[];
+    disallowedUsers?: Schema.Types.ObjectId[] | IUser[];
+    updatedBy?: string;
+}
 
 export interface IConfigInputDTO {
   name: string;

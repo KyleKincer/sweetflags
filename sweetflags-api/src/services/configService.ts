@@ -1,5 +1,5 @@
 import Config from '../models/ConfigModel';
-import { IConfig, IConfigInputDTO, IConfigUpdateDTO, IConfigToggleDTO, ConfigType, EvaluationStrategy } from '../interfaces/IConfig';
+import { IConfig, IConfigInputDTO, IConfigUpdateDTO, IConfigToggleDTO, ConfigType, EvaluationStrategy, IConfigEnvironment } from '../interfaces/IConfig';
 import { isIConfig, isIConfigArray } from '../type-guards/IConfig';
 import Environment from '../models/EnvironmentModel';
 import App from '../models/AppModel';
@@ -182,16 +182,38 @@ class ConfigService {
         return configs;
     }
 
-    async getConfigValue(configName: string | undefined, configId: string | undefined, userId: string, environmentId: string): Promise<boolean> {
+    async getConfigValue(configName: string | undefined, configId: string | undefined, userId: string | undefined, environmentId: string | undefined): Promise<{ name: string, id: string, value: boolean | string | object, type: string }> {
         if (!configName && !configId) {
-            throw new Error('Either the id or name property is required');
-        }
-        // Try to get the config from the cache
-        const cachedData = await RedisCache.getConfig({ name: configName, id: configId });
-        if (cachedData) {
-            return await this.isEnabled(cachedData, userId, environmentId);
+            throw new Error('Either the configId or configName property is required');
         }
 
+        // Try to get the full config from the cache
+        let cachedData = await RedisCache.getConfig({ name: configName, id: configId });
+        if (cachedData) {
+            const configValue = this.configValue(cachedData, userId, environmentId)
+            return {
+                name: cachedData.name,
+                id: cachedData._id,
+                value: configValue.value,
+                type: configValue.type
+            }
+        }
+
+        // Try to get a partial config from the cache
+        if (environmentId) {
+            cachedData = await RedisCache.getConfigByEnvironmentId({ name: configName, id: configId }, environmentId);
+        }
+        if (cachedData) {
+            const configValue = this.configValue(cachedData, userId, environmentId)
+            return {
+                name: cachedData.name,
+                id: cachedData._id,
+                value: configValue.value,
+                type: configValue.type
+            }
+        }
+
+        // Try to get the config from the database
         let configDoc: (Document & IConfig) | null;
         if (configId) {
             try {
@@ -199,25 +221,79 @@ class ConfigService {
             } catch (err: unknown) {
                 throw new Error(`Invalid id ${configId}`);
             }
-
-            configDoc = await Config
-                .findById(configId)
-                .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
-                .exec();
+            // Get specified environment if provided, otherwise get Production
+            if (environmentId) {
+                configDoc = await Config
+                    .findById(configId)
+                    .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
+                    .exec();
+            } else {
+                configDoc = await Config
+                    .findById(configId)
+                    .select({ name: 1, environments: { $elemMatch: { environment: { name: "Production" } } }, _id: 1 })
+                    .exec();
+            }
         } else if (configName) {
-            configDoc = await Config
-                .findOne({ name: configName })
-                .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
-                .exec();
+            // Get specified environment if provided, otherwise get Production
+            if (environmentId) {
+                configDoc = await Config
+                    .findOne({ name: configName })
+                    .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
+                    .exec();
+            } else {
+                configDoc = await Config
+                    .findOne({ name: configName })
+                    .select({ name: 1, environments: { $elemMatch: { environment: { name: "Production" } } }, _id: 1 })
+                    .exec();
+            }
         } else {
-            throw new ConfigNotFoundError(`Either the id or name property is required`);
+            throw new ConfigNotFoundError(`Either the configId or configName property is required`);
         }
 
         if (!configDoc) {
-            throw new ConfigNotFoundError(`Flag '${configName}' not found`);
+            throw new ConfigNotFoundError(`Flag '${configName || configId}' not found`);
         }
-        RedisCache.setCacheForConfig(configDoc.toObject());
-        return await this.isEnabled(configDoc, userId, environmentId);
+        RedisCache.setCacheForConfigByEnvironmentId(configDoc.toObject(), (configDoc.environments[0].environment as IEnvironment).id);
+        const configValue = this.configValue(cachedData, userId, environmentId)
+            return {
+                name: cachedData.name,
+                id: cachedData._id,
+                value: configValue.value,
+                type: configValue.type
+            }
+    }
+
+    // get value of a config depending on its type
+    configValue(config: IConfig, userId: string | undefined, environmentId: string | undefined): { value: boolean | string | object, type: string } {
+        // if environment is undefined, default to Production environment
+        const environment = environmentId ? config.environments.find((env) => (env.environment as IEnvironment).id === environmentId) : config.environments.find((env) => (env.environment as IEnvironment).name === 'Production');
+        if (!environment) {
+            const error = environmentId ? `Environment '${environmentId}' not found` : `Default environment 'Production' not found`;
+            throw new Error(error);
+        }
+        const type = environment.type;
+        const value = environment.value;
+        environmentId = environmentId ? environmentId : (environment.environment as IEnvironment).id;
+
+        let returnValue: boolean | string | object;
+        let returnType: string;
+        switch (type) {
+            case ConfigType.BOOLEAN:
+                returnType = ConfigType.BOOLEAN;
+                returnValue = this.isEnabled(environment, userId);
+                break;
+            case ConfigType.TEXT:
+                returnType = ConfigType.TEXT;
+                returnValue = value as string;
+                break;
+            case ConfigType.JSON:
+                returnType = ConfigType.JSON;
+                returnValue = value as object;
+                break;
+            default:
+                throw new Error(`Invalid type '${type}'`);
+        }
+        return { value: returnValue, type: returnType };
     }
 
     async getConfigStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
@@ -763,46 +839,44 @@ class ConfigService {
     }
 
 
-    async isEnabled(config: IConfig, user: string, environmentId: string): Promise<boolean> {
-        // need to check if environments.environment is populated, or if it is just an ObjectId
-        let environmentIndex: number;
-        environmentIndex = config.environments.findIndex((env) => env.environment.toString() === environmentId);
-        if (environmentIndex === -1) {
-            environmentIndex = config.environments.findIndex((env) => (env.environment as IEnvironment).id === environmentId);
-        }
-
-        if (environmentIndex === -1) {
-            throw new Error(`Environment '${environmentId}' not found`);
-        }
-
-        const configValue = config.environments[environmentIndex].value;
-        switch (config.environments[environmentIndex].evaluationStrategy) {
+    isEnabled(environment: IConfigEnvironment, user: string | undefined): boolean {
+        const configValue = environment.value;
+        let userId: ObjectId;
+        switch (environment.evaluationStrategy) {
             case 'BOOLEAN':
                 if (typeof configValue !== 'boolean') {
-                    throw new Error(`Config '${config.name}' has no boolean value for environment '${(config.environments[environmentIndex].environment as IEnvironment).name}'`);
+                    throw new Error(`Config has no boolean value for environment '${(environment.environment as IEnvironment).name}'`);
                 } else {
                     return configValue as boolean;
                 }
 
             case 'USER':
-                const userId = new ObjectId(user);
+                if (!user) {
+                    throw new Error(`Evaluation strategy is USER but no user was provided`)
+                }
+                try {
+                    const userId = new ObjectId(user);
+                } catch (err: unknown) {
+                    throw new Error(`Invalid user ID ${user}`);
+                }
 
                 // If there is nothing in either of these arrays, evaluate as a boolean flag
-                if (!config.environments[environmentIndex].allowedUsers || !config.environments[environmentIndex].disallowedUsers) {
-                    return false;
+                if (!environment.allowedUsers || !environment.disallowedUsers) {
+                    return configValue as boolean;
                 }
                 // Allowed users take precedence over disallowed users
-                if (configValue) {
-                    return (
-                        configValue as boolean &&
-                        (config.environments[environmentIndex].allowedUsers!.some(allowedUser => new ObjectId(allowedUser).equals(userId)) ||
-                            !config.environments[environmentIndex].disallowedUsers!.some(disallowedUser => new ObjectId(disallowedUser).equals(userId)))
-                    );
-                }
+                return (
+                    configValue as boolean &&
+                    (environment.allowedUsers!.some(allowedUser => new ObjectId(allowedUser).equals(userId)) ||
+                        !environment.disallowedUsers!.some(disallowedUser => new ObjectId(disallowedUser).equals(userId)))
+                );
 
             // Percentage is deterministic based on the user id
             case 'PERCENTAGE':
-                const percentage = config.environments[environmentIndex].evaluationPercentage || 0;
+                if (!user) {
+                    throw new Error(`Evaluation strategy is PERCENTAGE but no user was provided`)
+                }
+                const percentage = environment.evaluationPercentage || 0;
                 const hash = md5(user);
                 const hashInt = parseInt(hash.substr(0, 8), 16);
                 const normalized = hashInt / 0xffffffff;
@@ -813,7 +887,7 @@ class ConfigService {
 
             // Probabalistic is random
             case 'PROBABALISTIC':
-                const probabalisticPercentage = config.environments[environmentIndex].evaluationPercentage || 0;
+                const probabalisticPercentage = environment.evaluationPercentage || 0;
                 return Math.random() * 100 <= probabalisticPercentage;
 
             default:
