@@ -242,7 +242,7 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
 /**
  * @swagger
  * /api/configs/value/{configId}:
- *   post:
+ *   get:
  *     summary: Returns the config value
  *     tags: [Configs]
  *     security:
@@ -254,23 +254,12 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *         schema:
  *           type: string
  *         description: The config id
- *     requestBody:
- *       required: false
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               configName:
- *                 type: string
- *               userId:
- *                 type: string
- *               environmentId:
- *                 type: string
- *             required:
- *               - userId
- *               - environmentId
- *               - one of [configName, configId]
+ *       - in: query
+ *         name: userId
+ *         required: false
+ *       - in: query
+ *         name: environmentId
+ *         required: false
  *     responses:
  *       200:
  *         description: Config value for the given environment, user id, and flag name or flag id
@@ -318,7 +307,7 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *               required:
  *                 - message
  */
-router.post('/value/:configId', checkJwt, configsController.getConfigValue)
+router.get('/value/:configId', checkJwt, configsController.getConfigValue)
 
 /**
 * @swagger
