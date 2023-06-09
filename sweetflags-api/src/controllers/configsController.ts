@@ -99,7 +99,7 @@ async function getConfigValue(req: Request, res: Response): Promise<void> {
     }
 }
 
-async function getConfigStatesForUserId(req: Request, res: Response): Promise<void> {
+async function getConfigValuesForUserId(req: Request, res: Response): Promise<void> {
     try {
         const states = await ConfigService.getConfigStatesForUserId(req.body.appId, req.body.userId, req.body.environmentId);
         res.status(200).json(states);
@@ -254,7 +254,7 @@ export {
     getConfigsByAppId,
     getConfigsByAppName,
     getConfigValue,
-    getConfigStatesForUserId,
+    getConfigValuesForUserId,
     toggleFlag,
     enableFlag,
     disableFlag,

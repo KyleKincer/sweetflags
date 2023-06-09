@@ -901,7 +901,7 @@ class ConfigService {
             return {
                 id: flag._id,
                 name: flag.name,
-                isEnabled: await this.isEnabled(flag, user, environment)
+                isEnabled: this.isEnabled(flag, user, environment)
             };
         });
         const flags = await Promise.all(promises);

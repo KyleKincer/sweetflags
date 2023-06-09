@@ -382,7 +382,7 @@ router.post('/value/id', checkJwt, configsController.getConfigValue)
 *                   description: A message explaining the error
 *                   example: Internal server error
 */
-router.post('/state/user', checkJwt, configsController.getConfigStatesForUserId)
+router.post('/value/user', checkJwt, configsController.getConfigValuesForUserId)
 
 /**
  * @swagger
