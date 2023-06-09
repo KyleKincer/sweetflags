@@ -244,6 +244,8 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  * /api/configs/value/{configId}:
  *   get:
  *     summary: Returns the config value
+ *     description: |
+ *       Returns the config value for the given config id, environment id, and user id. If no environmentId is provided, the default "Production" environment will be used. Please note that userId is required for evaluating some types of configs like BOOLEAN type configs with USER or PERCENTAGE evaluationStrategy.
  *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
