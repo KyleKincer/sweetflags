@@ -222,15 +222,18 @@ class ConfigService {
                 throw new Error(`Invalid id ${configId}`);
             }
             // Get specified environment if provided, otherwise get Production
+            console.log(environmentId);
             if (environmentId) {
+                console.log('here');
                 configDoc = await Config
                     .findById(configId)
                     .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
                     .exec();
             } else {
+                // this might be a dangerous assumption, but Production should always be the first environment since it is created upon config creation
                 configDoc = await Config
                     .findById(configId)
-                    .select({ name: 1, environments: { $elemMatch: { environment: { name: "Production" } } }, _id: 1 })
+                    .select({ name: 1, 'environments.0': 1, _id: 1 })
                     .exec();
             }
         } else if (configName) {
@@ -255,12 +258,12 @@ class ConfigService {
         }
         RedisCache.setCacheForConfigByEnvironmentId(configDoc.toObject(), (configDoc.environments[0].environment as IEnvironment).id);
         const configValue = this.configValue(cachedData, userId, environmentId)
-            return {
-                name: cachedData.name,
-                id: cachedData._id,
-                value: configValue.value,
-                type: configValue.type
-            }
+        return {
+            name: configDoc.name,
+            id: configDoc._id,
+            value: configValue.value,
+            type: configValue.type
+        }
     }
 
     // get value of a config depending on its type
@@ -298,11 +301,11 @@ class ConfigService {
 
     async configValues(configs: Array<IConfig>, user: string, environment: string): Promise<{ configs: { id: string; name: string; type: string; value: boolean | string | object }[] }> {
         const promises = configs.map(async (config) => {
-            const {value, type} = this.configValue(config, user, environment);
+            const { value, type } = this.configValue(config, user, environment);
             return {
                 id: config._id,
                 name: config.name,
-                value, 
+                value,
                 type,
             };
         });
