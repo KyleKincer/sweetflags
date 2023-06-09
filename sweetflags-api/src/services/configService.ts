@@ -296,17 +296,33 @@ class ConfigService {
         return { value: returnValue, type: returnType };
     }
 
-    async getConfigStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
+    async configValues(configs: Array<IConfig>, user: string, environment: string): Promise<{ configs: { id: string; name: string; type: string; value: boolean | string | object }[] }> {
+        const promises = configs.map(async (config) => {
+            const {value, type} = this.configValue(config, user, environment);
+            return {
+                id: config._id,
+                name: config.name,
+                value, 
+                type,
+            };
+        });
+        const configValues = await Promise.all(promises);
+        return {
+            configs: configValues
+        }
+    }
+
+    async getConfigStatesForUserId(appId: string, userId: string, environmentId: string): Promise<{ configs: { id: string; name: string; type: string; value: boolean | string | object }[] }> {
         // Try to get the entire result from the cache
         const cachedData = await RedisCache.getConfigsByUserId(appId, userId)
         if (cachedData) {
-            return this.areEnabled(cachedData, userId, environmentId)
+            return this.configValues(cachedData, userId, environmentId)
         }
 
         // Try to get the flags from the cache
         const cachedFlags = await RedisCache.getConfigsByAppIdForStates(appId);
         if (cachedFlags) {
-            return this.areEnabled(cachedFlags, userId, environmentId);
+            return this.configValues(cachedFlags, userId, environmentId);
         }
 
         // Get them from the database if not in cache
@@ -327,7 +343,7 @@ class ConfigService {
 
         RedisCache.setCacheForConfigsByAppIdForStates(configsDocs, appId);
         RedisCache.setCacheForConfigsByUserId(configsDocs, appId, userId);
-        return this.areEnabled(configsDocs, userId, environmentId);
+        return this.configValues(configsDocs, userId, environmentId);
     }
 
     async toggleFlag(data: IConfigToggleDTO): Promise<IConfig> {
@@ -709,6 +725,7 @@ class ConfigService {
                     default:
                         throw new Error(`Invalid value for evaluationStrategy ${evaluationStrategy}-- expected one of ${Object.values(EvaluationStrategy).join(', ')}`);
                 }
+                break;
             case ConfigType.JSON:
                 if (typeof value !== 'object') {
                     throw new Error(`Invalid value for type ${type}-- expected object, got ${typeof value}`);
@@ -892,21 +909,6 @@ class ConfigService {
 
             default:
                 return false;
-        }
-    }
-
-
-    async areEnabled(configs: Array<IConfig>, user: string, environment: string): Promise<{ flags: { id: string; name: string; isEnabled: boolean }[] }> {
-        const promises = configs.map(async (flag) => {
-            return {
-                id: flag._id,
-                name: flag.name,
-                isEnabled: this.isEnabled(flag, user, environment)
-            };
-        });
-        const flags = await Promise.all(promises);
-        return {
-            flags: flags
         }
     }
 }
