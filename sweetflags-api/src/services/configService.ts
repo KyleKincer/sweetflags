@@ -182,13 +182,13 @@ class ConfigService {
         return configs;
     }
 
-    async getConfigValue(configName: string | undefined, configId: string | undefined, userId: string | undefined, environmentId: string | undefined): Promise<{ name: string, id: string, value: boolean | string | object, type: string }> {
-        if (!configName && !configId) {
-            throw new Error('Either the configId or configName property is required');
+    async getConfigValue(configId: string, userId: string | undefined, environmentId: string | undefined): Promise<{ name: string, id: string, value: boolean | string | object, type: string }> {
+        if (!configId) {
+            throw new Error('configId is required');
         }
 
         // Try to get the full config from the cache
-        let cachedData = await RedisCache.getConfig({ name: configName, id: configId });
+        let cachedData = await RedisCache.getConfig({ id: configId });
         if (cachedData) {
             const configValue = this.configValue(cachedData, userId, environmentId)
             return {
@@ -201,7 +201,7 @@ class ConfigService {
 
         // Try to get a partial config from the cache
         if (environmentId) {
-            cachedData = await RedisCache.getConfigByEnvironmentId({ name: configName, id: configId }, environmentId);
+            cachedData = await RedisCache.getConfigByEnvironmentId({ id: configId }, environmentId);
         }
         if (cachedData) {
             const configValue = this.configValue(cachedData, userId, environmentId)
@@ -236,25 +236,12 @@ class ConfigService {
                     .select({ name: 1, 'environments.0': 1, _id: 1 })
                     .exec();
             }
-        } else if (configName) {
-            // Get specified environment if provided, otherwise get Production
-            if (environmentId) {
-                configDoc = await Config
-                    .findOne({ name: configName })
-                    .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
-                    .exec();
-            } else {
-                configDoc = await Config
-                    .findOne({ name: configName })
-                    .select({ name: 1, environments: { $elemMatch: { environment: { name: "Production" } } }, _id: 1 })
-                    .exec();
-            }
         } else {
-            throw new ConfigNotFoundError(`Either the configId or configName property is required`);
+            throw new ConfigNotFoundError(`configId is required`);
         }
 
         if (!configDoc) {
-            throw new ConfigNotFoundError(`Flag '${configName || configId}' not found`);
+            throw new ConfigNotFoundError(`Config id '${configId}' not found`);
         }
         RedisCache.setCacheForConfigByEnvironmentId(configDoc.toObject(), (configDoc.environments[0].environment as IEnvironment).id);
         const configValue = this.configValue(cachedData, userId, environmentId)
