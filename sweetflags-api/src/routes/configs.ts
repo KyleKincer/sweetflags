@@ -279,10 +279,22 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
  *             schema:
  *               type: object
  *               properties:
- *                 isEnabled:
- *                   type: boolean
+ *                 name:
+ *                   type: string
+ *                 id: 
+ *                   type: string
+ *                 type: 
+ *                   type: string
+ *                 value:
+ *                   oneOf:
+ *                     - type: string
+ *                     - type: boolean
+ *                     - type: number
  *               required:
- *                 - isEnabled
+ *                 - name
+ *                 - id
+ *                 - type
+ *                 - value
  *       404:
  *         description: Config not found
  *         content:
@@ -314,8 +326,8 @@ router.post('/value/:configId', checkJwt, configsController.getConfigValue)
 *   post:
 *     summary: Returns the state of all configs for a given user ID, app, and environment
 *     tags: [Configs]
- *     security:
- *       - bearerAuth: []
+*     security:
+*       - bearerAuth: []
 *     requestBody:
 *       required: true
 *       content:
