@@ -241,22 +241,27 @@ router.get('/app/name/:appName', checkJwt, configsController.getConfigsByAppName
 
 /**
  * @swagger
- * /api/configs/value/id:
+ * /api/configs/value/{configId}:
  *   post:
  *     summary: Returns the config value
  *     tags: [Configs]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: configId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The config id
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
  *               configName:
- *                 type: string
- *               configId:
  *                 type: string
  *               userId:
  *                 type: string
