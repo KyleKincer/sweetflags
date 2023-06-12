@@ -20,6 +20,7 @@ const configSchema: Schema = new Schema({
       environment: { type: Schema.Types.ObjectId, ref: 'Environment', required: true },
       type: { type: String, enum: typeEnum, required: true },
       value: { type: Schema.Types.Mixed },
+      enumValues: [{ type: String }],
       evaluationStrategy: { type: String, enum: evaluationStrategyEnum },
       evaluationPercentage: { type: Number },
       allowedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],

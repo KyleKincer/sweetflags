@@ -135,10 +135,17 @@ class EnvironmentsService {
                 if (!prodConfig) {
                     throw new Error('Production environment not found');
                 }
-
                 environments.push({
-                    ...prodConfig,
-                });
+                    environment: environmentDoc,
+                    type: prodConfig.type,
+                    value: prodConfig.value,
+                    enumValues: prodConfig.enumValues,
+                    evaluationStrategy: prodConfig.evaluationStrategy,
+                    evaluationPercentage: prodConfig.evaluationPercentage,
+                    allowedUsers: prodConfig.allowedUsers,
+                    disallowedUsers: prodConfig.disallowedUsers,
+                    updatedBy: createdBy,
+                  });
                 configs[i].environments = environments;
                 await configs[i].save();
                 RedisCache.deleteCacheForConfig(config);
