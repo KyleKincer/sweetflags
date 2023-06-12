@@ -193,7 +193,7 @@ class ConfigService {
             const configValue = this.configValue(cachedData, userId, environmentId)
             return {
                 name: cachedData.name,
-                id: cachedData._id,
+                id: cachedData.id,
                 value: configValue.value,
                 type: configValue.type
             }
@@ -207,7 +207,7 @@ class ConfigService {
             const configValue = this.configValue(cachedData, userId, environmentId)
             return {
                 name: cachedData.name,
-                id: cachedData._id,
+                id: cachedData.id,
                 value: configValue.value,
                 type: configValue.type
             }
@@ -224,7 +224,6 @@ class ConfigService {
             // Get specified environment if provided, otherwise get Production
             console.log(environmentId);
             if (environmentId) {
-                console.log('here');
                 configDoc = await Config
                     .findById(configId)
                     .select({ name: 1, environments: { $elemMatch: { environment: environmentId } }, _id: 1 })
@@ -233,8 +232,9 @@ class ConfigService {
                 // this might be a dangerous assumption, but Production should always be the first environment since it is created upon config creation
                 configDoc = await Config
                     .findById(configId)
-                    .select({ name: 1, 'environments.0': 1, _id: 1 })
+                    .select({ name: 1, 'environments': { $slice: 1 }, _id: 1 })
                     .exec();
+                console.log(configDoc);
             }
         } else {
             throw new ConfigNotFoundError(`configId is required`);
@@ -244,10 +244,10 @@ class ConfigService {
             throw new ConfigNotFoundError(`Config id '${configId}' not found`);
         }
         RedisCache.setCacheForConfigByEnvironmentId(configDoc.toObject(), (configDoc.environments[0].environment as IEnvironment).id);
-        const configValue = this.configValue(cachedData, userId, environmentId)
+        const configValue = this.configValue(configDoc, userId, environmentId)
         return {
             name: configDoc.name,
-            id: configDoc._id,
+            id: configDoc.id,
             value: configValue.value,
             type: configValue.type
         }
@@ -256,11 +256,16 @@ class ConfigService {
     // get value of a config depending on its type
     configValue(config: IConfig, userId: string | undefined, environmentId: string | undefined): { value: boolean | string | object, type: string } {
         // if environment is undefined, default to Production environment
-        const environment = environmentId ? config.environments.find((env) => (env.environment as IEnvironment).id === environmentId) : config.environments.find((env) => (env.environment as IEnvironment).name === 'Production');
-        if (!environment) {
-            const error = environmentId ? `Environment '${environmentId}' not found` : `Default environment 'Production' not found`;
-            throw new Error(error);
+        let environment = environmentId ? config.environments.find((env) => (env.environment as IEnvironment).id === environmentId) : config.environments.find((env) => (env.environment as IEnvironment).name === 'Production');
+        if (!environment && environmentId) {
+            throw new Error(`Environment '${environmentId}' not found`);
+        } else if (!environment && config.environments.length === 1) { 
+            // if only one environment exists, default to that environment
+            environment = config.environments[0];
+        } else if (!environment) {
+            throw new Error(`Environment 'Production' not found`);
         }
+
         const type = environment.type;
         const value = environment.value;
         environmentId = environmentId ? environmentId : (environment.environment as IEnvironment).id;

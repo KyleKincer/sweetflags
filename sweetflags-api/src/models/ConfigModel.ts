@@ -34,11 +34,15 @@ const configSchema: Schema = new Schema({
   toObject: {
     transform: function (_doc, ret) {
       ret.id = ret._id.toString();
-      ret.environments = ret.environments.map((env) => {
-        env.id = env._id.toString();
-        delete env._id;
-        return env;
-      });
+      if (ret.environments.length > 0) {
+        ret.environments = ret.environments.map((env) => {
+          if (env._id) {
+            env.id = env._id.toString();
+            delete env._id;
+          }
+          return env;
+        });
+      }
       delete ret._id;
       delete ret.__v;
     }
