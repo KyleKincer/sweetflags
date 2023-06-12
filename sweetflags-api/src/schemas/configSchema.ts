@@ -13,37 +13,23 @@ const Config = {
       items: {
         type: 'object',
         properties: {
+          id: { type: 'string', description: 'The ID of the environment configuration' },
           environment: Environment,
-          isActive: {
-            type: 'boolean',
-            description: 'Whether the config is active in this environment',
-          },
-          evaluationStrategy: {
-            type: 'string',
-            description: 'The strategy used to evaluate the config',
-            enum: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
-          },
           type: {
             type: 'string',
             description: 'The type of the value to return for the config',
             enum: ['BOOLEAN', 'JSON', 'TEXT', 'ENUM'],
           },
-          stringValue: {
-            type: 'string',
-            description: 'The string value for the config when the type is "TEXT"',
-          },
-          jsonValue: {
-            type: 'object',
-            description: 'The JSON value for the config when the type is "JSON"',
-          },
+          value: { type: 'mixed', description: 'The value for the config based on its type' },
           enumValues: {
             type: 'array',
             description: 'The possible enum values for the config when the type is "ENUM"',
             items: { type: 'string' },
           },
-          enumValue: {
+          evaluationStrategy: {
             type: 'string',
-            description: 'The selected enum value for the config when the type is "ENUM"',
+            description: 'The strategy used to evaluate the config',
+            enum: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
           },
           evaluationPercentage: {
             type: 'number',
@@ -59,16 +45,21 @@ const Config = {
             description: 'The list of user IDs for whom the config is disabled when the evaluation strategy is "USER"',
             items: { type: 'string' },
           },
+          updatedBy: {
+            type: 'string',
+            description: 'The ID of the user who last updated the environment configuration',
+          },
         },
+        required: ['environment', 'type', 'evaluationStrategy', 'updatedBy'],
       },
     },
     createdBy: {
       type: 'string',
-      description: 'The name of the user who created the config',
+      description: 'The ID of the user who created the config',
     },
     updatedBy: {
       type: 'string',
-      description: 'The name of the user who last updated the config',
+      description: 'The ID of the user who last updated the config',
     },
     createdAt: {
       type: 'string',
@@ -81,6 +72,7 @@ const Config = {
       description: 'The date and time the config was last updated',
     },
   },
+  required: ['name', 'app', 'environments', 'createdBy', 'updatedBy'],
 };
 
 const IConfigInputDTO = {
@@ -88,25 +80,49 @@ const IConfigInputDTO = {
   properties: {
     name: { type: 'string', description: 'The name of the config' },
     appId: { type: 'string', description: 'The ID of the app the config belongs to' },
-    isActive: { type: 'boolean', description: 'The initial active state of the config' },
     createdBy: { type: 'string', description: 'The ID of the user who created the config' },
     description: { type: 'string', description: 'The description of the config', nullable: true },
-    evaluationStrategy: { type: 'string', description: 'The evaluation strategy for the config' },
-    evaluationPercentage: { type: 'number', description: 'The evaluation percentage for the config', nullable: true },
+    type: {
+      type: 'string',
+      description: 'The type of the value to return for the config',
+      enum: ['BOOLEAN', 'JSON', 'TEXT', 'ENUM'],
+    },
+    value: {
+      type: 'mixed',
+      description: 'The value for the config based on its type',
+      nullable: true,
+    },
+    enumValues: {
+      type: 'array',
+      description: 'The possible enum values for the config when the type is "ENUM"',
+      items: { type: 'string' },
+      nullable: true,
+    },
+    evaluationStrategy: {
+      type: 'string',
+      description: 'The strategy used to evaluate the config',
+      enum: ['BOOLEAN', 'USER', 'PERCENTAGE', 'PROBABALISTIC'],
+      nullable: true,
+    },
+    evaluationPercentage: {
+      type: 'number',
+      description: 'The percentage of users that will see the config when the evaluation strategy is "PERCENTAGE"',
+      nullable: true,
+    },
     allowedUsers: {
       type: 'array',
+      description: 'The list of allowed user IDs for the config',
       items: { type: 'string' },
-      description: 'The list of allowed user ObjectIds for the config',
       nullable: true,
     },
     disallowedUsers: {
       type: 'array',
+      description: 'The list of disallowed user IDs for the config',
       items: { type: 'string' },
-      description: 'The list of disallowed user ObjectIds for the config',
       nullable: true,
     },
   },
-  required: ['name', 'appId', 'isActive', 'createdBy'],
+  required: ['name', 'appId', 'createdBy', 'type'],
 };
 
 export { Config, IConfigInputDTO };
