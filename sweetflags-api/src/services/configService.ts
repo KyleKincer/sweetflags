@@ -222,7 +222,6 @@ class ConfigService {
                 throw new Error(`Invalid id ${configId}`);
             }
             // Get specified environment if provided, otherwise get Production
-            console.log(environmentId);
             if (environmentId) {
                 configDoc = await Config
                     .findById(configId)
@@ -234,7 +233,6 @@ class ConfigService {
                     .findById(configId)
                     .select({ name: 1, 'environments': { $slice: 1 }, _id: 1 })
                     .exec();
-                console.log(configDoc);
             }
         } else {
             throw new ConfigNotFoundError(`configId is required`);
@@ -256,7 +254,7 @@ class ConfigService {
     // get value of a config depending on its type
     configValue(config: IConfig, userId: string | undefined, environmentId: string | undefined): { value: boolean | string | object, type: string } {
         // if environment is undefined, default to Production environment
-        let environment = environmentId ? config.environments.find((env) => (env.environment as IEnvironment).id === environmentId) : config.environments.find((env) => (env.environment as IEnvironment).name === 'Production');
+        let environment = environmentId ? config.environments.find((env) => env.environment.toString() === environmentId) : config.environments.find((env) => (env.environment as IEnvironment).name === 'Production');
         if (!environment && environmentId) {
             throw new Error(`Environment '${environmentId}' not found`);
         } else if (!environment && config.environments.length === 1) { 

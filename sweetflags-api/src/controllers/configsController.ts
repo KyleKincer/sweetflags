@@ -84,7 +84,9 @@ async function getConfigsByAppName(req: Request, res: Response): Promise<void> {
 
 async function getConfigValue(req: Request, res: Response): Promise<void> {
     try {
-        const state = await ConfigService.getConfigValue(req.params.configId, req.params.userId, req.params.environmentId);
+        const userId = req.query.userId as string;
+        const environmentId = req.query.environmentId as string;
+        const state = await ConfigService.getConfigValue(req.params.configId, userId, environmentId);
         res.status(200).json(state);
 
     } catch (err) {
