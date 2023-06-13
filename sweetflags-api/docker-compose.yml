@@ -21,6 +21,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+    command: "npm run dev"
 
   sweetflags-mongo:
     image: mongo
