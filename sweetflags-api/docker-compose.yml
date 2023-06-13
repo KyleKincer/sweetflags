@@ -9,11 +9,11 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://sweetflags-mongo:27017/sweetflags
-      - REDIS_HOST= sweetflags-redis.dev.gcp.sweetwater.com
-      - REDIS_PORT= "6379"
-      - AUTH0_DOMAIN= dev-sweetwater-internal.us.auth0.com
-      - AUTH0_API_IDENTIFIER= urn:sweetflags-api
-      - AUTH0_CLIENT_ID= 4oE6I2AfQ7IFN9wA41hwOghCpHL2gJ5V
+      - REDIS_HOST=sweetflags-redis
+      - REDIS_PORT=6379
+      - AUTH0_DOMAIN=dev-sweetwater-internal.us.auth0.com
+      - AUTH0_API_IDENTIFIER=urn:sweetflags-api
+      - AUTH0_CLIENT_ID=4oE6I2AfQ7IFN9wA41hwOghCpHL2gJ5V
     env_file: .env
     depends_on:
       - sweetflags-mongo
