@@ -611,40 +611,7 @@ router.put('/:id', checkJwt, configsController.updateConfig)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               flagName:
- *                 type: string
- *                 description: The name of the config.
- *               description:
- *                 type: string
- *                 description: The description of the config.
- *               appName:
- *                 type: string
- *                 description: The name of the application associated with the config.
- *               isActive:
- *                 type: boolean
- *                 description: Indicates whether the config is active or not.
- *               evaluationStrategy:
- *                 type: string
- *                 enum: [BOOLEAN, PERCENTAGE, USER, PROBABILISTIC]
- *                 description: The evaluation strategy used for the config.
- *               evaluationPercentage:
- *                 type: integer
- *                 description: The percentage of users that the config is enabled for. Required if evaluationStrategy is PERCENTAGE.
- *               allowedUsers:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: The list of users who are allowed to see the config. Required if evaluationStrategy is USER.
- *               disallowedUsers:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: The list of users who are not allowed to see the config. Required if evaluationStrategy is USER.
- *               createdBy:
- *                 type: string
- *                 description: The name of the user who created the config.
+ *             $ref: '#/components/schemas/IConfigInputDTO'
  *             required:
  *               - name
  *               - app

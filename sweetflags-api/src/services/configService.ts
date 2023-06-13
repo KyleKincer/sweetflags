@@ -599,7 +599,7 @@ class ConfigService {
             throw new Error(`Invalid id ${id}`);
         }
 
-        const { environmentId, value, updatedBy, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers } = data;
+        const { environmentId, type, value, enumValues, evaluationStrategy, evaluationPercentage, allowedUsers, disallowedUsers, updatedBy } = data;
         const configDoc = await Config.findById(id).exec();
         if (!configDoc) {
             throw new ConfigNotFoundError(`Config '${id}' not found`);
@@ -611,12 +611,14 @@ class ConfigService {
             throw new EnvironmentNotFoundError(`Environment ${environmentId} not found`);
         }
 
-        environments[environmentIndex].value = typeof value === 'undefined' ? environments[environmentIndex].value : value;
-        environments[environmentIndex].evaluationStrategy = typeof evaluationStrategy === 'undefined' ? environments[environmentIndex].evaluationStrategy : evaluationStrategy;
-        environments[environmentIndex].evaluationPercentage = typeof evaluationPercentage === 'undefined' ? environments[environmentIndex].evaluationPercentage : evaluationPercentage;
-        environments[environmentIndex].allowedUsers = typeof allowedUsers === 'undefined' ? environments[environmentIndex].allowedUsers : allowedUsers;
-        environments[environmentIndex].disallowedUsers = typeof disallowedUsers === 'undefined' ? environments[environmentIndex].disallowedUsers : disallowedUsers;
-        environments[environmentIndex].updatedBy = updatedBy;
+        Object.entries(data).forEach(([key, value]) => {
+            if (key === 'environmentId') {
+                return;
+            }
+            if (value !== undefined) {
+                environments[environmentIndex][key] = value;
+            }
+        });        
 
         configDoc.environments = environments;
         await configDoc.save();
