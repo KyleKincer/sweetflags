@@ -7,6 +7,10 @@ include:
   - local: sweetflags-api/.gitlab-ci.yml
   - local: sweetflags-ui/.gitlab-ci.yml
 
+variables:
+  APP_OWNER: fourd_production_support_team
+  APP_DOMAIN: fourd
+
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH == "development"
