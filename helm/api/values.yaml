@@ -1,6 +1,3 @@
-global:
-  mongoService: "mongodb-sweetflags"
-
 hpa:
   enabled: true
   minReplicas: 2
@@ -53,7 +50,7 @@ redis:
 
 mongodb:
   enabled: true
-  datadogPassword: "${MONGODB_DATADOG_PASSWORD}"
+  name: mongodb-sweetflags
   version: 'v6'
   auth:
     replicaSetKey: "${MONGODB_REPLICA_SET_KEY}"
@@ -64,13 +61,6 @@ mongodb:
       - "${MONGODB_PASSWORD}"
     databases:
       - sweetflags
-
-  pdns:
-    apiKey: "${PDNS_API_KEY}"
-
-  tls:
-    caCert: "${TLS_CRT}"
-    caKey: "${TLS_KEY}"
 
   externalAccess:
     enabled: true

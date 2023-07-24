@@ -6,7 +6,17 @@ include:
     ref: gl-deploy-v1
   - local: sweetflags-api/.gitlab-ci.yml
   - local: sweetflags-ui/.gitlab-ci.yml
-    # ref: gl-deploy-v1
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
+      variables:
+        TARGET_CLUSTER: 'dev-mis_k8s-cluster'
+        SECRET_ENV: dev
+    - if: $CI_COMMIT_BRANCH == "main"
+      variables:
+        TARGET_CLUSTER: 'prod-mis_k8s-cluster'
+        SECRET_ENV: prod
 
 stages:
   - build

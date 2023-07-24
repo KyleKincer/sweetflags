@@ -16,17 +16,14 @@ scan_api:
   variables:
     IMAGE_NAME: 'api'
 
-.deploy_api:
+deploy_api:
   extends: .gitlab_helm_deploy
-  needs:
-    - build_api
+  needs: [ build_api ]
   variables:
     IMAGE_NAME: 'api'
     BASE_VALUES_DIR: 'helm/api'
+    HELM_MONGO_CHART_VERSION: '6.1.0'
   secrets:
-    MONGODB_DATADOG_PASSWORD:
-      vault: "shared/gke-mongodb-${SECRET_ENV}/datadog-token@secret"
-      file: false
     MONGODB_PASSWORD:
       vault: "${SECRET_ENV}/production-support/sweetflags/env/MONGODB_PASSWORD@secret"
       file: false
@@ -36,40 +33,12 @@ scan_api:
     MONGODB_ROOT_PASSWORD:
       vault: "${SECRET_ENV}/production-support/sweetflags/env/MONGODB_ROOT_PASSWORD@secret"
       file: false
-    PDNS_API_KEY:
-      vault: "shared/power-dns-${SECRET_ENV}-mis/PDNS_API_KEY@secret"
-      file: false
-    TLS_CRT:
-      vault: "shared/${SECRET_ENV}-gcp-letsencrypt/cert@secret"
-      file: false
-    TLS_KEY:
-      vault: "shared/${SECRET_ENV}-gcp-letsencrypt/key@secret"
-      file: false
-
-deploy_api_dev:
-  extends: .deploy_api
-  variables:
-    SECRET_ENV: dev
   rules:
-    - if: $CI_COMMIT_BRANCH == 'development'
+    - if: $CI_COMMIT_BRANCH == 'development' || $CI_COMMIT_BRANCH == 'main'
       changes:
         - .gitlab-ci.yml
         - helm/api/*
         - sweetflags-api/**/*
   tags:
     - gitlab-helm-deploy
-    - dev-mis_k8s-cluster
-
-deploy_api_prod:
-  extends: .deploy_api
-  variables:
-    SECRET_ENV: prod
-  rules:
-    - if: $CI_COMMIT_BRANCH == 'main'
-      changes:
-        - .gitlab-ci.yml
-        - helm/api/*
-        - sweetflags-api/**/*
-  tags:
-    - gitlab-helm-deploy
-    - prod-mis_k8s-cluster
+    - $TARGET_CLUSTER
