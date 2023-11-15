@@ -1,0 +1,40 @@
+global:
+  mongoService: "mongodb-sweetflags"
+
+env:
+  config:
+    NODE_ENV: ${ENVIRONMENT}
+    npm_config_cache: /tmp
+
+writablePaths:
+  # - /etc/nginx/
+  # - /var/lib/nginx/tmp
+  # - /var/lib/nginx/logs
+  # - /etc/nginx/conf.d/
+  - /var/cache/nginx
+  - /var/run
+
+datadog:
+  labels:
+    admission.datadoghq.com/enabled: "true"
+    tags.datadoghq.com/service: "sweetflags-ui"
+    tags.datadoghq.com/env: ${ENVIRONMENT}
+  annotations:
+    ad.datadoghq.com/tags: '{"team": "production-support"}'
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi

@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    image: sweetflags
+    container_name: sweetflags
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://sweetflags-mongo:27017/sweetflags
+      - REDIS_HOST= sweetflags-redis.dev.gcp.sweetwater.com
+      - REDIS_PORT= "6379"
+      - AUTH0_DOMAIN= dev-sweetwater-internal.us.auth0.com
+      - AUTH0_API_IDENTIFIER= urn:sweetflags-api
+      - AUTH0_CLIENT_ID= 4oE6I2AfQ7IFN9wA41hwOghCpHL2gJ5V
+    env_file: .env
+    depends_on:
+      - sweetflags-mongo
+      - sweetflags-redis
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  sweetflags-mongo:
+    image: mongo
+    volumes:
+      - mongo-data:/data/db
+
+  sweetflags-redis:
+    image: redis
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mongo-data:
+  redis-data:
+

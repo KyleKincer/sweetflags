@@ -1,0 +1,3 @@
+istio:
+  hosts:
+    - sweetflags-ui.dev.gcp.sweetwater.com

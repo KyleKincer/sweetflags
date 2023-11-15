@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  sweetflags-ui:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: development
+    ports:
+      - '8080:8080'
+    read_only: true
+    volumes:
+      - './varcache:/var/cache/nginx'
+      - './varrun:/var/run'
+      - './tmp:/tmp'

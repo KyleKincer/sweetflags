@@ -1,0 +1,45 @@
+
+build_ui:
+  extends: .build_default_registry
+  variables:
+    IMAGE_NAME: 'ui'
+    DOCKERFILE: $CI_PROJECT_DIR/sweetflags-ui/Dockerfile
+    CONTEXT: $CI_PROJECT_DIR/sweetflags-ui
+  before_script:
+    - >
+      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+          export BUILD_ARGS="--build-arg BUILD_MODE=production"
+      else
+          export BUILD_ARGS="--build-arg BUILD_MODE=development"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - .gitlab-ci.yml
+        - helm/ui/*
+        - sweetflags-ui/**/*
+
+scan_ui:
+  extends: .container_scanning
+  variables:
+    IMAGE_NAME: 'ui'
+
+deploy_ui:
+  extends: .gitlab_helm_deploy
+  variables:
+    IMAGE_NAME: 'ui'
+    HELM_RELEASE_NAME: 'sweetflags-ui'
+    BASE_VALUES_DIR: 'helm/ui'
+  needs:
+    - job: deploy_api
+      optional: true
+    - job: build_api
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'development' || $CI_COMMIT_BRANCH == 'main'
+      changes:
+        - .gitlab-ci.yml
+        - helm/ui/*
+        - sweetflags-ui/**/*
+  tags:
+    - gitlab-helm-deploy
+    - $TARGET_CLUSTER
