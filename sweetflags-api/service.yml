@@ -3,20 +3,10 @@ kind: Service
 metadata:
   name: sweetflags-api
 spec:
-  containers:
-    - name: sweetflags-api
-      image: sweetflags-api
-      ports:
-        - containerPort: 80
-      readinessProbe:
-        httpGet:
-          path: /healthz
-          port: 80
-        initialDelaySeconds: 5
-        periodSeconds: 10
-      livenessProbe:
-        httpGet:
-          path: /healthz
-          port: 80
-        initialDelaySeconds: 15
-        periodSeconds: 20
+  selector:
+    app: sweetflags-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
