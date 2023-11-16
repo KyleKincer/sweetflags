@@ -1,6 +1,5 @@
 import express from 'express';
 import * as appsController from '../controllers/appsController';
-import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 
@@ -47,7 +46,7 @@ const router = express.Router();
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/', checkJwt, appsController.getAllApps);
+router.get('/', appsController.getAllApps);
 
 /**
  * @swagger
@@ -95,7 +94,7 @@ router.get('/', checkJwt, appsController.getAllApps);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/:id', checkJwt, appsController.getAppById);
+router.get('/:id', appsController.getAppById);
 
 /**
  * @swagger
@@ -143,7 +142,7 @@ router.get('/:id', checkJwt, appsController.getAppById);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/name/:name', checkJwt, appsController.getAppByName);
+router.get('/name/:name', appsController.getAppByName);
 
 /**
  * @swagger
@@ -196,7 +195,7 @@ router.get('/name/:name', checkJwt, appsController.getAppByName);
  *                     type: string
  *                     description: Error message
  */
-router.post('/', checkJwt, appsController.createApp);
+router.post('/', appsController.createApp);
 
 /**
  * @swagger
@@ -259,6 +258,6 @@ router.post('/', checkJwt, appsController.createApp);
  *                     type: string
  *                     description: Error message
  */
-router.delete('/:id', checkJwt, appsController.deleteApp);
+router.delete('/:id', appsController.deleteApp);
 
 export default router;

@@ -1,6 +1,5 @@
 import express from 'express';
 import * as logsController from '../controllers/logsController';
-import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 
@@ -63,7 +62,7 @@ const router = express.Router();
  *                     type: string
  *                     description: Error message
  */
-router.get('/', checkJwt, logsController.getAllLogs);
+router.get('/', logsController.getAllLogs);
 
 /**
  * @swagger
@@ -121,7 +120,7 @@ router.get('/', checkJwt, logsController.getAllLogs);
  *                     type: string
  *                     description: Error message
  */
-router.get('/:target', checkJwt, logsController.getLogsByTarget);
+router.get('/:target', logsController.getLogsByTarget);
 
 
 export default router;
