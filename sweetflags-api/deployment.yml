@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sweetflags-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sweetflags-api
+  template:
+    metadata:
+      labels:
+        app: sweetflags-api
+    spec:
+      containers:
+      - name: sweetflags-api
+        image: us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-api
+        ports:
+        - containerPort: 8080
