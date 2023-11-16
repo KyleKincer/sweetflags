@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: sweetflags-api
-        image: $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA
+        image: us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-api:${GITHUB_SHA}
         ports:
         - containerPort: 8080
