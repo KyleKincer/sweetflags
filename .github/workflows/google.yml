@@ -23,7 +23,7 @@ env:
   GKE_ZONE: us-central1   # TODO: update to cluster zone
   DEPLOYMENT_NAME: sweetflags-api # TODO: update to deployment name
   REPOSITORY: sweetflags # TODO: update to Artifact Registry docker repository
-  IMAGE: static-site
+  IMAGE: sweetflags-api
 
 jobs:
   setup-build-publish-deploy:
