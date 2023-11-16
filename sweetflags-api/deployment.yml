@@ -15,5 +15,6 @@ spec:
       containers:
       - name: sweetflags-api
         image: us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-api
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
