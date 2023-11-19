@@ -12,9 +12,26 @@ import logRouter from './routes/logs';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
 import 'dd-trace/init';
+import os from 'os';
 
 dotenv.config();
 console.log('Starting server');
+
+// Print the IP address
+const networkInterfaces = os.networkInterfaces();
+if (networkInterfaces) {
+  for (const name of Object.keys(networkInterfaces)) {
+    const nets = networkInterfaces[name];
+    if (nets) {
+      for (const net of nets) {
+        // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+        if (net.family === 'IPv4' && !net.internal) {
+          console.log('IP Address:', net.address);
+        }
+      }
+    }
+  }
+}
 
 async function connectToDb() {
   try {
