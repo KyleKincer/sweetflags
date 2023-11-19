@@ -20,7 +20,7 @@ spec:
         - name: VITE_BASE_URL
           value: "http://localhost:8080"
         - name: VITE_SWEETFLAGS_API_BASE_URL
-          value: "http://34.42.221.254/api/"
+          value: "https://sweetflags.kylekincer.com/api/"
         - name: VITE_AUTH0_DOMAIN
           valueFrom:
             secretKeyRef:
