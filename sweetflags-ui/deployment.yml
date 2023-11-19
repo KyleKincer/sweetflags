@@ -32,4 +32,4 @@ spec:
               name: auth0-client-id
               key: AUTH0_CLIENT_ID
         ports:
-        - containerPort: 5173
+        - containerPort: 8080
