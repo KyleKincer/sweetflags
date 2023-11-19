@@ -16,5 +16,11 @@ spec:
       - name: sweetflags-api
         image: us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-api
         imagePullPolicy: Always
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-uri
+              key: MONGODB_URI
         ports:
         - containerPort: 8080
