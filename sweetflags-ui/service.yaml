@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sweetflags-ui
+spec:
+  selector:
+    app: sweetflags-ui
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5173
+  type: LoadBalancer

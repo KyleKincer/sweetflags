@@ -18,12 +18,14 @@ on:
 
 env:
   PROJECT_ID: sweetflags
-  GAR_LOCATION: us-central1 # TODO: update region of the Artifact Registry
-  GKE_CLUSTER: sweetflags-api-cluster-1    # TODO: update to cluster name
-  GKE_ZONE: us-central1   # TODO: update to cluster zone
-  DEPLOYMENT_NAME: sweetflags-api # TODO: update to deployment name
-  REPOSITORY: sweetflags # TODO: update to Artifact Registry docker repository
-  IMAGE: sweetflags-api
+  GAR_LOCATION: us-central1 
+  GKE_CLUSTER: sweetflags-api-cluster-1 
+  GKE_ZONE: us-central1
+  API_DEPLOYMENT_NAME: sweetflags-api 
+  UI_DEPLOYMENT_NAME: sweetflags-ui
+  REPOSITORY: sweetflags 
+  API_IMAGE: sweetflags-api
+  UI_IMAGE: sweetflags-ui
 
 jobs:
   setup-build-publish-deploy:
@@ -64,31 +66,61 @@ jobs:
         cluster_name: ${{ env.GKE_CLUSTER }}
         location: ${{ env.GKE_ZONE }}
 
-    # Build the Docker image
-    - name: Build
+    # Build the API image
+    - name: Build API
       run: |-
         docker build \
-          --tag "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA" \
+          --tag "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_IMAGE:$GITHUB_SHA" \
           --build-arg GITHUB_SHA="$GITHUB_SHA" \
           --build-arg GITHUB_REF="$GITHUB_REF" \
           sweetflags-api/
-        docker images
-    # Push the Docker image to Google Artifact Registry
-    - name: Publish
+    # Push the API image to Google Artifact Registry
+    - name: Publish API
       run: |-
-        docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA"
+        docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_IMAGE:$GITHUB_SHA"
     # Set up kustomize
     - name: Set up Kustomize
       run: |-
         cd sweetflags-api
         curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
         chmod u+x ./kustomize
-    # Deploy the Docker image to the GKE cluster
-    - name: Deploy
+    # Deploy the API image to the GKE cluster
+    - name: Deploy API
       run: |-
         cd sweetflags-api
         # replacing the image name in the k8s template
-        ./kustomize edit set image us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-api=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA
+        ./kustomize edit set image us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-api=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_IMAGE:$GITHUB_SHA
         ./kustomize build . | kubectl apply -f -
-        kubectl rollout status deployment/$DEPLOYMENT_NAME
+        kubectl rollout status deployment/$API_DEPLOYMENT_NAME
+        kubectl get services -o wide
+
+    # Build the UI image
+    - name: Build UI
+      run: |-
+        docker build \
+          --tag "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$UI_IMAGE:$GITHUB_SHA" \
+          --build-arg GITHUB_SHA="$GITHUB_SHA" \
+          --build-arg GITHUB_REF="$GITHUB_REF" \
+          sweetflags-ui/
+
+    # Push the UI image to Google Artifact Registry
+    - name: Publish UI
+      run: |-
+        docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$UI_IMAGE:$GITHUB_SHA"
+    
+    # Set up kustomize
+    - name: Set up Kustomize
+      run: |-
+        cd sweetflags-ui
+        curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
+        chmod u+x ./kustomize
+        
+    # Deploy the UI image to the GKE cluster
+    - name: Deploy UI
+      run: |-
+        cd sweetflags-ui
+        # replacing the image name in the k8s template
+        ./kustomize edit set image us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-ui=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$UI_IMAGE:$GITHUB_SHA
+        ./kustomize build . | kubectl apply -f -
+        kubectl rollout status deployment/$UI_DEPLOYMENT_NAME
         kubectl get services -o wide
