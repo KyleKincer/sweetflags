@@ -38,4 +38,4 @@ spec:
               name: redis-password
               key: REDIS_PASSWORD
         ports:
-        - containerPort: 3000
+        - containerPort: 8080
