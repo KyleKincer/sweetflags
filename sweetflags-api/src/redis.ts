@@ -17,7 +17,7 @@ class RedisCache {
             this.client = new Redis({
                 host: process.env.REDIS_HOST,
                 port: Number(process.env.REDIS_PORT),
-                password: process.env.MEMORYSTORE_REDIS_PASSWORD,
+                password: process.env.REDIS_PASSWORD,
             });
         }
     }
