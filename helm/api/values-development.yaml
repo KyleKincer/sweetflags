@@ -1,7 +1,0 @@
-redis:
-  tier: BASIC
-  memorySizeGb: 2
-
-istio:
-  hosts:
-    - sweetflags.dev.gcp.sweetwater.com
