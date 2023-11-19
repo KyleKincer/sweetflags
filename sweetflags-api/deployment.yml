@@ -39,3 +39,15 @@ spec:
               key: REDIS_PASSWORD
         ports:
         - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /api/healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/healthz
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
