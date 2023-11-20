@@ -1,6 +1,5 @@
 import express from 'express';
 import * as usersController from '../controllers/usersController';
-import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 
@@ -41,7 +40,7 @@ const router = express.Router();
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/', checkJwt, usersController.getAllUsers);
+router.get('/', usersController.getAllUsers);
 
 /**
  * @swagger
@@ -78,7 +77,7 @@ router.get('/', checkJwt, usersController.getAllUsers);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/:id', checkJwt, usersController.getUserById);
+router.get('/:id', usersController.getUserById);
 
 /**
  * @swagger
@@ -117,7 +116,7 @@ router.get('/:id', checkJwt, usersController.getUserById);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.get('/app/:appId', checkJwt, usersController.getUsersByAppId);
+router.get('/app/:appId', usersController.getUsersByAppId);
 
 /**
  * @swagger
@@ -168,7 +167,7 @@ router.get('/app/:appId', checkJwt, usersController.getUsersByAppId);
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/app/:appId/:externalId', checkJwt, usersController.getUserByAppIdAndExternalId);
+router.get('/app/:appId/:externalId', usersController.getUserByAppIdAndExternalId);
 
 /**
  * @swagger
@@ -204,7 +203,7 @@ router.get('/app/:appId/:externalId', checkJwt, usersController.getUserByAppIdAn
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.post('/', checkJwt, usersController.createUser);
+router.post('/', usersController.createUser);
 
 /**
  * @swagger
@@ -247,7 +246,7 @@ router.post('/', checkJwt, usersController.createUser);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.put('/:id', checkJwt, usersController.updateUser);
+router.put('/:id', usersController.updateUser);
 
 /**
  * @swagger
@@ -284,6 +283,6 @@ router.put('/:id', checkJwt, usersController.updateUser);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.delete('/:id', checkJwt, usersController.deleteUser);
+router.delete('/:id', usersController.deleteUser);
 
 export default router;

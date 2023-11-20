@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sweetflags-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sweetflags-ui
+  template:
+    metadata:
+      labels:
+        app: sweetflags-ui
+    spec:
+      containers:
+      - name: sweetflags-ui
+        image: us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-ui
+        imagePullPolicy: Always
+        env:
+        - name: VITE_BASE_URL
+          value: "http://localhost:8080"
+        - name: VITE_SWEETFLAGS_API_BASE_URL
+          value: "https://sweetflags.kylekincer.com/api/"
+        - name: VITE_AUTH0_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: auth0-domain
+              key: AUTH0_DOMAIN
+        - name: VITE_AUTH0_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: auth0-client-id
+              key: AUTH0_CLIENT_ID
+        ports:
+        - containerPort: 8080

@@ -1,6 +1,5 @@
 import express from 'express';
 import environmentsController from '../controllers/environmentsController';
-import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 

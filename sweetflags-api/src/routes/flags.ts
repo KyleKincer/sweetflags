@@ -1,6 +1,5 @@
 import express from 'express';
 import * as flagsController from '../controllers/flagsController';
-import checkJwt from '../middleware/authMiddleware'
 
 const router = express.Router();
 
@@ -49,7 +48,7 @@ const router = express.Router();
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/', checkJwt, flagsController.getAllFlags);
+router.get('/', flagsController.getAllFlags);
 
 /**
  * @swagger
@@ -94,7 +93,7 @@ router.get('/', checkJwt, flagsController.getAllFlags);
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/:id', checkJwt, flagsController.getFlagById);
+router.get('/:id', flagsController.getFlagById);
 
 /**
  * @swagger
@@ -139,7 +138,7 @@ router.get('/:id', checkJwt, flagsController.getFlagById);
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/name/:name', checkJwt, flagsController.getFlagByName)
+router.get('/name/:name', flagsController.getFlagByName)
 
 /**
  * @swagger
@@ -188,7 +187,7 @@ router.get('/name/:name', checkJwt, flagsController.getFlagByName)
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/app/:appId', checkJwt, flagsController.getFlagsByAppId)
+router.get('/app/:appId', flagsController.getFlagsByAppId)
 
 /**
  * @swagger
@@ -237,7 +236,7 @@ router.get('/app/:appId', checkJwt, flagsController.getFlagsByAppId)
  *                   type: string
  *                   description: Error message explaining the issue with the server
  */
-router.get('/app/name/:appName', checkJwt, flagsController.getFlagsByAppName)
+router.get('/app/name/:appName', flagsController.getFlagsByAppName)
 
 /**
  * @swagger
@@ -304,7 +303,7 @@ router.get('/app/name/:appName', checkJwt, flagsController.getFlagsByAppName)
  *               required:
  *                 - message
  */
-router.post('/state/id', checkJwt, flagsController.getFlagState)
+router.post('/state/id', flagsController.getFlagState)
 
 /**
 * @swagger
@@ -385,7 +384,7 @@ router.post('/state/id', checkJwt, flagsController.getFlagState)
 *                   description: A message explaining the error
 *                   example: Internal server error
 */
-router.post('/state/user', checkJwt, flagsController.getFlagStatesForUserId)
+router.post('/state/user', flagsController.getFlagStatesForUserId)
 
 /**
  * @swagger
@@ -444,13 +443,13 @@ router.post('/state/user', checkJwt, flagsController.getFlagStatesForUserId)
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.put('/toggle', checkJwt, flagsController.toggleFlag);
+router.put('/toggle', flagsController.toggleFlag);
 
 // endpoint to enable flag by id in all environments with a single request including updatedBy
-router.put('/enable', checkJwt, flagsController.enableFlag);
+router.put('/enable', flagsController.enableFlag);
 
 // endpoint to disable flag in all environments
-router.put('/disable', checkJwt, flagsController.disableFlag);
+router.put('/disable', flagsController.disableFlag);
 
 /**
  * @swagger
@@ -517,7 +516,7 @@ router.put('/disable', checkJwt, flagsController.disableFlag);
  *                     description: A message explaining the error
  *                     example: Internal server error
  */
-router.put('/:id/metadata', checkJwt, flagsController.updateFlagMetadata)
+router.put('/:id/metadata', flagsController.updateFlagMetadata)
 
 /**
  * @swagger
@@ -591,7 +590,7 @@ router.put('/:id/metadata', checkJwt, flagsController.updateFlagMetadata)
  *       500:
  *         description: An error occurred while updating the feature flag.
  */
-router.put('/:id', checkJwt, flagsController.updateFlag)
+router.put('/:id', flagsController.updateFlag)
 
 /**
  * @swagger
@@ -667,7 +666,7 @@ router.put('/:id', checkJwt, flagsController.updateFlag)
  *       500:
  *         description: An error occurred while creating the feature flag.
  */
-router.post('/', checkJwt, flagsController.createFlag);
+router.post('/', flagsController.createFlag);
 
 /**
  * @swagger
@@ -714,6 +713,6 @@ router.post('/', checkJwt, flagsController.createFlag);
  *                     description: A message explaining the error
  *                     example: An unknown error occurred
  */
-router.delete('/:id', checkJwt, flagsController.deleteFlag);
+router.delete('/:id', flagsController.deleteFlag);
 
 export default router;

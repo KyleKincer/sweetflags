@@ -1,4 +1,4 @@
-FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0 as build
+FROM --platform=linux/amd64 node:18 as build
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 RUN ls -la dist
 
-FROM gitlab-registry.sweetwater.com/it/devops/dockerfiles/node-18-alpine:1.0.0
+FROM --platform=linux/amd64 node:18
 WORKDIR /app
 
 COPY package*.json ./

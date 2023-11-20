@@ -10,11 +10,11 @@ export default function useApi() {
     baseURL: import.meta.env.VITE_SWEETFLAGS_API_BASE_URL,
   });
 
-  api.interceptors.request.use(async (config) => {
-    const token = await getAccessTokenSilently();
-    config.headers.Authorization = `Bearer ${token}`;
-    return config;
-  });
+  // api.interceptors.request.use(async (config) => {
+  //   const token = await getAccessTokenSilently();
+  //   config.headers.Authorization = `Bearer ${token}`;
+  //   return config;
+  // });
   const isLoading = ref(false);
   const isLoadingToggleFlag = ref(false);
   const isLoadingGetLogs = ref(false);

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sweetflags-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sweetflags-api
+  template:
+    metadata:
+      labels:
+        app: sweetflags-api
+    spec:
+      containers:
+      - name: sweetflags-api
+        image: us-central1-docker.pkg.dev/sweetflags/sweetflags/sweetflags-api
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-uri
+              key: MONGODB_URI
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: redis-port
+              key: REDIS_PORT
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: redis-host
+              key: REDIS_HOST
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-password
+              key: REDIS_PASSWORD
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /api/healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/healthz
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
