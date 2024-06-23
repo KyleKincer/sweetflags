@@ -10,8 +10,8 @@ env:
   UI_IMAGE: sweetflags-ui
   API_DEPLOYMENT_NAME: sweetflags-api
   UI_DEPLOYMENT_NAME: sweetflags-ui
-  MONGODB_URI: mongodb://localhost:27017/sweetflags
-  REDIS_HOST: localhost
+  MONGODB_URI: mongodb://192.168.254.57:27017/sweetflags
+  REDIS_HOST: 192.168.254.57
   REDIS_PORT: 6379
 
 jobs:
