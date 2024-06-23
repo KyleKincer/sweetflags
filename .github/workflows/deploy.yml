@@ -2,7 +2,7 @@ name: Build and Deploy to Self-Hosted Server
 
 on:
   push:
-    branches: [ "development" ]
+    branches: [ "main" ]
 
 env:
   PROJECT_ID: sweetflags
@@ -82,5 +82,7 @@ jobs:
           docker stop ${UI_DEPLOYMENT_NAME} || true && \
           docker rm ${UI_DEPLOYMENT_NAME} || true && \
           docker run -d --name ${UI_DEPLOYMENT_NAME} \
+            -e VITE_BASE_URL="https://sweetflags.kylekincer.com" \
+            -e VITE_SWEETFLAGS_API_BASE_URL="https://sweetflags.kylekincer.com/api/" \
             -p 3001:3001 \
             localhost:5000/${PROJECT_ID}/${UI_IMAGE}:${GITHUB_SHA}
