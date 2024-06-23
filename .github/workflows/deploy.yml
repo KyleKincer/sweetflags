@@ -82,5 +82,5 @@ jobs:
           docker stop ${UI_DEPLOYMENT_NAME} || true && \
           docker rm ${UI_DEPLOYMENT_NAME} || true && \
           docker run -d --name ${UI_DEPLOYMENT_NAME} \
-            -p 3001:3000 \
+            -p 3001:3001 \
             localhost:5000/${PROJECT_ID}/${UI_IMAGE}:${GITHUB_SHA}
