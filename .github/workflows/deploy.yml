@@ -44,7 +44,7 @@ jobs:
     # Deploy the API image to server
     - name: Deploy API
       run: |-
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker pull localhost:5000/${PROJECT_ID}/${API_IMAGE}:${GITHUB_SHA} && docker stop ${API_DEPLOYMENT_NAME} && docker rm ${API_DEPLOYMENT_NAME} && docker run -d --name ${API_DEPLOYMENT_NAME} localhost:5000/${PROJECT_ID}/${API_IMAGE}:${GITHUB_SHA}"
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker pull localhost:5000/${PROJECT_ID}/${API_IMAGE}:${GITHUB_SHA} && docker stop ${API_DEPLOYMENT_NAME} || true && docker rm ${API_DEPLOYMENT_NAME} || true && docker run -d --name ${API_DEPLOYMENT_NAME} localhost:5000/${PROJECT_ID}/${API_IMAGE}:${GITHUB_SHA}"
 
     # Build the UI image
     - name: Build UI
@@ -63,4 +63,4 @@ jobs:
     # Deploy the UI image to server
     - name: Deploy UI
       run: |-
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker pull localhost:5000/${PROJECT_ID}/${UI_IMAGE}:${GITHUB_SHA} && docker stop ${UI_DEPLOYMENT_NAME} && docker rm ${UI_DEPLOYMENT_NAME} && docker run -d --name ${UI_DEPLOYMENT_NAME} localhost:5000/${PROJECT_ID}/${UI_IMAGE}:${GITHUB_SHA}"
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker pull localhost:5000/${PROJECT_ID}/${UI_IMAGE}:${GITHUB_SHA} && docker stop ${UI_DEPLOYMENT_NAME} || true && docker rm ${UI_DEPLOYMENT_NAME} || true && docker run -d --name ${UI_DEPLOYMENT_NAME} localhost:5000/${PROJECT_ID}/${UI_IMAGE}:${GITHUB_SHA}"
