@@ -51,7 +51,7 @@ async function connectToDb() {
 
   const app = express();
 
-  const port = process.env.PORT || 8080;
+  const port = process.env.API_PORT || 8080;
   app.set('port', port);
 
   // Set up Swagger UI
