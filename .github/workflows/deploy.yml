@@ -46,18 +46,17 @@ jobs:
     # Deploy the API image to server
     - name: Deploy API
       run: |-
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          docker pull localhost:5000/${PROJECT_ID}/${API_IMAGE}:${GITHUB_SHA}
-          docker stop ${API_DEPLOYMENT_NAME} || true
-          docker rm ${API_DEPLOYMENT_NAME} || true
-          docker run -d --name ${API_DEPLOYMENT_NAME} \
-            -e NODE_ENV=development \
-            -e MONGODB_URI=${MONGODB_URI} \
-            -e REDIS_HOST=${REDIS_HOST} \
-            -e REDIS_PORT=${REDIS_PORT} \
-            -p 3000:3000 \
-            localhost:5000/${PROJECT_ID}/${API_IMAGE}:${GITHUB_SHA}
-        EOF
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+        "docker pull localhost:5000/${PROJECT_ID}/${API_IMAGE}:${GITHUB_SHA} && \
+        docker stop ${API_DEPLOYMENT_NAME} || true && \
+        docker rm ${API_DEPLOYMENT_NAME} || true && \
+        docker run -d --name ${API_DEPLOYMENT_NAME} \
+          -e NODE_ENV=development \
+          -e MONGODB_URI=${MONGODB_URI} \
+          -e REDIS_HOST=${REDIS_HOST} \
+          -e REDIS_PORT=${REDIS_PORT} \
+          -p 3000:3000 \
+          localhost:5000/${PROJECT_ID}/${API_IMAGE}:${GITHUB_SHA}"
 
     # Build the UI image
     - name: Build UI
